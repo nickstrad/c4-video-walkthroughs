@@ -84,3 +84,21 @@ export function buildTimeline(sb: Storyboard, takes: Record<string, TakeRecord>,
     audio: { file: audioFile, sampleRate },
   };
 }
+
+export type SpeechWindow = { id: string; start: number; end: number };
+/**
+ * Where the voice should be heard, absolute seconds, in time order: each
+ * scene's speech span, split at step bounds for stepped scenes.
+ */
+export function speechWindows(tl: Timeline): SpeechWindow[] {
+  const out: SpeechWindow[] = [];
+  for (const s of tl.scenes) {
+    const [a, z] = s.speech;
+    if (!s.steps) { out.push({ id: s.id, start: r3(s.start + a), end: r3(s.start + z) }); continue; }
+    for (const st of s.steps) {
+      const lo = Math.max(a, st.start), hi = Math.min(z, st.end);
+      if (hi > lo) out.push({ id: `${s.id}.${st.id}`, start: r3(s.start + lo), end: r3(s.start + hi) });
+    }
+  }
+  return out;
+}

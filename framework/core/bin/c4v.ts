@@ -7,8 +7,9 @@
 //   node core/bin/c4v.ts build   <project>   # offline: never calls ElevenLabs
 //   node core/bin/c4v.ts verify  <project>   # pinned-git + take + bundle checks
 //   node core/bin/c4v.ts narrate <project>   # voice missing takes (spends TTS credits)
+//   node core/bin/c4v.ts proof   <project> [mp4…]   # output proof (default: renders/*.mp4)
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { BUNDLE_SCHEMA, type RenderBundle } from "../src/bundle.ts";
 import { pinExcerpts, verifyExcerpts } from "../src/code-source/excerpts.ts";
@@ -20,10 +21,11 @@ import { buildTimeline } from "../src/narration/timeline.ts";
 import { mixTrack } from "../src/narration/track.ts";
 import { isCodeScene, type Storyboard } from "../src/storyboard/schema.ts";
 import { validateStoryboard } from "../src/storyboard/validate.ts";
+import { proveOutput } from "../src/verify/output.ts";
 
-const [cmd, dirArg] = process.argv.slice(2);
-if (!cmd || !dirArg || !["build", "verify", "narrate"].includes(cmd)) {
-  console.error("usage: c4v build|verify|narrate <project-dir>");
+const [cmd, dirArg, ...rest] = process.argv.slice(2);
+if (!cmd || !dirArg || !["build", "verify", "narrate", "proof"].includes(cmd)) {
+  console.error("usage: c4v build|verify|narrate <project-dir> | c4v proof <project-dir> [mp4…]");
   process.exit(2);
 }
 const dir = path.resolve(dirArg);
@@ -114,8 +116,27 @@ function verify() {
   console.log("verify: pass");
 }
 
+/** Prove each rendered MP4 against the committed bundle's timeline. */
+function proof() {
+  const { timeline } = JSON.parse(readFileSync(path.join(buildDir, "bundle.json"), "utf8")) as RenderBundle;
+  const rendersDir = path.join(dir, "renders");
+  const files = rest.length ? rest.map((f) => path.resolve(f))
+    : existsSync(rendersDir) ? readdirSync(rendersDir).filter((f) => f.endsWith(".mp4")).map((f) => path.join(rendersDir, f)) : [];
+  if (!files.length) die("proof", ["no MP4 to prove"]);
+  const errs: string[] = [];
+  for (const f of files) {
+    const p = proveOutput(f, timeline);
+    const v = p.video, a = p.audio;
+    console.log(`  ${path.relative(dir, f)}: ${p.bytes} B · ${v?.codec} ${v?.width}x${v?.height} ${v?.fps} ${v?.frames} frames ${v?.duration} s · ${a?.codec} ${a?.sampleRate} Hz ${a?.channels} ch ${a?.duration} s · faststart ${p.faststart} · quietest line ${p.quietestLine?.id} ${p.quietestLine?.db} dB · loudest pause ${p.loudestPause?.db} dB`);
+    errs.push(...p.errors.map((e) => `${path.relative(dir, f)}: ${e}`));
+  }
+  die("proof", errs);
+  console.log(`proof: pass (${files.length} file${files.length > 1 ? "s" : ""})`);
+}
+
 if (cmd === "build") await build();
 else if (cmd === "verify") verify();
+else if (cmd === "proof") proof();
 else {
   const missing = missingTakes(sb, takesDir);
   if (!missing.length) console.log("narrate: every scene has a take; nothing to voice (0 characters)");

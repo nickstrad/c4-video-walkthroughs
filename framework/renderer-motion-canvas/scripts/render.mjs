@@ -11,12 +11,11 @@
 // exporter finalises it on the server after the last frame). Hardened: project
 // and output are arguments, the port is free, there is an overall timeout,
 // browser errors fail the run (except the editor's harmless metadata-save
-// timeouts, e.g. virtual:settings), and the result is probed against the timeline before it
+// timeouts, e.g. virtual:settings), and the result passes core's output proof (proveOutput) before it
 // is copied out. Env: CHROME (browser binary), C4V_TIMEOUT (s, default 1500).
 import {createServer} from 'vite';
 import {chromium} from 'playwright-core';
-import ffprobe from '@ffprobe-installer/ffprobe';
-import {execFileSync} from 'node:child_process';
+import {proveOutput} from '../../core/src/verify/output.ts';
 import {copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync} from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
@@ -124,23 +123,12 @@ try {
 }
 if (dying) await new Promise(() => {}); // a failure is already shutting down and exiting
 
-// Probe: H.264 + AAC, the bundle's size, and the timeline's duration (±1 frame).
-const probe = JSON.parse(
-  execFileSync(ffprobe.path, ['-v', 'error', '-show_entries', 'stream=codec_type,codec_name,width,height,r_frame_rate,duration:format=duration,size', '-of', 'json', target], {encoding: 'utf8'}),
-);
-const v = probe.streams.find((s) => s.codec_type === 'video');
-const a = probe.streams.find((s) => s.codec_type === 'audio');
-const problems = [];
-if (!v || v.codec_name !== 'h264') problems.push(`video stream ${v?.codec_name}`);
-if (!a || a.codec_name !== 'aac') problems.push(`audio stream ${a?.codec_name}`);
-if (v && (v.width !== timeline.width || v.height !== timeline.height)) problems.push(`size ${v.width}x${v.height}`);
-if (v && Math.abs(Number(v.duration) - timeline.total) > 1 / timeline.fps + 1e-3) problems.push(`video ${v.duration} s, timeline ${timeline.total} s`);
-if (a && Math.abs(Number(a.duration) - timeline.total) > 0.1) problems.push(`audio ${a.duration} s, timeline ${timeline.total} s`);
-const size = Number(probe.format.size);
-if (size >= 10 * 1024 * 1024) problems.push(`${size} bytes ≥ 10 MiB`);
-log(`video ${v?.codec_name} ${v?.width}x${v?.height} ${v?.r_frame_rate} ${v?.duration} s · audio ${a?.codec_name} ${a?.duration} s · ${size} bytes`);
-if (problems.length) {
-  console.error(`[${secs()}s] FAILED probe: ${problems.join('; ')} (kept ${target})`);
+// Prove the result against the timeline (core's shared output proof) before
+// it is copied out.
+const proof = proveOutput(target, timeline);
+log(`video ${proof.video?.codec} ${proof.video?.width}x${proof.video?.height} ${proof.video?.frames} frames · audio ${proof.audio?.codec} ${proof.audio?.duration} s · ${proof.bytes} bytes`);
+if (proof.errors.length) {
+  console.error(`[${secs()}s] FAILED proof: ${proof.errors.join('; ')} (kept ${target})`);
   process.exit(1);
 }
 mkdirSync(path.dirname(out), {recursive: true});
