@@ -1,0 +1,174 @@
+{
+  "fps": 30,
+  "leadIn": 0.2,
+  "tail": 0.4,
+  "voice": {
+    "name": "Roger",
+    "id": "CwhRBWXzGAHq8TQ4Fs17"
+  },
+  "model": "eleven_multilingual_v2",
+  "scenes": [
+    {
+      "id": "s1-request",
+      "start": 0,
+      "duration": 4.7,
+      "storyboardDuration": 2.6,
+      "speech": [
+        0.2,
+        4.275
+      ],
+      "clipLength": 4.83,
+      "cues": {
+        "send": 0.978
+      }
+    },
+    {
+      "id": "s2-balance",
+      "start": 4.7,
+      "duration": 2.7667,
+      "storyboardDuration": 2.2,
+      "speech": [
+        0.2,
+        2.336
+      ],
+      "clipLength": 2.461,
+      "cues": {
+        "travel": 1.14
+      }
+    },
+    {
+      "id": "s3-cache-hit",
+      "start": 7.4667,
+      "duration": 5.7333,
+      "storyboardDuration": 2.6,
+      "speech": [
+        0.2,
+        5.332
+      ],
+      "clipLength": 5.712,
+      "cues": {
+        "badge": 0.525,
+        "skip": 1.976
+      }
+    },
+    {
+      "id": "s4-forward",
+      "start": 13.2,
+      "duration": 4.9333,
+      "storyboardDuration": 2.4,
+      "speech": [
+        0.2,
+        4.519
+      ],
+      "clipLength": 5.108,
+      "cues": {
+        "relabel": 0.827,
+        "travel": 1.837
+      }
+    },
+    {
+      "id": "s5-into-code",
+      "start": 18.1333,
+      "duration": 6.4333,
+      "storyboardDuration": 1.4,
+      "speech": [
+        0.2,
+        6.028
+      ],
+      "clipLength": 6.594,
+      "cues": {
+        "open": 1.489
+      }
+    },
+    {
+      "id": "s6-read-only",
+      "start": 24.5667,
+      "duration": 4.5,
+      "storyboardDuration": 2.2,
+      "speech": [
+        0.2,
+        4.078
+      ],
+      "clipLength": 4.783,
+      "cues": {
+        "highlight": 0.664
+      }
+    },
+    {
+      "id": "s7-epoch",
+      "start": 29.0667,
+      "duration": 4.7,
+      "storyboardDuration": 2.4,
+      "speech": [
+        0.2,
+        4.275
+      ],
+      "clipLength": 5.062,
+      "cues": {
+        "check": 3.393
+      }
+    },
+    {
+      "id": "s8-lane",
+      "start": 33.7667,
+      "duration": 5.2,
+      "storyboardDuration": 2.4,
+      "speech": [
+        0.2,
+        4.798
+      ],
+      "clipLength": 5.619,
+      "cues": {
+        "fill": 1.14
+      }
+    },
+    {
+      "id": "s9-rows",
+      "start": 38.9667,
+      "duration": 4.5,
+      "storyboardDuration": 2.6,
+      "speech": [
+        0.2,
+        4.078
+      ],
+      "clipLength": 4.458,
+      "cues": {
+        "fetch": 0.699,
+        "stream": 2.94
+      }
+    },
+    {
+      "id": "s10-caps",
+      "start": 43.4667,
+      "duration": 7.0333,
+      "storyboardDuration": 2.8,
+      "speech": [
+        0.2,
+        6.609
+      ],
+      "clipLength": 7.338,
+      "cues": {
+        "rows": 0.722,
+        "bytes": 2.766,
+        "truncated": 5.901
+      }
+    },
+    {
+      "id": "s11-reply",
+      "start": 50.5,
+      "duration": 4.3667,
+      "storyboardDuration": 2.6,
+      "speech": [
+        0.2,
+        3.95
+      ],
+      "clipLength": 4.133,
+      "cues": {
+        "gateway": 1.814,
+        "ingress": 2.487,
+        "tenant": 3.335
+      }
+    }
+  ],
+  "total": 55.2667
+}

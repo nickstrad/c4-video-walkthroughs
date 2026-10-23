@@ -1,2 +1,4 @@
 node_modules/
 output/
+# Rebuilt by scripts/narrate.mjs from the committed per-scene takes.
+narration/track.wav

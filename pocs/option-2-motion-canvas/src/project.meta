@@ -24,7 +24,7 @@
       "name": "@motion-canvas/ffmpeg",
       "options": {
         "fastStart": true,
-        "includeAudio": false
+        "includeAudio": true
       }
     }
   }
