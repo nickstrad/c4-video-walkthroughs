@@ -2,7 +2,7 @@
 // read names a commit, so the working tree (and its uncommitted edits) is never
 // consulted. Salvaged from both POCs' extractors (`git show <sha>:<path>`).
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
 
 /**
  * Local checkout for a "owner/name" repo. C4V_CHECKOUT_<NAME> (name upper-cased,
@@ -30,4 +30,18 @@ export function git(dir: string): Git {
     revParse: (rev) => run(["rev-parse", rev]).toString("utf8").trim(),
     blob: (commit, path) => run(["show", `${commit}:${path}`]),
   };
+}
+
+/**
+ * Write the tree at `commit:subpath` into `dest` (created, must be empty),
+ * from git objects only: `git archive <commit>:<subpath> | tar -x`. For a
+ * scene that runs pinned code (tests, a CLI), so what runs is the commit,
+ * never the working tree. Lifted from the option-3 POC's prepare.mjs.
+ */
+export function exportTree(g: Git, commit: string, subpath: string, dest: string) {
+  mkdirSync(dest, { recursive: true });
+  if (readdirSync(dest).length) throw new Error(`exportTree: ${dest} is not empty`);
+  const tree = subpath.replace(/^\/+|\/+$/g, "");
+  const tar = execFileSync("git", ["-C", g.dir, "archive", "--format=tar", tree ? `${commit}:${tree}` : commit], { maxBuffer: 1 << 30 });
+  execFileSync("tar", ["-x", "-C", dest], { input: tar });
 }
