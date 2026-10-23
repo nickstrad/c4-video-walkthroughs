@@ -1,0 +1,3 @@
+func New() *Client {
+	return &Client{http: httpx.NewClient(httpx.Timeouts{Dial: 200 * time.Millisecond, Header: 2500 * time.Millisecond, Total: 2500 * time.Millisecond})}
+}

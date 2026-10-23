@@ -29,3 +29,17 @@ also introduces click and video timing drift: browser capture is wall-clock work
 
 Environment-specific Playwright cache behavior belongs in the VM store entry
 `playwright-shared-cache.md`, not in this project's architecture knowledge.
+
+## Click-driven overlays without extra clicks
+
+Callouts, captions and citations that must change with a Magic Move step can bind
+to `$clicks` (`:class="{ on: $clicks === 1 }"`) instead of using `v-click`. They
+then follow the Magic Move's own clicks and register none of their own. A slide
+with no click-consuming element can still take timed clicks with `clicks: N` in its
+frontmatter; this deck uses that for the C4 zoom, a CSS transform on a wrapper around
+the unmodified image. The first slide gets the default theme's `cover` layout
+unless `layout: default` is set, which shifts its padding.
+
+Magic Move tokens start moving a few hundred milliseconds after the click and
+settle well after the nominal duration. For a mid-morph still, sample several
+timestamps from the MP4 and pick one where both old and new tokens are visible.

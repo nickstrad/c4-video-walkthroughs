@@ -5,13 +5,13 @@
 
   theme       @slidev/theme-default
   css engine  unocss
-  entry       /root/Software/c4video-work/option-4/pocs/option-4-slidev-magic-move/slides.md
+  entry       /root/Software/c4video-work/improve-4/pocs/option-4-slidev-magic-move/slides.md
 vite v8.3.5 building client environment for production...
 transforming...
-✓ 486 modules transformed.
+✓ 479 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                                    1.44 kB │ gzip:  0.62 kB
+dist/index.html                                    1.49 kB │ gzip:  0.63 kB
 dist/assets/logo-BYkHSa_O.png                     94.32 kB
 dist/assets/play-D_7yfuao.css                      0.06 kB │ gzip:  0.08 kB
 dist/assets/NoteDisplay-DCBzjb4F.css               0.09 kB │ gzip:  0.10 kB
@@ -23,36 +23,35 @@ dist/assets/SlideWrapper-DpMGUg5h.css              0.91 kB │ gzip:  0.35 kB
 dist/assets/shortcuts-CQI6CZy9.css                 1.56 kB │ gzip:  0.66 kB
 dist/assets/presenter-B1Gv-iWL.css                 3.45 kB │ gzip:  0.75 kB
 dist/assets/modules/shiki-V4-KMA-J.css            15.32 kB │ gzip:  2.85 kB
-dist/assets/index-B1RkCJ6N.css                   101.30 kB │ gzip: 19.22 kB
-dist/assets/slidev/default-CvSQ8hk8.js             0.25 kB │ gzip:  0.21 kB
+dist/assets/index-GNA4C6i1.css                   104.82 kB │ gzip: 20.22 kB
+dist/assets/slidev/default-B-YGWPow.js             0.25 kB │ gzip:  0.21 kB
 dist/assets/slidev/IconButton-CNI8g7_N.js          0.58 kB │ gzip:  0.39 kB
 dist/assets/slidev/Modal-n_7XPCc_.js               0.71 kB │ gzip:  0.47 kB
 dist/assets/rolldown-runtime-XKyaHtl9.js           0.72 kB │ gzip:  0.42 kB
-dist/assets/slidev/entry-C0kkl0MR.js               0.91 kB │ gzip:  0.45 kB
-dist/assets/slidev/404-B3KdgjR8.js                 1.11 kB │ gzip:  0.66 kB
-dist/assets/slidev/notes-edit-npD2Z3Po.js          2.13 kB │ gzip:  1.15 kB
-dist/assets/slidev/NoteEditable-Vgq4ZA3F.js        2.23 kB │ gzip:  1.17 kB
+dist/assets/slidev/entry-DpkN5CrK.js               0.91 kB │ gzip:  0.45 kB
+dist/assets/md-B2YoJS4a.js                         0.95 kB │ gzip:  0.64 kB
+dist/assets/md-CgAZIU66.js                         1.07 kB │ gzip:  0.69 kB
+dist/assets/slidev/404-BCYrmCht.js                 1.11 kB │ gzip:  0.67 kB
+dist/assets/slidev/notes-edit-Bv00Q-Lr.js          2.13 kB │ gzip:  1.15 kB
+dist/assets/slidev/NoteEditable-ul_RMvFC.js        2.23 kB │ gzip:  1.17 kB
 dist/assets/modules/unplugin-icons-CYhwiHzw.js     2.60 kB │ gzip:  1.07 kB
 dist/assets/modules/file-saver-_HzGZh9f.js         2.69 kB │ gzip:  1.29 kB
 dist/assets/slidev/TitleIcon-Zrq6986_.js           2.73 kB │ gzip:  0.79 kB
-dist/assets/slidev/TimerBar-Crte8fpn.js            2.76 kB │ gzip:  1.22 kB
-dist/assets/slidev/CodeBlockWrapper-CXxv4kqu.js    2.78 kB │ gzip:  1.43 kB
-dist/assets/slidev/notes-C1yzSIgj.js               3.29 kB │ gzip:  1.51 kB
-dist/assets/slidev/md-C6EPjGWa.js                  3.42 kB │ gzip:  1.29 kB
-dist/assets/md-CuMQXbo9.js                         4.15 kB │ gzip:  1.06 kB
-dist/assets/slidev/play-D9NzGghs.js                4.30 kB │ gzip:  1.99 kB
-dist/assets/md-DTV7pFnS.js                         4.41 kB │ gzip:  1.05 kB
-dist/assets/slidev/context-CV8N_dpJ.js             5.60 kB │ gzip:  2.73 kB
-dist/assets/slidev/NoteDisplay-B6Tn-hVe.js         6.01 kB │ gzip:  2.63 kB
-dist/assets/md-CPoGDCz8.js                         6.57 kB │ gzip:  1.11 kB
-dist/assets/md-BTPf0mXU.js                         8.46 kB │ gzip:  1.17 kB
-dist/assets/slidev/overview-JVUFv0sQ.js            9.29 kB │ gzip:  4.03 kB
-dist/assets/slidev/presenter-Tnm_jsPv.js          10.29 kB │ gzip:  3.96 kB
-dist/assets/slidev/md-CD1nFyPC.js                 15.88 kB │ gzip:  9.47 kB
-dist/assets/SlideWrapper-DJdAhadg.js              24.94 kB │ gzip:  8.84 kB
-dist/assets/slidev/shortcuts-Byf8tkp_.js          64.69 kB │ gzip: 23.00 kB
+dist/assets/slidev/TimerBar-owgaUOVK.js            2.76 kB │ gzip:  1.22 kB
+dist/assets/slidev/CodeBlockWrapper-aQWakN6J.js    2.78 kB │ gzip:  1.43 kB
+dist/assets/slidev/notes-D0bRiQXK.js               3.29 kB │ gzip:  1.52 kB
+dist/assets/md-NDNO6EZ-.js                         3.29 kB │ gzip:  1.19 kB
+dist/assets/slidev/utils-CWm-htmD.js               4.03 kB │ gzip:  2.07 kB
+dist/assets/slidev/play-QmQUUQyc.js                4.30 kB │ gzip:  2.00 kB
+dist/assets/md-DMrXBo6N.js                         4.50 kB │ gzip:  1.21 kB
+dist/assets/slidev/NoteDisplay-CRD1A-AD.js         6.04 kB │ gzip:  2.65 kB
+dist/assets/slidev/overview-CFaQwlIm.js            9.29 kB │ gzip:  4.02 kB
+dist/assets/slidev/presenter-BMY4fhhe.js          10.29 kB │ gzip:  3.96 kB
+dist/assets/slidev/md-DGmorqsO.js                 20.31 kB │ gzip: 12.29 kB
+dist/assets/SlideWrapper-BgGOukxH.js              24.94 kB │ gzip:  8.84 kB
+dist/assets/slidev/shortcuts-DhQ7HHWH.js          64.64 kB │ gzip: 22.99 kB
 dist/assets/modules/vue-D9vKUDiB.js               82.23 kB │ gzip: 30.54 kB
-dist/assets/index-DGZxCIxr.js                    112.55 kB │ gzip: 40.62 kB
+dist/assets/index-DCKc3LOK.js                    114.45 kB │ gzip: 41.59 kB
 dist/assets/modules/shiki-CXLz6JnV.js            247.93 kB │ gzip: 88.23 kB
 
-✓ built in 13.20s
+✓ built in 6.73s

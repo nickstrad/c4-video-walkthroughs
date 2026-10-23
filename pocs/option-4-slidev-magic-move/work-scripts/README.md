@@ -11,8 +11,9 @@ Run from this POC directory, using Node 22.23.2 and `npm ci`.
 `SOURCE_REPO` overrides the book-notes clone for the source scripts. `CHROMIUM_PATH`
 overrides the recorder browser; `FFMPEG` overrides its encoder. FFprobe must be on
 PATH. The recorder owns port 4314; no other Slidev process should use that port.
-The recording script fails on missing code states, missing active animation,
-clipped hardened tokens, missing final slide, or uncaught page errors.
+The recording script fails on a missing code state, a morph with no active
+animation, clipped tokens or overlapping callouts in any code state, a missing
+final slide, or uncaught page errors. Scene times live in its `schedule` object.
 
 These helpers are reusable scaffolding; the story-specific ranges, slide schedule,
 architecture asset and output names must be adapted for another project. See
