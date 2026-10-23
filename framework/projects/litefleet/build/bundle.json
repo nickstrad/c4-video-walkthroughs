@@ -1973,6 +1973,7 @@
  "excerpts": {
   "query-guards": {
    "id": "query-guards",
+   "kind": "code",
    "repo": "nickstrad/book-notes",
    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
    "tag": "release-it/v1-hardened",
@@ -1998,6 +1999,7 @@
   },
   "query-caps": {
    "id": "query-caps",
+   "kind": "code",
    "repo": "nickstrad/book-notes",
    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
    "tag": "release-it/v1-hardened",
@@ -2023,6 +2025,7 @@
   },
   "acquire": {
    "id": "acquire",
+   "kind": "code",
    "repo": "nickstrad/book-notes",
    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
    "tag": "release-it/v1-hardened",

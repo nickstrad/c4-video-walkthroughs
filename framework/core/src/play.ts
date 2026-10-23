@@ -3,7 +3,7 @@
 // highlight, a hop or a state change lands on the same word in either engine.
 // Times are seconds; `rel` means relative to the scene start.
 import type { RenderBundle } from "./bundle.ts";
-import type { TimedScene } from "./narration/types.ts";
+import type { TimedAct, TimedScene } from "./narration/types.ts";
 import { isCodeScene, type Hop, type Range, type Scene, type StateChange } from "./storyboard/schema.ts";
 
 export const sceneOf = (b: RenderBundle, id: string): Scene => {
@@ -41,13 +41,22 @@ export function hopsOf(b: RenderBundle, sceneId: string): TimedHop[] {
   });
 }
 
-/** Selection timeline of a code scene: ranges and when each takes over (rel). */
-export function focusOf(b: RenderBundle, sceneId: string): { at: number; ranges: Range[]; stepId?: string }[] {
+export type FocusEntry = { at: number; ranges: Range[]; stepId?: string; skipped?: boolean };
+/**
+ * Selection timeline of a code scene: ranges and when each takes over (rel).
+ * `skipped` marks lines shown but not executed, for a renderer's own treatment.
+ */
+export function focusOf(b: RenderBundle, sceneId: string): FocusEntry[] {
   const sc = sceneOf(b, sceneId), t = timedOf(b, sceneId);
   if (!isCodeScene(sc)) return [];
-  if (sc.steps) return sc.steps.map((st, i) => ({ at: t.steps![i].start, ranges: [st.lines], stepId: st.id }));
-  return (sc.focus ?? []).map((f) => ({ at: cueAt(t, f.cue), ranges: f.ranges }));
+  const flag = (skipped?: boolean) => (skipped ? { skipped } : {});
+  if (sc.steps) return sc.steps.map((st, i) => ({ at: t.steps![i].start, ranges: [st.lines], stepId: st.id, ...flag(st.skipped) }));
+  return (sc.focus ?? []).map((f) => ({ at: cueAt(t, f.cue), ranges: f.ranges, ...flag(f.skipped) }));
 }
+
+/** The act playing at absolute t, if the storyboard declares acts (the last one during the outro). */
+export const actAt = (b: RenderBundle, t: number): TimedAct | undefined =>
+  b.timeline.acts?.find((a) => t >= a.start && t < a.start + a.duration) ?? (t >= 0 ? b.timeline.acts?.at(-1) : undefined);
 
 export type StateEvent = StateChange & { at: number; sceneId: string }; // at: absolute
 /** Every state-panel change in the video, in time order (absolute). */

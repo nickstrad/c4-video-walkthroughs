@@ -2,8 +2,10 @@
 
 export type Excerpt = {
   id: string; repo: string; commit: string; tag: string;
+  kind: "code" | "evidence";
   path: string; displayPath: string; blob: string;
-  symbol: string; declaredAt: number;
+  /** Code: the declaration, found at line declaredAt. Evidence: a description, declaredAt null. */
+  symbol: string; declaredAt: number | null;
   lines: [number, number]; firstLine: number;
   /** The exact bytes of the lines at the commit (UTF-8, LF, tabs kept). */
   text: string;

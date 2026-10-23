@@ -25,8 +25,15 @@ export type Storyboard = {
   narration: NarrationConfig;
   excerpts: ExcerptSpec[];
   statePanel?: StatePanel;
+  /**
+   * The story's acts, in order. When present every scene names its act and
+   * each act's scenes are contiguous; the timeline then carries act bounds.
+   */
+  acts?: Act[];
   scenes: Scene[];
 };
+
+export type Act = { id: string; title: string };
 
 export type NarrationConfig = {
   provider: "elevenlabs";
@@ -41,14 +48,21 @@ export type NarrationConfig = {
 /** A tag and the commit it must resolve to; a tag that has moved is refused. */
 export type Pin = { tag: string; commit: string };
 
-/** A code range pinned at sources.code.commit, or at its own `at`. */
+/**
+ * A range pinned at sources.code.commit, or at its own `at`. Kind "code"
+ * (the default) is source whose `symbol` is declared at or above the range;
+ * kind "evidence" is a recorded result or prose (a lesson's measured output,
+ * say): byte-checked the same way, but `symbol` is only a description and no
+ * declaration is looked for.
+ */
 export type ExcerptSpec = {
   id: string;
+  kind?: "code" | "evidence";
   /** Pin this excerpt at another commit of sources.code.repo (e.g. one symbol across versions). */
   at?: Pin;
   path: string;
   blob: string; // git blob SHA of `path` at the commit
-  symbol: string; // must appear at or above lines[1]
+  symbol: string; // code: must start a line at or above lines[1]; evidence: a description
   lines: Range;
   /** lines[0] starts with `symbol` and lines[1] is the closing "}". */
   wholeFunction?: boolean;
@@ -95,6 +109,7 @@ type SceneBase = Line & {
   id: string;
   narration?: NarrationSpec;
   minDuration?: number;
+  act?: string; // Storyboard.acts id
   datasetStep?: string; // scenario step id in the dynamic view
   state?: StateChange[];
 };
@@ -121,7 +136,8 @@ export type DiagramScene = SceneBase & {
   skip?: { elements: string[]; edges: string[]; note?: string; cue?: string };
 };
 
-export type Step = Line & { id: string; label: string; lines: Range };
+/** `skipped`: lines shown but never executed on this path (an early return, a branch not taken). */
+export type Step = Line & { id: string; label: string; lines: Range; skipped?: boolean };
 
 export type CodeScene = SceneBase & {
   kind: "code-explanation";
@@ -129,7 +145,7 @@ export type CodeScene = SceneBase & {
   /** Diagram kept on screen as context (renderer's choice how). */
   context?: { view: string; elementId?: string };
   /** Selections, each replacing the last at its cue (or the scene start). */
-  focus?: { ranges: Range[]; cue?: string }[];
+  focus?: { ranges: Range[]; cue?: string; skipped?: boolean }[];
   /** Stepped walk through the excerpt; each step's text is one part of the take. */
   steps?: Step[];
   railTitle?: string;

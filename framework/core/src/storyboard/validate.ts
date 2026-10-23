@@ -17,6 +17,18 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
     ids.add(s.id);
   }
   const excerpts = new Map(sb.excerpts.map((e) => [e.id, e]));
+  for (const x of sb.excerpts) if (x.kind === "evidence" && x.wholeFunction) err(`excerpt ${x.id}: evidence cannot be wholeFunction`);
+  if (sb.acts) {
+    const order = sb.acts.map((a) => a.id);
+    if (new Set(order).size !== order.length) err("duplicate act id");
+    let at = -1;
+    for (const s of sb.scenes) {
+      const k = s.act === undefined ? -1 : order.indexOf(s.act);
+      if (k < 0) { err(`${s.id}: act ${s.act ?? "(none)"} is not in acts`); continue; }
+      if (k < at) err(`${s.id}: act ${s.act} resumes after a later act; an act's scenes must be contiguous and in order`);
+      at = k;
+    }
+  } else for (const s of sb.scenes) if (s.act !== undefined) err(`${s.id}: act ${s.act} but the storyboard declares no acts`);
   const fields = new Map((sb.statePanel?.fields ?? []).map((f) => [f.id, f]));
 
   const checkView = (s: Scene, viewId: string) => {

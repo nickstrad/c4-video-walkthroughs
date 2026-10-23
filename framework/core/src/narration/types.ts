@@ -38,6 +38,8 @@ export type TimedScene = {
   cues: Record<string, number>;
   steps?: TimedStep[];
 };
+/** An act's bounds: its first scene's start to its last scene's end. */
+export type TimedAct = { id: string; title: string; startFrame: number; frames: number; start: number; duration: number; scenes: string[] };
 export type Caption = { start: number; end: number; text: string; sceneId: string; stepId?: string };
 export type Timeline = {
   schema: "c4v-timeline/1";
@@ -48,6 +50,8 @@ export type Timeline = {
   totalFrames: number;
   total: number;
   scenes: TimedScene[];
+  /** Present only when the storyboard declares acts. */
+  acts?: TimedAct[];
   captions: Caption[];
   audio: { file: string; sampleRate: number };
 };

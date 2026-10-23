@@ -12,6 +12,7 @@ const V0 = "a".repeat(40), V1 = "b".repeat(40);
 const files: Record<string, string> = {
   [`${V0}:src/q.go`]: "package q\n\nfunc Query() {\n\treturn\n}\n",
   [`${V1}:src/q.go`]: "package q\n\nfunc Query() {\n\tguard()\n\treturn\n}\n",
+  [`${V1}:lessons/02.md`]: "# Timeouts\n\nBefore: p99 30 s\nAfter: p99 1.2 s\n",
 };
 const blobSha = (c: string) => createHash("sha1").update(files[c]).digest("hex");
 const fakeGit = (tags: Record<string, string>): Git => ({
@@ -40,4 +41,15 @@ test("one path pinned at two commits, each with its own tag and sha256", () => {
 
 test("a tag that drifted from the pinned commit is refused", () => {
   assert.throws(() => pinExcerpts(sb, fakeGit({ v0: V1, v1: V1 }), ds), /excerpt then: tag v0 -> b+, storyboard pins a+/);
+});
+
+test("evidence excerpts are byte-pinned without a declaration check", () => {
+  const ev = structuredClone(sb);
+  ev.excerpts = [{ id: "after", kind: "evidence", path: "lessons/02.md", blob: blobSha(`${V1}:lessons/02.md`), symbol: "measured p99 before and after", lines: [3, 4] }];
+  const [x] = pinExcerpts(ev, fakeGit({ v1: V1 }), ds);
+  assert.equal(x.kind, "evidence");
+  assert.equal(x.declaredAt, null);
+  assert.equal(x.text, "Before: p99 30 s\nAfter: p99 1.2 s");
+  ev.excerpts[0].kind = "code";
+  assert.throws(() => pinExcerpts(ev, fakeGit({ v1: V1 }), ds), /not declared/);
 });

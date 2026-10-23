@@ -10,7 +10,7 @@
 //   stitched text); per-scene lead-in overrides; a minimum scene length for
 //   moves that need it (the focus zoom); refusal to reuse a stale take.
 import { isCodeScene, spokenParts, spokenText, takeId, type Storyboard } from "../storyboard/schema.ts";
-import type { Caption, TakeRecord, TimedScene, Timeline } from "./types.ts";
+import type { Caption, TakeRecord, TimedAct, TimedScene, Timeline } from "./types.ts";
 
 const SPOKEN = /[\p{L}\p{N}]/u;
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
@@ -78,11 +78,20 @@ export function buildTimeline(sb: Storyboard, takes: Record<string, TakeRecord>,
     frame += frames;
   }
   const totalFrames = frame + Math.round(outro * fps);
-  return {
+  const tl: Timeline = {
     schema: "c4v-timeline/1", storyboard: sb.id, fps, width, height,
     totalFrames, total: r3(totalFrames / fps), scenes, captions,
     audio: { file: audioFile, sampleRate },
   };
+  if (sb.acts) {
+    tl.acts = sb.acts.map((a): TimedAct => {
+      const own = sb.scenes.flatMap((s, i) => (s.act === a.id ? [scenes[i]] : []));
+      if (!own.length) throw new Error(`act ${a.id} has no scenes`);
+      const startFrame = own[0].startFrame, frames = own.at(-1)!.startFrame + own.at(-1)!.frames - startFrame;
+      return { id: a.id, title: a.title, startFrame, frames, start: r3(startFrame / fps), duration: r3(frames / fps), scenes: own.map((s) => s.id) };
+    });
+  }
+  return tl;
 }
 
 export type SpeechWindow = { id: string; start: number; end: number };

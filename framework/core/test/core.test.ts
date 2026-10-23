@@ -9,7 +9,7 @@ import type { RenderBundle } from "../src/bundle.ts";
 import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline, lastSpoken } from "../src/narration/timeline.ts";
 import type { TakeRecord } from "../src/narration/types.ts";
-import { focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
+import { actAt, focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
 import { spokenText, type Storyboard } from "../src/storyboard/schema.ts";
 import { validateStoryboard } from "../src/storyboard/validate.ts";
 
@@ -91,4 +91,29 @@ test("timeline invariants hold, and catch a retime regression", () => {
   assert.match(errs, /caption overlaps/);
   const wrongModel = { ...takes, "s1-request": { ...takes["s1-request"], model: "eleven_flash_v2" } };
   assert.match(validateTimeline(tl, sb, wrongModel).join(), /voiced with eleven_flash_v2/);
+});
+
+test("acts: validated contiguous, carried as timeline bounds, queried by actAt", () => {
+  const views = { "query-flow": projectView(ds, "query-flow"), "node-components": projectView(ds, "node-components") };
+  const acted = structuredClone(sb);
+  acted.acts = [{ id: "out", title: "The request" }, { id: "in", title: "Inside the node" }];
+  const inside = acted.scenes.findIndex((s) => s.id === "s5-into-code");
+  acted.scenes.forEach((s, i) => (s.act = i < inside ? "out" : "in"));
+  assert.deepEqual(validateStoryboard(acted, views), []);
+  const tl = buildTimeline(acted, takes);
+  assert.equal(tl.acts![1].startFrame, tl.scenes[inside].startFrame);
+  assert.equal(tl.acts![0].frames + tl.acts![1].frames, tl.scenes.reduce((n, s) => n + s.frames, 0));
+  const b = { ...bundle, storyboard: acted, timeline: tl };
+  assert.equal(actAt(b, tl.scenes[inside].start + 0.01)?.id, "in");
+  assert.equal(actAt(bundle, 1), undefined);
+  acted.scenes[1].act = "in";
+  assert.match(validateStoryboard(acted, views).join(), /resumes after a later act/);
+});
+
+test("skipped selections are carried by focusOf", () => {
+  const sk = structuredClone(sb);
+  const s6 = sk.scenes.find((s) => s.id === "s6-read-only") as { focus: { skipped?: boolean }[] };
+  s6.focus[0].skipped = true;
+  assert.equal(focusOf({ ...bundle, storyboard: sk }, "s6-read-only")[0].skipped, true);
+  assert.equal(focusOf(bundle, "s6-read-only")[0].skipped, undefined);
 });
