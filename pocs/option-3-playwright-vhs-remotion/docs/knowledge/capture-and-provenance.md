@@ -1,6 +1,6 @@
 # Keep recordings tied to source truth
 
-A diagram dataset and a site's catalog can land in separate changes. The book-notes site’s production bundle initially listed only shell fixtures, while the real Litefleet JSON already existed. Copy the real bundle to scratch and add the dataset entry only there. Retain the site SHA, dataset hash and explicit catalog-adaptation note. This demonstrates the actual UI without claiming production catalog integration is complete.
+A diagram dataset and a site's catalog can land in separate changes. The book-notes site’s production bundle initially listed only shell fixtures, while the real Litefleet JSON already existed. Copy the real bundle to scratch and add the dataset entry only there. Retain the site SHA, dataset hash and explicit catalog-adaptation note. This demonstrates the actual UI without claiming production catalog integration is complete. By the Opus improvement pass (2026-10-23), the site build listed Litefleet natively, and its dataset matched byte for byte. `prepare.mjs` now adapts the copy only when the entry is missing, and records `catalogAdapted`.
 
 Use `git archive <pinned-commit>` to run source demonstrations without checking out or mutating another project. Extract code directly with `git show <commit>:<path>`, and check the scene's symbol and lines against that same object. A raw test log plus recorded terminal PASS makes a stronger evidence chain than an edited code card alone. Unit tests prove the behavior asserted by those tests, not the operation of the complete deployment.
 

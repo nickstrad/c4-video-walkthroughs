@@ -1,18 +1,59 @@
 {
   "sha": "936786399d7bab3ebbfa845b9a07df02b41ed363",
-  "path": "books/release-it/project/internal/breaker/breaker.go",
-  "symbol": "(*Breaker).Call",
-  "start": 84,
-  "end": 92,
-  "lines": [
-    "func (b *Breaker) Call(fn func() error, failure func(error) bool) error {",
-    "\tif !b.allow() {",
-    "\t\trejected.WithLabelValues(b.dep).Inc()",
-    "\t\treturn ErrOpen",
-    "\t}",
-    "\terr := fn()",
-    "\tb.record(err != nil && failure(err))",
-    "\treturn err",
-    "}"
+  "excerpts": [
+    {
+      "id": "client",
+      "path": "books/release-it/project/internal/routes/client.go",
+      "symbol": "(*Client).Create",
+      "start": 112,
+      "end": 119,
+      "lines": [
+        "func (c *Client) Create(ctx context.Context, apiKey, name string) (wire.Database, error) {",
+        "\tvar d wire.Database",
+        "\tbody, _ := json.Marshal(wire.CreateDatabaseRequest{Name: name})",
+        "\terr := c.breaker.Call(func() error {",
+        "\t\treturn c.doWith(ctx, c.admin, http.MethodPost, \"/internal/databases\", apiKey, body, &d)",
+        "\t}, retryable)",
+        "\treturn d, err",
+        "}"
+      ]
+    },
+    {
+      "id": "guard",
+      "path": "books/release-it/project/internal/breaker/breaker.go",
+      "symbol": "(*Breaker).Call",
+      "start": 84,
+      "end": 92,
+      "lines": [
+        "func (b *Breaker) Call(fn func() error, failure func(error) bool) error {",
+        "\tif !b.allow() {",
+        "\t\trejected.WithLabelValues(b.dep).Inc()",
+        "\t\treturn ErrOpen",
+        "\t}",
+        "\terr := fn()",
+        "\tb.record(err != nil && failure(err))",
+        "\treturn err",
+        "}"
+      ]
+    },
+    {
+      "id": "test",
+      "path": "books/release-it/project/internal/breaker/breaker_test.go",
+      "symbol": "TestOpensAfterConsecutiveFailures",
+      "start": 13,
+      "end": 22,
+      "lines": [
+        "func TestOpensAfterConsecutiveFailures(t *testing.T) {",
+        "\tb := New(\"t1\")",
+        "\tfor i := 0; i < 5; i++ {",
+        "\t\tb.Call(func() error { return errDown }, all)",
+        "\t}",
+        "\tcalled := false",
+        "\tif err := b.Call(func() error { called = true; return nil }, all); err != ErrOpen || called {",
+        "\t\tt.Fatalf(\"err = %v, called = %v; want ErrOpen without calling\", err, called)",
+        "\t}",
+        "}"
+      ]
+    }
   ]
 }

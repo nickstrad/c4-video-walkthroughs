@@ -7,4 +7,4 @@
 === RUN   TestAnswersDoNotCount
 --- PASS: TestAnswersDoNotCount (0.00s)
 PASS
-ok  	litefleet/internal/breaker	0.095s
+ok  	litefleet/internal/breaker	0.073s

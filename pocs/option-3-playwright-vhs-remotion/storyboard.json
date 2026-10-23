@@ -1,6 +1,7 @@
 {
-  "title": "Litefleet: fail fast when control fails",
-  "scenario": "Run the real circuit breaker tests: five consecutive failures open the circuit; the next dependency call is not invoked. Browse its gateway C4 component, then explain the guard.",
+  "title": "Litefleet: fail fast when the control plane fails",
+  "claim": "After five failed calls in a row, Litefleet's gateway stops calling the control plane and fails fast with ErrOpen.",
+  "scenario": "Find the gateway's control circuit breaker in the real C4 site, read the guard that rejects calls at the pinned commit, then watch the project's own breaker tests pass.",
   "repo": "https://github.com/nickstrad/book-notes",
   "tag": "release-it/v1-hardened",
   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
@@ -14,16 +15,8 @@
   ],
   "sources": [
     {
-      "element": "gw-breaker",
-      "path": "books/release-it/project/internal/breaker/breaker.go",
-      "symbol": "(*Breaker).Call",
-      "lines": [
-        84,
-        92
-      ],
-      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
-    },
-    {
+      "id": "client",
+      "excerpt": true,
       "element": "gw-routes",
       "path": "books/release-it/project/internal/routes/client.go",
       "symbol": "(*Client).Create",
@@ -34,6 +27,20 @@
       "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
     },
     {
+      "id": "guard",
+      "excerpt": true,
+      "element": "gw-breaker",
+      "path": "books/release-it/project/internal/breaker/breaker.go",
+      "symbol": "(*Breaker).Call",
+      "lines": [
+        84,
+        92
+      ],
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
+    },
+    {
+      "id": "test",
+      "excerpt": true,
       "evidence": "five failures then reject without invoking dependency",
       "path": "books/release-it/project/internal/breaker/breaker_test.go",
       "symbol": "TestOpensAfterConsecutiveFailures",
@@ -50,39 +57,204 @@
     "provider": null,
     "note": "Caption text is the narration stub; no ElevenLabs call or key."
   },
-  "browserPlaybackRate": 1.3766666666666667,
   "fps": 30,
   "width": 1280,
   "height": 720,
-  "durationSeconds": 32,
+  "acts": {
+    "where": "1 · Where — C4 diagram",
+    "how": "2 · How — pinned source",
+    "proof": "3 · Proof — real tests"
+  },
   "scenes": [
     {
-      "kind": "diagram-still",
+      "id": "title",
+      "kind": "title-card",
       "from": 0,
-      "duration": 4,
-      "asset": "public/diagram.png",
-      "caption": "The gateway’s control circuit breaker guards calls to the control plane."
+      "duration": 90,
+      "headline": "After 5 failures, Litefleet's gateway stops calling the control plane.",
+      "steps": [
+        "Find it in the C4 diagram",
+        "Read the guard at commit 9367863",
+        "Watch the real tests pass"
+      ],
+      "captions": []
     },
     {
+      "id": "where",
+      "act": "where",
       "kind": "playwright",
-      "from": 4,
-      "duration": 12,
+      "from": 90,
+      "duration": 224,
       "asset": "public/browser.mp4",
-      "caption": "Select Litefleet → containers → gateway components. This is the real diagrams site."
+      "segments": [
+        [
+          62,
+          96
+        ],
+        [
+          139,
+          170
+        ],
+        [
+          213,
+          372
+        ]
+      ],
+      "actionsAsset": "public/browser-actions.json",
+      "pushIn": {
+        "afterAction": "zoom",
+        "delayFrames": 40,
+        "scale": 1.18,
+        "originX": 0.85,
+        "originY": 0.45
+      },
+      "captions": [
+        {
+          "at": 0,
+          "text": "The real C4 site: Litefleet → containers → gateway components."
+        },
+        {
+          "at": 62,
+          "text": "Inspect the Control circuit breaker: it guards gateway calls to the control plane."
+        }
+      ]
     },
     {
-      "kind": "code-callout",
-      "from": 16,
-      "duration": 7,
-      "asset": "public/code.json",
-      "caption": "Call checks admission first. A rejection increments a metric and returns ErrOpen."
+      "id": "how-client",
+      "act": "how",
+      "kind": "code",
+      "from": 314,
+      "duration": 105,
+      "source": "client",
+      "steps": [
+        {
+          "at": 0,
+          "lines": [
+            115,
+            116,
+            117
+          ],
+          "note": "The control-plane request runs inside breaker.Call"
+        }
+      ],
+      "captions": [
+        {
+          "at": 0,
+          "text": "The route client sends every control-plane Create through breaker.Call."
+        }
+      ]
     },
     {
+      "id": "how-guard",
+      "act": "how",
+      "kind": "code",
+      "from": 419,
+      "duration": 165,
+      "source": "guard",
+      "steps": [
+        {
+          "at": 0,
+          "lines": [
+            85
+          ],
+          "note": "First: is the breaker admitting calls?"
+        },
+        {
+          "at": 50,
+          "lines": [
+            86,
+            87
+          ],
+          "note": "No: count the rejection and return ErrOpen"
+        },
+        {
+          "at": 100,
+          "lines": [
+            89
+          ],
+          "skipped": true,
+          "note": "fn() — the control-plane call — never runs"
+        }
+      ],
+      "captions": [
+        {
+          "at": 0,
+          "text": "Breaker open? Count the rejection and return ErrOpen. The call itself never runs."
+        }
+      ]
+    },
+    {
+      "id": "proof-test",
+      "act": "proof",
+      "kind": "code",
+      "from": 584,
+      "duration": 105,
+      "source": "test",
+      "steps": [
+        {
+          "at": 0,
+          "lines": [
+            15,
+            16,
+            17
+          ],
+          "note": "Five failing calls"
+        },
+        {
+          "at": 45,
+          "lines": [
+            18,
+            19,
+            20
+          ],
+          "note": "Then: must get ErrOpen, and called must stay false"
+        }
+      ],
+      "captions": [
+        {
+          "at": 0,
+          "text": "The test: five failures, then one call that must get ErrOpen without running."
+        }
+      ]
+    },
+    {
+      "id": "proof-terminal",
+      "act": "proof",
       "kind": "vhs",
-      "from": 23,
-      "duration": 9,
-      "asset": "public/terminal.mp4",
-      "caption": "Five failures → reject without calling. Recovery and non-counting errors are tested too."
+      "from": 689,
+      "duration": 163,
+      "asset": "public/terminal-vhs.mp4",
+      "highlight": {
+        "text": "--- PASS: TestOpensAfterConsecutiveFailures (0.00s)",
+        "box": [
+          20,
+          93,
+          866,
+          32
+        ],
+        "at": 87
+      },
+      "captions": [
+        {
+          "at": 0,
+          "text": "Real go test at the pinned commit: all four breaker tests pass."
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "kind": "end-card",
+      "from": 852,
+      "duration": 90,
+      "checks": [
+        "Located gw-breaker in the real C4 site",
+        "Read the guard at pinned commit 9367863",
+        "4 / 4 breaker tests pass on camera"
+      ],
+      "caveat": "Unit-level proof: no live outage was injected. Captions stand in for narration.",
+      "captions": []
     }
-  ]
+  ],
+  "durationFrames": 942,
+  "durationSeconds": 31.4
 }
