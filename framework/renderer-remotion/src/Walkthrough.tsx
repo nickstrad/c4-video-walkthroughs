@@ -2,10 +2,11 @@
 // shot through the kind registry (scenes.tsx); at every scene start the layers
 // blend from the previous shot: same view → the camera moves, different view
 // → crossfade; same code run → the selection moves, new excerpt → crossfade.
+// A code pane coming on screen waits for its scene's `enter` cue.
 // One narration track plays from frame 0.
 import React, { useMemo } from "react";
 import { AbsoluteFill, Html5Audio, Sequence, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import type { Box } from "../../core/src/index.ts";
+import { codeEnterOf, type Box } from "../../core/src/index.ts";
 import { beatsAt } from "./beats.ts";
 import { mixCam } from "./camera.ts";
 import { Captions } from "./Captions.tsx";
@@ -35,6 +36,10 @@ export const Walkthrough: React.FC<RenderProps> = ({ bundle, code }) => {
   const prev: Shot = i > 0 ? shots[i - 1] : {};
   const prevEnd = i > 0 ? story.timed[i - 1].duration : 0;
   const k = ramp(rel, i > 0 ? TRANS : 0.5);
+  // A code pane that is not on screen yet (and the state panel arriving with
+  // it) waits for the scene's enter cue; everything else blends at the start.
+  const entering = !!cur.code && !prev.code;
+  const kIn = entering ? ramp(rel - codeEnterOf(bundle, ts.id), TRANS) : k;
 
   return (
     <AbsoluteFill style={{ background: C.bg }}>
@@ -43,8 +48,8 @@ export const Walkthrough: React.FC<RenderProps> = ({ bundle, code }) => {
         transformOrigin: "0 0", transform: `scale(${width / DESIGN.w}, ${height / DESIGN.h})`,
       }}>
         <DiagramLayer story={story} prev={prev.diagram} cur={cur.diagram} prevRel={prevEnd} rel={rel} k={k} t={t} />
-        <CodeLayer story={story} shots={shots} i={i} code={code} k={k} t={t} />
-        <PanelLayer story={story} prev={prev.panel} cur={cur.panel} k={k} t={t} />
+        <CodeLayer story={story} shots={shots} i={i} code={code} k={kIn} t={t} />
+        <PanelLayer story={story} prev={prev.panel} cur={cur.panel} k={entering && !prev.panel ? kIn : k} t={t} />
         <HeaderLayer prev={prev.header} cur={cur.header} k={k} />
         {story.scenes.map((scene, j) => {
           const Overlay = SCENE_KINDS[scene.kind]?.Overlay;

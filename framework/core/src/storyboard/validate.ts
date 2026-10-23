@@ -2,8 +2,9 @@
 // returns a list of problems, empty when the storyboard is renderable. The
 // pinned-git checks live in code-source/; the cue-phrase checks in
 // narration/timeline.ts, where the spoken text is known.
-import type { View } from "../diagram/view.ts";
-import { DIAGRAM_KINDS, SCHEMA, isCodeScene, type Hop, type Range, type Scene, type Storyboard } from "./schema.ts";
+import type { Dataset, View } from "../diagram/view.ts";
+import { hopEdge } from "../play.ts";
+import { DIAGRAM_KINDS, SCHEMA, contextAt, isCodeScene, type Hop, type Range, type Scene, type Storyboard } from "./schema.ts";
 
 const inside = ([a, b]: Range, [lo, hi]: Range) => a >= lo && b <= hi && a <= b;
 
@@ -17,6 +18,18 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
     ids.add(s.id);
   }
   const excerpts = new Map(sb.excerpts.map((e) => [e.id, e]));
+  for (const x of sb.excerpts) if (x.kind === "evidence" && x.wholeFunction) err(`excerpt ${x.id}: evidence cannot be wholeFunction`);
+  if (sb.acts) {
+    const order = sb.acts.map((a) => a.id);
+    if (new Set(order).size !== order.length) err("duplicate act id");
+    let at = -1;
+    for (const s of sb.scenes) {
+      const k = s.act === undefined ? -1 : order.indexOf(s.act);
+      if (k < 0) { err(`${s.id}: act ${s.act ?? "(none)"} is not in acts`); continue; }
+      if (k < at) err(`${s.id}: act ${s.act} resumes after a later act; an act's scenes must be contiguous and in order`);
+      at = k;
+    }
+  } else for (const s of sb.scenes) if (s.act !== undefined) err(`${s.id}: act ${s.act} but the storyboard declares no acts`);
   const fields = new Map((sb.statePanel?.fields ?? []).map((f) => [f.id, f]));
 
   const checkView = (s: Scene, viewId: string) => {
@@ -38,11 +51,19 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
       checkEl(s, v, h.from);
       checkEl(s, v, h.to);
       if (h.edge) checkEdge(s, v, h.edge);
+      else if (v && !hopEdge(v, h)) err(`${s.id}: no edge joins ${h.from} and ${h.to} in ${v.id}; name one`);
       checkCue(s, h.cue);
     }
   };
 
-  for (const s of sb.scenes) {
+  for (const [i, s] of sb.scenes.entries()) {
+    const says = [s.caption !== undefined, isCodeScene(s) && !!s.steps, !!s.lines].filter(Boolean).length;
+    if (says !== 1) err(`${s.id}: a scene says exactly one of caption, steps or lines`);
+    if (s.lines) {
+      if (!s.lines.length) err(`${s.id}: lines is empty`);
+      if (new Set(s.lines.map((l) => l.id)).size !== s.lines.length) err(`${s.id}: duplicate line id`);
+      if (s.narration?.take) err(`${s.id}: narration.take names one take; a multi-line scene sets take per line`);
+    }
     for (const c of s.state ?? []) {
       if (!fields.has(c.field)) err(`${s.id}: state field ${c.field} not in statePanel`);
       checkCue(s, c.cue);
@@ -56,11 +77,13 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
       }
       for (const st of s.steps ?? []) if (!inside(st.lines, x.lines)) err(`${s.id}: step ${st.id} ${st.lines} outside ${x.id} ${x.lines}`);
       if (s.steps && s.focus) err(`${s.id}: use steps or focus, not both`);
-      const v = s.context ? checkView(s, s.context.view) : undefined;
+      const ctx = contextAt(sb.scenes, i);
+      const v = ctx ? checkView(s, ctx.view) : undefined;
       if (s.context?.elementId) checkEl(s, v, s.context.elementId);
-      if (s.hops && !s.context) err(`${s.id}: hops in a code scene need a context view`);
+      if (s.hops && !ctx) err(`${s.id}: hops in a code scene need a context view`);
       checkHops(s, v, s.hops);
       checkCue(s, s.packet?.cue);
+      checkCue(s, s.enter);
     } else {
       if (!(DIAGRAM_KINDS as readonly string[]).includes(s.kind)) { err(`${s.id}: unknown kind ${(s as Scene).kind}`); continue; }
       const v = checkView(s, s.view);
@@ -77,6 +100,34 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
         checkCue(s, s.skip.cue);
       }
     }
+  }
+  return errs;
+}
+
+/**
+ * Every C4 reference the storyboard makes exists in the dataset itself: views
+ * in its diagrams, excerpt bindings in its model, scenario steps in their
+ * view. Run before views are projected, so a typo is a listed problem rather
+ * than a thrown projection error. Pure.
+ */
+export function validateRefs(sb: Storyboard, ds: Dataset): string[] {
+  const errs: string[] = [];
+  const diagrams = new Map(ds.diagrams.map((d) => [d.id, d]));
+  const elements = new Set(ds.model.elements.map((e) => e.id));
+  const rels = new Set(ds.model.relationships.map((r) => r.id));
+  for (const x of sb.excerpts) {
+    if (x.elementId && !elements.has(x.elementId)) errs.push(`excerpt ${x.id}: element ${x.elementId} not in the dataset model`);
+    if (x.relationshipId && !rels.has(x.relationshipId)) errs.push(`excerpt ${x.id}: relationship ${x.relationshipId} not in the dataset model`);
+  }
+  for (const s of sb.scenes) {
+    const viewId = isCodeScene(s) ? s.context?.view : s.view;
+    if (viewId === undefined) {
+      if (s.datasetStep) errs.push(`${s.id}: datasetStep ${s.datasetStep} needs a view or context view`);
+      continue;
+    }
+    const d = diagrams.get(viewId);
+    if (!d) { errs.push(`${s.id}: view ${viewId} not in the dataset's diagrams`); continue; }
+    if (s.datasetStep && !d.scenario?.children.some((c) => c.id === s.datasetStep)) errs.push(`${s.id}: datasetStep ${s.datasetStep} not in ${viewId}'s scenario`);
   }
   return errs;
 }

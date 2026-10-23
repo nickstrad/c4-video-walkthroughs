@@ -25,8 +25,15 @@ export type Storyboard = {
   narration: NarrationConfig;
   excerpts: ExcerptSpec[];
   statePanel?: StatePanel;
+  /**
+   * The story's acts, in order. When present every scene names its act and
+   * each act's scenes are contiguous; the timeline then carries act bounds.
+   */
+  acts?: Act[];
   scenes: Scene[];
 };
+
+export type Act = { id: string; title: string };
 
 export type NarrationConfig = {
   provider: "elevenlabs";
@@ -36,17 +43,32 @@ export type NarrationConfig = {
   leadIn: number; // default silence before a scene's speech, s
   tail: number; // padding after the last spoken letter, s
   stepLead: number; // a step lights this long before its first word, s
+  lineGap?: number; // silence between the lines of a multi-line scene, s (default 0.4)
 };
 
-/** A code range pinned at sources.code.commit. */
+/** A tag and the commit it must resolve to; a tag that has moved is refused. */
+export type Pin = { tag: string; commit: string };
+
+/**
+ * A range pinned at sources.code.commit, or at its own `at`. Kind "code"
+ * (the default) is source whose `symbol` is declared at or above the range;
+ * kind "evidence" is a recorded result or prose (a lesson's measured output,
+ * say): byte-checked the same way, but `symbol` is only a description and no
+ * declaration is looked for.
+ */
 export type ExcerptSpec = {
   id: string;
+  kind?: "code" | "evidence";
+  /** Pin this excerpt at another commit of sources.code.repo (e.g. one symbol across versions). */
+  at?: Pin;
   path: string;
   blob: string; // git blob SHA of `path` at the commit
-  symbol: string; // must appear at or above lines[1]
+  symbol: string; // code: must start a line at or above lines[1]; evidence: a description
   lines: Range;
-  /** lines[0] starts with `symbol` and lines[1] is the closing "}". */
+  /** lines[0] starts with `symbol` and lines[1] is exactly `closing`. */
   wholeFunction?: boolean;
+  /** The line that closes a wholeFunction excerpt; default "}" (brace languages). */
+  closing?: string;
   elementId?: string; // the element this code implements
   relationshipId?: string; // or the relationship it implements
   /** Dataset source selector naming this code; cited by the relationship, else the element. */
@@ -86,10 +108,24 @@ export type NarrationSpec = {
   cues?: Record<string, string>;
 };
 
-type SceneBase = Line & {
+/** One of several separately voiced lines of a scene; each is its own take. */
+export type SceneLine = Line & {
   id: string;
+  take?: string; // take file stem; defaults to "<scene id>.<line id>"
+  gap?: number; // silence before this line, s; overrides NarrationConfig.lineGap
+};
+
+/**
+ * What a scene says is exactly one of: a `caption` (one take), `steps` (code
+ * scenes: a stepped walk voiced as one take) or `lines` (several takes, in
+ * order, each with its own caption).
+ */
+type SceneBase = Partial<Line> & {
+  id: string;
+  lines?: SceneLine[];
   narration?: NarrationSpec;
   minDuration?: number;
+  act?: string; // Storyboard.acts id
   datasetStep?: string; // scenario step id in the dynamic view
   state?: StateChange[];
 };
@@ -116,15 +152,22 @@ export type DiagramScene = SceneBase & {
   skip?: { elements: string[]; edges: string[]; note?: string; cue?: string };
 };
 
-export type Step = Line & { id: string; label: string; lines: Range };
+/** `skipped`: lines shown but never executed on this path (an early return, a branch not taken). */
+export type Step = Line & { id: string; label: string; lines: Range; skipped?: boolean };
 
 export type CodeScene = SceneBase & {
   kind: "code-explanation";
   excerpt: string;
-  /** Diagram kept on screen as context (renderer's choice how). */
-  context?: { view: string; elementId?: string };
+  /**
+   * Diagram kept on screen as context (renderer's choice how). Omitted, it is
+   * inherited from the scene before when that one shows the same excerpt
+   * (see contextAt), so a run of scenes over one excerpt keeps one layout.
+   */
+  context?: CodeContext;
+  /** Cue at which the code pane appears if it is not on screen yet; default the scene start. */
+  enter?: string;
   /** Selections, each replacing the last at its cue (or the scene start). */
-  focus?: { ranges: Range[]; cue?: string }[];
+  focus?: { ranges: Range[]; cue?: string; skipped?: boolean }[];
   /** Stepped walk through the excerpt; each step's text is one part of the take. */
   steps?: Step[];
   railTitle?: string;
@@ -132,14 +175,53 @@ export type CodeScene = SceneBase & {
   hops?: Hop[];
 };
 
+export type CodeContext = { view: string; elementId?: string };
+
 export type Scene = DiagramScene | CodeScene;
 export type SceneKind = Scene["kind"];
 
 export const DIAGRAM_KINDS = ["architecture-overview", "focus-element", "follow-request", "state-change"] as const;
 export const isCodeScene = (s: Scene): s is CodeScene => s.kind === "code-explanation";
 
-/** What TTS speaks for a scene: steps' parts joined by spaces, else the line. */
+/**
+ * The context diagram of scenes[i]: its own `context`, else the context of
+ * the scene before when that is a code scene on the same excerpt (and so on
+ * back). Undefined for diagram scenes and context-free code scenes.
+ */
+export function contextAt(scenes: Scene[], i: number): CodeContext | undefined {
+  for (let j = i; j >= 0; j--) {
+    const s = scenes[j];
+    if (!isCodeScene(s)) return undefined;
+    if (s.context) return s.context;
+    const prev = scenes[j - 1];
+    if (!prev || !isCodeScene(prev) || prev.excerpt !== s.excerpt) return undefined;
+  }
+  return undefined;
+}
+
+/** The view a scene draws or keeps as context, if any. */
+export const viewAt = (scenes: Scene[], i: number): string | undefined => {
+  const s = scenes[i];
+  return isCodeScene(s) ? contextAt(scenes, i)?.view : s.view;
+};
+
+const said = (l: Partial<Line>, id: string) => {
+  const t = l.speech ?? l.caption;
+  if (t === undefined) throw new Error(`${id}: nothing to say (no caption)`);
+  return t;
+};
+
+/** What TTS speaks for a single-take scene: steps' parts (joined by spaces), else the line. */
 export const spokenParts = (s: Scene): string[] =>
-  isCodeScene(s) && s.steps ? s.steps.map((st) => st.speech ?? st.caption) : [s.speech ?? s.caption];
-export const spokenText = (s: Scene): string => spokenParts(s).join(" ");
-export const takeId = (s: Scene): string => s.narration?.take ?? s.id;
+  isCodeScene(s) && s.steps ? s.steps.map((st) => said(st, `${s.id}.${st.id}`)) : [said(s, s.id)];
+
+/** One take of a scene: its file stem and exact text. */
+export type TakeSpec = { id: string; text: string; caption: string; gap?: number; lineId?: string };
+
+/** A scene's takes in speaking order: one per line, else one for the scene. */
+export function takesOf(s: Scene): TakeSpec[] {
+  if (s.lines) return s.lines.map((l) => ({ id: l.take ?? `${s.id}.${l.id}`, text: said(l, `${s.id}.${l.id}`), caption: l.caption, gap: l.gap, lineId: l.id }));
+  return [{ id: s.narration?.take ?? s.id, text: spokenParts(s).join(" "), caption: s.caption ?? "" }];
+}
+/** Everything a scene says, its takes joined by spaces (prosody context for neighbours). */
+export const spokenText = (s: Scene): string => takesOf(s).map((t) => t.text).join(" ");

@@ -24,11 +24,23 @@ export function lineBytes(file: Buffer, [a, b]: [number, number]): Buffer {
   return file.subarray(starts[a - 1], end);
 }
 
+/**
+ * Pin every excerpt. Each one is read at its own pin (`at`, else
+ * sources.code), so one storyboard can quote several commits; every tag must
+ * still resolve to the commit the storyboard expects.
+ */
 export function pinExcerpts(sb: Storyboard, g: Git, ds: Dataset): Excerpt[] {
-  const { tag, commit, repo, stripPrefix = "" } = sb.sources.code;
-  const tagSha = g.revParse(`${tag}^{commit}`);
-  if (tagSha !== commit) throw new Error(`tag ${tag} -> ${tagSha}, storyboard pins ${commit}`);
-  return sb.excerpts.map((x) => pinOne(x, g, ds, { tag, commit, repo, stripPrefix }));
+  const { repo, stripPrefix = "" } = sb.sources.code;
+  const checked = new Set<string>();
+  return sb.excerpts.map((x) => {
+    const { tag, commit } = x.at ?? sb.sources.code;
+    if (!checked.has(tag + commit)) {
+      const tagSha = g.revParse(`${tag}^{commit}`);
+      if (tagSha !== commit) throw new Error(`${x.at ? `excerpt ${x.id}: ` : ""}tag ${tag} -> ${tagSha}, storyboard pins ${commit}`);
+      checked.add(tag + commit);
+    }
+    return pinOne(x, g, ds, { tag, commit, repo, stripPrefix });
+  });
 }
 
 function pinOne(x: ExcerptSpec, g: Git, ds: Dataset, c: { tag: string; commit: string; repo: string; stripPrefix: string }): Excerpt {
@@ -39,12 +51,18 @@ function pinOne(x: ExcerptSpec, g: Git, ds: Dataset, c: { tag: string; commit: s
   const all = file.toString("utf8").split("\n");
   const bytes = lineBytes(file, x.lines);
   const body = all.slice(x.lines[0] - 1, x.lines[1]);
-  // The symbol must be declared at or above the excerpt's last line.
-  const decl = all.findIndex((l, i) => i < x.lines[1] && l.startsWith(x.symbol));
-  if (decl < 0) fail(`${x.symbol} not declared in ${x.path} above line ${x.lines[1]}`);
+  const kind = x.kind ?? "code";
+  // Code: the symbol must be declared at or above the excerpt's last line.
+  // Evidence (results, prose) has no declaration to find.
+  let decl = -1;
+  if (kind === "code") {
+    decl = all.findIndex((l, i) => i < x.lines[1] && l.startsWith(x.symbol));
+    if (decl < 0) fail(`${x.symbol} not declared in ${x.path} above line ${x.lines[1]}`);
+  }
   if (x.wholeFunction) {
+    if (kind !== "code") fail("evidence cannot be wholeFunction");
     if (!body[0].startsWith(x.symbol)) fail(`line ${x.lines[0]} is not ${x.symbol}: ${body[0]}`);
-    if (body.at(-1) !== "}") fail(`line ${x.lines[1]} does not close the function: ${body.at(-1)}`);
+    if (body.at(-1) !== (x.closing ?? "}")) fail(`line ${x.lines[1]} does not close the function: ${body.at(-1)}`);
   }
   let selector: Excerpt["selector"] = null;
   if (x.datasetSourceId) {
@@ -52,13 +70,13 @@ function pinOne(x: ExcerptSpec, g: Git, ds: Dataset, c: { tag: string; commit: s
     const s = sourceSelector(ds, citedBy, x.datasetSourceId);
     if (s.path !== x.path) fail(`selector ${s.id} names ${s.path}`);
     if (s.revision !== c.commit) fail(`selector revision ${s.revision} != ${c.commit}`);
-    if (s.line !== null && s.line !== decl + 1) fail(`selector line ${s.line}, ${x.symbol} is declared at ${decl + 1}`);
+    if (kind === "code" && s.line !== null && s.line !== decl + 1) fail(`selector line ${s.line}, ${x.symbol} is declared at ${decl + 1}`);
     selector = { id: s.id, notes: s.notes, url: s.url, line: s.line };
   }
   return {
-    id: x.id, repo: c.repo, commit: c.commit, tag: c.tag, path: x.path,
+    id: x.id, kind, repo: c.repo, commit: c.commit, tag: c.tag, path: x.path,
     displayPath: x.path.startsWith(c.stripPrefix) ? x.path.slice(c.stripPrefix.length) : x.path,
-    blob, symbol: x.symbol, declaredAt: decl + 1, lines: x.lines, firstLine: x.lines[0],
+    blob, symbol: x.symbol, declaredAt: kind === "code" ? decl + 1 : null, lines: x.lines, firstLine: x.lines[0],
     text: bytes.toString("utf8"), sha256: sha256(bytes), selector,
     url: `https://github.com/${c.repo}/blob/${c.commit}/${x.path}#L${x.lines[0]}-L${x.lines[1]}`,
   };

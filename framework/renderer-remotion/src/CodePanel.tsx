@@ -5,7 +5,7 @@
 // scripts/prepare.mjs; selection timing comes from play.ts's focusOf.
 import React from "react";
 import { InnerLine, Pre, type AnnotationHandler, type HighlightedCode } from "codehike/code";
-import type { Box, CodeScene, Excerpt, Range } from "../../core/src/index.ts";
+import { citation, type Box, type CodeScene, type Excerpt, type Range } from "../../core/src/index.ts";
 import { lerp, ramp } from "./anim.ts";
 import { selectionAt, stepIndexAt, type Selection, type Story } from "./story.ts";
 import { C, MONO, SANS } from "./theme.ts";
@@ -132,7 +132,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({ story, i, highlighted, box
           <span style={{ color: C.ink, fontFamily: MONO, fontSize: 16, fontWeight: 700 }}>{ex.symbol}</span>
         </div>
         <div style={{ position: "absolute", left: 18, top: 33, right: 18, color: C.accent, fontFamily: MONO, fontSize: 12.5, whiteSpace: "nowrap" }}>
-          {ex.displayPath} · L{ex.lines[0]}–{ex.lines[1]} · {ex.tag} · {ex.commit.slice(0, 7)}
+          {citation(ex, { symbol: false })}
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, top: HEADER, bottom: 0, overflow: "hidden", borderTop: `1px solid ${C.border}`, background: C.bg }}>
           <div style={{ transform: `translateY(${-scroll}px)` }}>

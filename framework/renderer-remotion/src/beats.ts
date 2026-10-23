@@ -21,10 +21,6 @@ export type Beats = {
   packet?: { at: Point; label: string; k: number };
 };
 
-/** The edge a hop rides: the named one, else whichever edge joins its ends. */
-export const hopEdge = (view: View, from: string, to: string, edge?: string) =>
-  edge ?? view.edges.find((e) => (e.from === from && e.to === to) || (e.from === to && e.to === from))?.id;
-
 /** Where a resting packet sits: on the box's top edge, so it never covers the label. */
 export const dock = (layout: Layout, id: string): Point => {
   const b = layout.boxes[id];
@@ -60,7 +56,7 @@ export function beatsAt(story: Story, viewId: string, t: number): Beats {
     if (story.viewOf(i) !== viewId) return;
     const ts = story.timed[i];
     for (const h of hopsOf(story.bundle, sc.id))
-      hops.push({ from: h.from, to: h.to, edge: hopEdge(view, h.from, h.to, h.edge), s: ts.start + h.start, d: h.duration, scene: i });
+      hops.push({ from: h.from, to: h.to, edge: h.edge, s: ts.start + h.start, d: h.duration, scene: i });
     if (t < ts.start || isCodeScene(sc)) return;
     const cue = (c?: string) => ts.start + (c === undefined ? 0 : ts.cues[c] ?? 0);
     if (sc.badge) {

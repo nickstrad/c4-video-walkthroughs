@@ -4,7 +4,7 @@
 // showing now (camera moves, morphs, fades). New transitions plug in here.
 import {Node, type View2D} from '@motion-canvas/2d';
 import {all, delay, easeInOutCubic, type ThreadGenerator} from '@motion-canvas/core';
-import {fit, packetLabelAt, sceneOf, type Box, type CodeScene, type Excerpt, type RenderBundle, type Scene} from '../../core/src/index.ts';
+import {fit, packetLabelAt, type Box, type Excerpt, type RenderBundle} from '../../core/src/index.ts';
 import {CodePanel, StepRail} from './code.tsx';
 import {DiagramView, type CameraTarget} from './diagram.tsx';
 import {captions, statePanel, titleCard, viewHeader} from './panels.tsx';
@@ -156,19 +156,5 @@ export class Stage {
   *dropHeader(d = 0.5): ThreadGenerator {
     this.cur = {...this.cur, header: undefined};
     yield* all(this.card.root.opacity(0, d, easeInOutCubic), this.header.root.opacity(0, d));
-  }
-
-  /**
-   * A code scene's context: its own `context`, else the context of the
-   * code scene before it when that scene shows the same excerpt (so a run of
-   * scenes over one excerpt keeps one layout).
-   */
-  contextOf(sc: CodeScene): CodeScene['context'] {
-    if (sc.context) return sc.context;
-    const scenes = this.b.storyboard.scenes;
-    const i = scenes.findIndex((x) => x.id === sc.id);
-    const prev: Scene | undefined = scenes[i - 1];
-    if (prev && prev.kind === 'code-explanation' && prev.excerpt === sc.excerpt) return this.contextOf(sceneOf(this.b, prev.id) as CodeScene);
-    return undefined;
   }
 }

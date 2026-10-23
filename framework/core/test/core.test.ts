@@ -6,11 +6,12 @@ import { lineBytes } from "../src/code-source/excerpts.ts";
 import { hopPath, along } from "../src/diagram/route.ts";
 import { projectView, type Dataset } from "../src/diagram/view.ts";
 import type { RenderBundle } from "../src/bundle.ts";
+import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline, lastSpoken } from "../src/narration/timeline.ts";
 import type { TakeRecord } from "../src/narration/types.ts";
-import { focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
+import { actAt, codeEnterOf, contextOf, focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
 import { spokenText, type Storyboard } from "../src/storyboard/schema.ts";
-import { validateStoryboard } from "../src/storyboard/validate.ts";
+import { validateRefs, validateStoryboard } from "../src/storyboard/validate.ts";
 
 const P = new URL("../../projects/litefleet/", import.meta.url).pathname;
 const sb = JSON.parse(readFileSync(P + "storyboard.json", "utf8")) as Storyboard;
@@ -75,4 +76,112 @@ test("playback queries", () => {
   const back = hopPath(qf.view, qf.layout, "node", "gateway");
   assert.deepEqual(back[0], qf.layout.routes.forward.points.at(-1));
   assert.deepEqual(along(back, 1), back.at(-1));
+});
+
+test("timeline invariants hold, and catch a retime regression", () => {
+  const tl = buildTimeline(sb, takes);
+  assert.deepEqual(validateTimeline(tl, sb, takes), []);
+  const bad = structuredClone(tl);
+  bad.scenes[3].startFrame += 1;
+  bad.scenes[5].takes[0].speech[1] = bad.scenes[5].speech[1] = bad.scenes[5].duration - 0.1;
+  bad.captions[2].end = bad.captions[3].start + 0.5;
+  const errs = validateTimeline(bad, sb, takes).join("\n");
+  assert.match(errs, /starts at frame/);
+  assert.match(errs, /less than 0.3 s before the cut/);
+  assert.match(errs, /caption overlaps/);
+  const wrongModel = { ...takes, "s1-request": { ...takes["s1-request"], model: "eleven_flash_v2" } };
+  assert.match(validateTimeline(tl, sb, wrongModel).join(), /voiced with eleven_flash_v2/);
+});
+
+test("acts: validated contiguous, carried as timeline bounds, queried by actAt", () => {
+  const views = { "query-flow": projectView(ds, "query-flow"), "node-components": projectView(ds, "node-components") };
+  const acted = structuredClone(sb);
+  acted.acts = [{ id: "out", title: "The request" }, { id: "in", title: "Inside the node" }];
+  const inside = acted.scenes.findIndex((s) => s.id === "s5-into-code");
+  acted.scenes.forEach((s, i) => (s.act = i < inside ? "out" : "in"));
+  assert.deepEqual(validateStoryboard(acted, views), []);
+  const tl = buildTimeline(acted, takes);
+  assert.equal(tl.acts![1].startFrame, tl.scenes[inside].startFrame);
+  assert.equal(tl.acts![0].frames + tl.acts![1].frames, tl.scenes.reduce((n, s) => n + s.frames, 0));
+  const b = { ...bundle, storyboard: acted, timeline: tl };
+  assert.equal(actAt(b, tl.scenes[inside].start + 0.01)?.id, "in");
+  assert.equal(actAt(bundle, 1), undefined);
+  acted.scenes[1].act = "in";
+  assert.match(validateStoryboard(acted, views).join(), /resumes after a later act/);
+});
+
+test("skipped selections are carried by focusOf", () => {
+  const sk = structuredClone(sb);
+  const s6 = sk.scenes.find((s) => s.id === "s6-read-only") as { focus: { skipped?: boolean }[] };
+  s6.focus[0].skipped = true;
+  assert.equal(focusOf({ ...bundle, storyboard: sk }, "s6-read-only")[0].skipped, true);
+  assert.equal(focusOf(bundle, "s6-read-only")[0].skipped, undefined);
+});
+
+const fakeTake = (sceneId: string, text: string, per = 0.06): TakeRecord => {
+  const chars = [...text];
+  const a = { characters: chars, character_start_times_seconds: chars.map((_, i) => i * per), character_end_times_seconds: chars.map((_, i) => (i + 1) * per) };
+  return { sceneId, text, voiceId: "v", model: sb.narration.model, outputFormat: sb.narration.outputFormat, characters: chars.length, alignment: a, normalized_alignment: a };
+};
+
+test("multi-line scenes chain separate takes, each measured to its last letter", () => {
+  const ml = structuredClone(sb);
+  const s1 = ml.scenes[0];
+  delete s1.caption;
+  s1.lines = [
+    { id: "a", caption: "A tenant app sends a read." },
+    { id: "b", caption: "It carries SQL and a key.", gap: 0.5 },
+  ];
+  s1.narration = { cues: { send: "sends", key: "a key" } };
+  const t = { ...takes, "s1-request.a": fakeTake("s1-request", "A tenant app sends a read."), "s1-request.b": fakeTake("s1-request", "It carries SQL and a key.") };
+  const tl = buildTimeline(ml, t);
+  const [a, b] = tl.scenes[0].takes;
+  assert.equal(a.at, 0.2);
+  assert.equal(a.speech[1], 0.2 + 25 * 0.06); // "read" ends at char 25; the "." is not speech
+  assert.equal(b.at, +(a.speech[1] + 0.5).toFixed(3));
+  assert.equal(tl.scenes[0].cues.key, +(b.at + 19 * 0.06).toFixed(3));
+  assert.deepEqual(tl.captions.slice(0, 2).map((c) => [c.lineId, c.start]), [["a", 0], ["b", b.at]]);
+  assert.deepEqual(validateTimeline(tl, ml, t), []);
+  // A phrase in both lines is refused rather than bound to the first match.
+  ml.scenes[0].narration!.cues = { a: "a " };
+  assert.throws(() => buildTimeline(ml, t), /occurs 2 times/);
+});
+
+test("C4 references are checked against the dataset model and scenarios", () => {
+  assert.deepEqual(validateRefs(sb, ds), []);
+  const bad = structuredClone(sb);
+  bad.excerpts[0].elementId = "nodee";
+  bad.excerpts[0].relationshipId = "sql-tenantt";
+  bad.scenes[0].datasetStep = "query-flow-step-99";
+  (bad.scenes[1] as { view: string }).view = "no-such-view";
+  const errs = validateRefs(bad, ds).join("\n");
+  assert.match(errs, /element nodee not in the dataset model/);
+  assert.match(errs, /relationship sql-tenantt not in the dataset model/);
+  assert.match(errs, /query-flow-step-99 not in query-flow's scenario/);
+  assert.match(errs, /view no-such-view not in the dataset's diagrams/);
+});
+
+test("the dumb-views lint flags authored text typed into source", async () => {
+  const { authoredText } = await import("../src/verify/dumb-views.ts");
+  const texts = authoredText(sb);
+  assert.ok(texts.includes("A tenant app sends a read: SQL plus a bearer API key."));
+  assert.ok(texts.includes("WHAT ACQUIRE CHECKS"));
+  assert.ok(!texts.includes("rows")); // too short to flag
+});
+
+test("core owns context inheritance, the code-pane entry cue and each hop's edge", () => {
+  // s6–s8 name no context; they inherit s5's along the query-guards run, and n-acquire (new excerpt) has none.
+  assert.deepEqual(contextOf(bundle, "s7-epoch"), { view: "query-flow", elementId: "node" });
+  assert.equal(contextOf(bundle, "n-acquire"), undefined);
+  assert.equal(contextOf(bundle, "s1-request"), undefined);
+  const s5 = bundle.timeline.scenes.find((s) => s.id === "s5-into-code")!;
+  assert.equal(codeEnterOf(bundle, "s5-into-code"), s5.cues.open);
+  assert.equal(codeEnterOf(bundle, "s6-read-only"), 0);
+  // s11's hops name no edge; core resolves the edge that joins their ends.
+  const qf = bundle.views["query-flow"].view;
+  for (const h of hopsOf(bundle, "s11-reply")) {
+    const e = qf.edges.find((x) => x.id === h.edge)!;
+    assert.deepEqual([e.from, e.to].sort(), [h.from, h.to].sort());
+  }
+  assert.equal(hopsOf(bundle, "s9-rows")[0].edge, "sql-tenant");
 });

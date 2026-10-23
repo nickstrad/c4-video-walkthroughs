@@ -21,10 +21,13 @@ export type TakeRecord = {
 };
 
 export type TimedStep = { id: string; start: number; end: number };
+/** One take placed in its scene (rel): its audio starts at `at`; speech runs to the last spoken letter. */
+export type TimedTake = { take: string; lineId?: string; at: number; speech: [number, number] };
 export type TimedScene = {
   id: string;
   kind: string;
-  take: string;
+  /** The scene's takes in order: one, or one per line of a multi-line scene. */
+  takes: TimedTake[];
   /** Scene placement, whole frames. */
   startFrame: number;
   frames: number;
@@ -32,13 +35,15 @@ export type TimedScene = {
   start: number;
   duration: number;
   leadIn: number;
-  /** Speech span relative to the scene start: lead-in → last spoken letter. */
+  /** Speech span relative to the scene start: lead-in → the last take's last spoken letter. */
   speech: [number, number];
   /** Named cues, seconds relative to the scene start. */
   cues: Record<string, number>;
   steps?: TimedStep[];
 };
-export type Caption = { start: number; end: number; text: string; sceneId: string; stepId?: string };
+/** An act's bounds: its first scene's start to its last scene's end. */
+export type TimedAct = { id: string; title: string; startFrame: number; frames: number; start: number; duration: number; scenes: string[] };
+export type Caption = { start: number; end: number; text: string; sceneId: string; stepId?: string; lineId?: string };
 export type Timeline = {
   schema: "c4v-timeline/1";
   storyboard: string;
@@ -48,6 +53,8 @@ export type Timeline = {
   totalFrames: number;
   total: number;
   scenes: TimedScene[];
+  /** Present only when the storyboard declares acts. */
+  acts?: TimedAct[];
   captions: Caption[];
   audio: { file: string; sampleRate: number };
 };

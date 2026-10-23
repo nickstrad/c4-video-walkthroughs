@@ -3,7 +3,7 @@
 // and the selection on that run at time t. All times come from the timeline
 // via core's play.ts; nothing here knows about a particular project.
 import {
-  focusOf, isCodeScene,
+  contextOf, focusOf, isCodeScene, viewOf,
   type CodeScene, type Range, type RenderBundle, type Scene, type TimedScene, type View, type Layout,
 } from "../../core/src/index.ts";
 import { lerp, ramp } from "./anim.ts";
@@ -29,15 +29,14 @@ export function buildStory(bundle: RenderBundle): Story {
     if (!s) throw new Error(`timeline scene ${t.id} is not in the storyboard`);
     return s;
   });
-  // A code run: consecutive code scenes on the same excerpt. The run's context
-  // diagram carries forward until a scene in it names another one.
-  const run: number[] = [], ctx: (Ctx | undefined)[] = [];
+  // A code run: consecutive code scenes on the same excerpt. Which context
+  // diagram a run keeps is core's rule (contextOf in play.ts).
+  const run: number[] = [];
   scenes.forEach((s, i) => {
-    if (!isCodeScene(s)) { run.push(-1); ctx.push(undefined); return; }
+    if (!isCodeScene(s)) { run.push(-1); return; }
     const prev = scenes[i - 1];
     const cont = !!prev && isCodeScene(prev) && prev.excerpt === s.excerpt;
     run.push(cont ? run[i - 1] : i);
-    ctx.push(s.context ?? (cont ? ctx[i - 1] : undefined));
   });
   const view = (id: string) => {
     const v = bundle.views[id];
@@ -46,12 +45,9 @@ export function buildStory(bundle: RenderBundle): Story {
   };
   return {
     bundle, scenes, timed, view,
-    contextOf: (i) => ctx[i],
+    contextOf: (i) => contextOf(bundle, scenes[i].id),
     runOf: (i) => run[i],
-    viewOf: (i) => {
-      const s = scenes[i];
-      return isCodeScene(s) ? ctx[i]?.view : s.view;
-    },
+    viewOf: (i) => viewOf(bundle, scenes[i].id),
   };
 }
 

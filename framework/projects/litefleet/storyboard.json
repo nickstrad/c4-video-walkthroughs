@@ -139,6 +139,7 @@
       "excerpt": "query-guards",
       "datasetStep": "query-flow-step-7",
       "context": { "view": "query-flow", "elementId": "node" },
+      "enter": "open",
       "caption": "Inside the node: Engine.Query, exec.go at release-it/v1-hardened.",
       "speech": "Inside the node: Engine dot Query, in exec dot go, at release-it v1 hardened.",
       "narration": { "cues": { "open": "Engine" } }
