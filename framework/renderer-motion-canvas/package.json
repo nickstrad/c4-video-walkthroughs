@@ -1,0 +1,27 @@
+{
+  "name": "@c4v/renderer-motion-canvas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "render": "node scripts/render.mjs",
+    "stills": "node scripts/stills.mjs"
+  },
+  "dependencies": {
+    "@lezer/go": "1.0.1",
+    "@lezer/highlight": "1.2.5",
+    "@motion-canvas/2d": "3.17.2",
+    "@motion-canvas/core": "3.17.2"
+  },
+  "devDependencies": {
+    "@motion-canvas/ffmpeg": "3.17.2",
+    "@motion-canvas/ui": "3.17.2",
+    "@motion-canvas/vite-plugin": "3.17.2",
+    "playwright-core": "1.62.0",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  },
+  "description": "Motion Canvas renderer: plays a c4v render bundle (build/bundle.json + build/track.wav) into an MP4. Node >= 22.18."
+}
