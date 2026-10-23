@@ -158,8 +158,14 @@ export type Step = Line & { id: string; label: string; lines: Range; skipped?: b
 export type CodeScene = SceneBase & {
   kind: "code-explanation";
   excerpt: string;
-  /** Diagram kept on screen as context (renderer's choice how). */
-  context?: { view: string; elementId?: string };
+  /**
+   * Diagram kept on screen as context (renderer's choice how). Omitted, it is
+   * inherited from the scene before when that one shows the same excerpt
+   * (see contextAt), so a run of scenes over one excerpt keeps one layout.
+   */
+  context?: CodeContext;
+  /** Cue at which the code pane appears if it is not on screen yet; default the scene start. */
+  enter?: string;
   /** Selections, each replacing the last at its cue (or the scene start). */
   focus?: { ranges: Range[]; cue?: string; skipped?: boolean }[];
   /** Stepped walk through the excerpt; each step's text is one part of the take. */
@@ -169,11 +175,35 @@ export type CodeScene = SceneBase & {
   hops?: Hop[];
 };
 
+export type CodeContext = { view: string; elementId?: string };
+
 export type Scene = DiagramScene | CodeScene;
 export type SceneKind = Scene["kind"];
 
 export const DIAGRAM_KINDS = ["architecture-overview", "focus-element", "follow-request", "state-change"] as const;
 export const isCodeScene = (s: Scene): s is CodeScene => s.kind === "code-explanation";
+
+/**
+ * The context diagram of scenes[i]: its own `context`, else the context of
+ * the scene before when that is a code scene on the same excerpt (and so on
+ * back). Undefined for diagram scenes and context-free code scenes.
+ */
+export function contextAt(scenes: Scene[], i: number): CodeContext | undefined {
+  for (let j = i; j >= 0; j--) {
+    const s = scenes[j];
+    if (!isCodeScene(s)) return undefined;
+    if (s.context) return s.context;
+    const prev = scenes[j - 1];
+    if (!prev || !isCodeScene(prev) || prev.excerpt !== s.excerpt) return undefined;
+  }
+  return undefined;
+}
+
+/** The view a scene draws or keeps as context, if any. */
+export const viewAt = (scenes: Scene[], i: number): string | undefined => {
+  const s = scenes[i];
+  return isCodeScene(s) ? contextAt(scenes, i)?.view : s.view;
+};
 
 const said = (l: Partial<Line>, id: string) => {
   const t = l.speech ?? l.caption;

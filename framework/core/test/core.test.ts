@@ -9,7 +9,7 @@ import type { RenderBundle } from "../src/bundle.ts";
 import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline, lastSpoken } from "../src/narration/timeline.ts";
 import type { TakeRecord } from "../src/narration/types.ts";
-import { actAt, focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
+import { actAt, codeEnterOf, contextOf, focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
 import { spokenText, type Storyboard } from "../src/storyboard/schema.ts";
 import { validateRefs, validateStoryboard } from "../src/storyboard/validate.ts";
 
@@ -167,4 +167,21 @@ test("the dumb-views lint flags authored text typed into source", async () => {
   assert.ok(texts.includes("A tenant app sends a read: SQL plus a bearer API key."));
   assert.ok(texts.includes("WHAT ACQUIRE CHECKS"));
   assert.ok(!texts.includes("rows")); // too short to flag
+});
+
+test("core owns context inheritance, the code-pane entry cue and each hop's edge", () => {
+  // s6–s8 name no context; they inherit s5's along the query-guards run, and n-acquire (new excerpt) has none.
+  assert.deepEqual(contextOf(bundle, "s7-epoch"), { view: "query-flow", elementId: "node" });
+  assert.equal(contextOf(bundle, "n-acquire"), undefined);
+  assert.equal(contextOf(bundle, "s1-request"), undefined);
+  const s5 = bundle.timeline.scenes.find((s) => s.id === "s5-into-code")!;
+  assert.equal(codeEnterOf(bundle, "s5-into-code"), s5.cues.open);
+  assert.equal(codeEnterOf(bundle, "s6-read-only"), 0);
+  // s11's hops name no edge; core resolves the edge that joins their ends.
+  const qf = bundle.views["query-flow"].view;
+  for (const h of hopsOf(bundle, "s11-reply")) {
+    const e = qf.edges.find((x) => x.id === h.edge)!;
+    assert.deepEqual([e.from, e.to].sort(), [h.from, h.to].sort());
+  }
+  assert.equal(hopsOf(bundle, "s9-rows")[0].edge, "sql-tenant");
 });

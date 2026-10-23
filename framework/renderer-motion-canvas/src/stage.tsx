@@ -157,18 +157,4 @@ export class Stage {
     this.cur = {...this.cur, header: undefined};
     yield* all(this.card.root.opacity(0, d, easeInOutCubic), this.header.root.opacity(0, d));
   }
-
-  /**
-   * A code scene's context: its own `context`, else the context of the
-   * code scene before it when that scene shows the same excerpt (so a run of
-   * scenes over one excerpt keeps one layout).
-   */
-  contextOf(sc: CodeScene): CodeScene['context'] {
-    if (sc.context) return sc.context;
-    const scenes = this.b.storyboard.scenes;
-    const i = scenes.findIndex((x) => x.id === sc.id);
-    const prev: Scene | undefined = scenes[i - 1];
-    if (prev && prev.kind === 'code-explanation' && prev.excerpt === sc.excerpt) return this.contextOf(sceneOf(this.b, prev.id) as CodeScene);
-    return undefined;
-  }
 }

@@ -3,7 +3,8 @@
 // pinned-git checks live in code-source/; the cue-phrase checks in
 // narration/timeline.ts, where the spoken text is known.
 import type { Dataset, View } from "../diagram/view.ts";
-import { DIAGRAM_KINDS, SCHEMA, isCodeScene, type Hop, type Range, type Scene, type Storyboard } from "./schema.ts";
+import { hopEdge } from "../play.ts";
+import { DIAGRAM_KINDS, SCHEMA, contextAt, isCodeScene, type Hop, type Range, type Scene, type Storyboard } from "./schema.ts";
 
 const inside = ([a, b]: Range, [lo, hi]: Range) => a >= lo && b <= hi && a <= b;
 
@@ -50,11 +51,12 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
       checkEl(s, v, h.from);
       checkEl(s, v, h.to);
       if (h.edge) checkEdge(s, v, h.edge);
+      else if (v && !hopEdge(v, h)) err(`${s.id}: no edge joins ${h.from} and ${h.to} in ${v.id}; name one`);
       checkCue(s, h.cue);
     }
   };
 
-  for (const s of sb.scenes) {
+  for (const [i, s] of sb.scenes.entries()) {
     const says = [s.caption !== undefined, isCodeScene(s) && !!s.steps, !!s.lines].filter(Boolean).length;
     if (says !== 1) err(`${s.id}: a scene says exactly one of caption, steps or lines`);
     if (s.lines) {
@@ -75,11 +77,13 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
       }
       for (const st of s.steps ?? []) if (!inside(st.lines, x.lines)) err(`${s.id}: step ${st.id} ${st.lines} outside ${x.id} ${x.lines}`);
       if (s.steps && s.focus) err(`${s.id}: use steps or focus, not both`);
-      const v = s.context ? checkView(s, s.context.view) : undefined;
+      const ctx = contextAt(sb.scenes, i);
+      const v = ctx ? checkView(s, ctx.view) : undefined;
       if (s.context?.elementId) checkEl(s, v, s.context.elementId);
-      if (s.hops && !s.context) err(`${s.id}: hops in a code scene need a context view`);
+      if (s.hops && !ctx) err(`${s.id}: hops in a code scene need a context view`);
       checkHops(s, v, s.hops);
       checkCue(s, s.packet?.cue);
+      checkCue(s, s.enter);
     } else {
       if (!(DIAGRAM_KINDS as readonly string[]).includes(s.kind)) { err(`${s.id}: unknown kind ${(s as Scene).kind}`); continue; }
       const v = checkView(s, s.view);

@@ -2,9 +2,10 @@
 // `kind` up here; a new story-arc kind is one more entry. Every runner gets the
 // stage, its storyboard scene and its timed scene, and must finish within
 // timed.frames (the interpreter pads to exactly that and fails on overrun).
-// All times come from play.ts queries over the bundle: cueAt, hopsOf, focusOf.
+// All times come from play.ts queries over the bundle: cueAt, hopsOf, focusOf,
+// codeEnterOf; the context diagram from contextOf.
 import {all, delay, waitFor, type ThreadGenerator} from '@motion-canvas/core';
-import {cueAt, focusOf, hopsOf, type CodeScene, type DiagramScene, type Scene, type TimedScene} from '../../core/src/index.ts';
+import {codeEnterOf, contextOf, cueAt, focusOf, hopsOf, type CodeScene, type DiagramScene, type Scene, type TimedScene} from '../../core/src/index.ts';
 import {SHOT_MOVE, type Shot, type Stage} from './stage.tsx';
 
 export type SceneRunner = (st: Stage, sc: Scene, t: TimedScene) => ThreadGenerator;
@@ -67,7 +68,7 @@ const focusElement: SceneRunner = function* (st, scene) {
 /** code-explanation: excerpt + selections (or steps + rail), context strip, state panel, hops in the strip. */
 const codeScene: SceneRunner = function* (st, scene, t) {
   const sc = scene as CodeScene;
-  const ctx = st.contextOf(sc);
+  const ctx = contextOf(st.b, sc.id);
   const ctxView = ctx && st.diagram(ctx.view);
   const shot: Shot = ctx
     ? {
@@ -83,9 +84,9 @@ const codeScene: SceneRunner = function* (st, scene, t) {
       }
     : {code: {excerpt: sc.excerpt, box: st.L.codeTall}, rail: !!sc.steps};
 
-  // A panel that is not on screen yet opens on the scene's `open` cue (if any).
+  // A panel that is not on screen yet opens on the scene's `enter` cue (if any).
   const entering = !st.current.code;
-  const open = entering ? cueAt(t, t.cues.open !== undefined ? 'open' : undefined) : 0;
+  const open = entering ? codeEnterOf(st.b, sc.id) : 0;
   const morphs = !entering && (st.current.code?.excerpt !== sc.excerpt || st.current.code?.box !== shot.code!.box);
   const settled = (entering ? open : 0) + (entering || morphs ? SHOT_MOVE : 0);
 
