@@ -1,5 +1,5 @@
 {
-  "$comment": "Stage 2 output, hand-authored for the POC in place of the Claude Agent SDK step. Every code anchor is checked by scripts/extract.mjs against pinned git objects. Times are seconds; narration is stubbed as captions (no TTS).",
+  "$comment": "Stage 2 output, hand-authored for the POC in place of the Claude Agent SDK step. Every code anchor is checked by scripts/extract.mjs against pinned git objects. Times are seconds. Durations, starts and audio fields are written by scripts/narrate.mjs from the ElevenLabs alignment; `speech` is the spoken form where a caption is not speakable as written.",
   "title": "Litefleet: how a node says no",
   "fps": 30,
   "width": 1280,
@@ -25,61 +25,79 @@
       "id": "overview",
       "type": "architecture-overview",
       "start": 0,
-      "duration": 5,
+      "duration": 7.96,
       "title": "Litefleet · node components",
-      "narration": "Every Litefleet node runs six responsibilities. One of them decides whether a SQL statement may run at all."
+      "narration": "Every Litefleet node runs six responsibilities. One of them decides whether a SQL statement may run at all.",
+      "audio": {
+        "file": "overview.mp3",
+        "at": 0.5,
+        "end": 7.06
+      }
     },
     {
       "id": "focus",
       "type": "focus-element",
-      "start": 5,
-      "duration": 4,
+      "start": 7.96,
+      "duration": 4.69,
       "elementId": "nd-engine",
-      "narration": "The admission engine: per-database lanes, then tenant and node limits."
+      "narration": "The admission engine: per-database lanes, then tenant and node limits.",
+      "audio": {
+        "file": "focus.mp3",
+        "at": 0.3,
+        "end": 3.99
+      }
     },
     {
       "id": "code",
       "type": "code-explanation",
-      "start": 9,
-      "duration": 16,
+      "start": 12.65,
+      "duration": 34.69,
       "intro": 1,
       "steps": [
         {
           "id": "lane",
           "label": "Pick read / write lane",
           "lines": [67, 71],
-          "duration": 2.5,
+          "duration": 4.88,
           "narration": "acquire picks the database's read lane, or its single write lane."
         },
         {
           "id": "wait",
           "label": "Queue ≤ 8, else 429",
           "lines": [72, 87],
-          "duration": 3.5,
-          "narration": "No free lane? Eight statements may wait. The ninth gets 429 tenant_busy at once."
+          "duration": 8.27,
+          "narration": "No free lane? Eight statements may wait. The ninth gets 429 tenant_busy at once.",
+          "speech": "No free lane? Eight statements may wait. The ninth gets four-twenty-nine, tenant busy, at once."
         },
         {
           "id": "tenant",
           "label": "Tenant slot (4)",
           "lines": [88, 97],
-          "duration": 3,
-          "narration": "Next, a tenant slot: four statements per tenant across the node, inside a 250 ms wait."
+          "duration": 7.38,
+          "narration": "Next, a tenant slot: four statements per tenant across the node, inside a 250 ms wait.",
+          "speech": "Next, a tenant slot: four statements per tenant across the node, inside a 250 millisecond wait."
         },
         {
           "id": "node",
           "label": "Node slot (16), else 503",
           "lines": [98, 105],
-          "duration": 3,
-          "narration": "Then a node slot: sixteen per node, or 503 node_busy, handing back what it already holds."
+          "duration": 7.73,
+          "narration": "Then a node slot: sixteen per node, or 503 node_busy, handing back what it already holds.",
+          "speech": "Then a node slot: sixteen per node, or five-oh-three, node busy, handing back what it already holds."
         },
         {
           "id": "release",
           "label": "Return release func",
           "lines": [106, 112],
-          "duration": 3,
+          "duration": 5.43,
           "narration": "Success returns a release func that frees node, tenant and lane in reverse order."
         }
-      ]
+      ],
+      "audio": {
+        "file": "code.mp3",
+        "at": 1,
+        "end": 33.3
+      }
     }
   ]
 }
