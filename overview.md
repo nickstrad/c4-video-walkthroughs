@@ -165,3 +165,24 @@ site bundle only.
 *Narration note: the POCs stub the ElevenLabs step (captions/titles instead
 of voice) until an API key is provided; the timing-driven sync is designed
 so the voice track drops in without rework.*
+
+## Demo site
+
+https://nickstrad.github.io/c4-video-walkthroughs/ is a single hand-written,
+dependency-free page (`site/index.html`), dark and mobile-first: one card per
+POC with an inline `<video controls playsinline preload="metadata">`, a poster
+frame, duration, and a full-width "open full screen" link. The Pages workflow
+(`.github/workflows/pages.yml`) assembles only the page, the four demo MP4s
+and four posters (copied from each POC's `frames/`) into the artifact. It
+redeploys on pushes that touch `site/`, the demo videos or frames.
+
+All four MP4s are H.264 High 720p with the `moov` atom ahead of `mdat`
+(faststart), so they stream without a full download.
+
+Verified live on 2026-10-23 after run
+[39968001539](https://github.com/nickstrad/c4-video-walkthroughs/actions/runs/39968001539)
+(commit `747f235`, build and deploy succeeded): the index returns 200 and
+references all four videos; every poster returns 200; every video returns
+200 with `video/mp4` and the full committed byte size, and answers
+`Range: bytes=0-1023` with 206 and a correct `Content-Range` — the byte-range
+support iOS Safari needs. Not yet checked on a physical iPhone.
