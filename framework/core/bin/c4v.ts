@@ -17,6 +17,7 @@ import { checkoutFor, git } from "../src/code-source/git.ts";
 import { layoutView } from "../src/diagram/layout.ts";
 import { projectView, type Dataset, type View } from "../src/diagram/view.ts";
 import { loadTakes, missingTakes, synthesizeMissing } from "../src/narration/takes.ts";
+import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline } from "../src/narration/timeline.ts";
 import { mixTrack } from "../src/narration/track.ts";
 import { isCodeScene, type Storyboard } from "../src/storyboard/schema.ts";
@@ -66,6 +67,7 @@ async function build() {
   const excerpts = pinExcerpts(sb, code, dataset);
   const takes = loadTakes(sb, takesDir);
   const timeline = buildTimeline(sb, takes);
+  die("timeline", validateTimeline(timeline, sb, takes));
   const laid: RenderBundle["views"] = {};
   for (const [id, view] of Object.entries(v)) laid[id] = { view, layout: await layoutView(view) };
   const bundle: RenderBundle = {
@@ -103,7 +105,9 @@ function verify() {
   try {
     const fresh = pinExcerpts(sb, code, dataset);
     for (const x of fresh) if (JSON.stringify(x) !== JSON.stringify(bundle.excerpts[x.id])) errs.push(`bundle excerpt ${x.id} is stale; rebuild`);
-    const tl = buildTimeline(sb, loadTakes(sb, takesDir));
+    const takes = loadTakes(sb, takesDir);
+    errs.push(...validateTimeline(bundle.timeline, sb, takes));
+    const tl = buildTimeline(sb, takes);
     if (JSON.stringify(tl) !== JSON.stringify(bundle.timeline)) errs.push("bundle timeline is stale; rebuild");
     if (JSON.stringify(bundle.storyboard) !== JSON.stringify(sb)) errs.push("bundle storyboard is stale; rebuild");
   } catch (e) {
@@ -112,7 +116,7 @@ function verify() {
   die("verify", errs);
   for (const x of excerpts) console.log(`  ok ${x.id.padEnd(13)} ${x.displayPath}:${x.lines.join("-")} @ ${x.commit.slice(0, 7)} blob ${x.blob.slice(0, 7)} sha256 ${x.sha256.slice(0, 12)} (${Buffer.byteLength(x.text)} B byte-identical)`);
   console.log(`  ok dataset snapshot byte-identical to ${sb.sources.dataset.path} @ ${sb.sources.dataset.commit.slice(0, 7)}`);
-  console.log(`  ok ${sb.scenes.length} takes match their spoken text; bundle timeline reproduces`);
+  console.log(`  ok ${sb.scenes.length} takes match their spoken text and model; timeline invariants hold; bundle timeline reproduces`);
   console.log("verify: pass");
 }
 

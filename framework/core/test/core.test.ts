@@ -6,6 +6,7 @@ import { lineBytes } from "../src/code-source/excerpts.ts";
 import { hopPath, along } from "../src/diagram/route.ts";
 import { projectView, type Dataset } from "../src/diagram/view.ts";
 import type { RenderBundle } from "../src/bundle.ts";
+import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline, lastSpoken } from "../src/narration/timeline.ts";
 import type { TakeRecord } from "../src/narration/types.ts";
 import { focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
@@ -75,4 +76,19 @@ test("playback queries", () => {
   const back = hopPath(qf.view, qf.layout, "node", "gateway");
   assert.deepEqual(back[0], qf.layout.routes.forward.points.at(-1));
   assert.deepEqual(along(back, 1), back.at(-1));
+});
+
+test("timeline invariants hold, and catch a retime regression", () => {
+  const tl = buildTimeline(sb, takes);
+  assert.deepEqual(validateTimeline(tl, sb, takes), []);
+  const bad = structuredClone(tl);
+  bad.scenes[3].startFrame += 1;
+  bad.scenes[5].speech[1] = bad.scenes[5].duration - 0.1;
+  bad.captions[2].end = bad.captions[3].start + 0.5;
+  const errs = validateTimeline(bad, sb, takes).join("\n");
+  assert.match(errs, /starts at frame/);
+  assert.match(errs, /less than 0.3 s before the cut/);
+  assert.match(errs, /caption overlaps/);
+  const wrongModel = { ...takes, "s1-request": { ...takes["s1-request"], model: "eleven_flash_v2" } };
+  assert.match(validateTimeline(tl, sb, wrongModel).join(), /voiced with eleven_flash_v2/);
 });

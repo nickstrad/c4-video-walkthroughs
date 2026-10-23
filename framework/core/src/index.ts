@@ -4,6 +4,7 @@ export * from "./storyboard/schema.ts";
 export * from "./storyboard/validate.ts";
 export * from "./narration/types.ts";
 export * from "./narration/timeline.ts";
+export * from "./narration/invariants.ts";
 export * from "./code-source/types.ts";
 export * from "./diagram/view.ts";
 export * from "./diagram/geometry.ts";
