@@ -1,0 +1,33 @@
+{
+  "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "snippets": {
+    "query-guards": {
+      "id": "query-guards",
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23",
+      "file": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "function": "func (e *Engine) Query",
+      "lines": [
+        130,
+        149
+      ],
+      "text": "func (e *Engine) Query(ctx context.Context, id string, epoch int, req wire.QueryRequest, start func() io.Writer) (started bool, err error) {\n    defer observeStatement(\"read\", time.Now())\n    ctx, cancel := context.WithTimeout(ctx, StatementDeadline)\n    defer cancel()\n    if !isRead(req.SQL) {\n        return false, &StatementError{http.StatusBadRequest, \"bad_request\", \"query takes a single read statement; use execute for writes\"}\n    }\n    h, err := e.Handle(id)\n    if err != nil {\n        return false, err\n    }\n    defer h.Release()\n    if err := h.admit(epoch); err != nil {\n        return false, err\n    }\n    release, err := e.acquire(ctx, h, false)\n    if err != nil {\n        return false, err\n    }\n    defer release()"
+    },
+    "query-caps": {
+      "id": "query-caps",
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23",
+      "file": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "function": "func (e *Engine) Query",
+      "lines": [
+        194,
+        217
+      ],
+      "text": "    for rows.Next() {\n        if count == MaxRows {\n            truncated = true\n            break\n        }\n        if err := rows.Scan(ptrs...); err != nil {\n            return true, classify(ctx, err)\n        }\n        row, err := json.Marshal(vals)\n        if err != nil {\n            return true, err\n        }\n        if size+int64(len(row)) > MaxBytes {\n            truncated = true\n            break\n        }\n        if count > 0 {\n            w.Write([]byte{','})\n            size++\n        }\n        w.Write(row)\n        size += int64(len(row))\n        count++\n    }"
+    }
+  }
+}

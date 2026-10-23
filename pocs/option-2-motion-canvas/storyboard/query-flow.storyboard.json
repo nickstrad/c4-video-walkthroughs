@@ -1,0 +1,244 @@
+{
+  "schema": "c4v-storyboard/0.1",
+  "title": "Litefleet: one bounded read, gateway to SQLite",
+  "authoredBy": "Claude Opus 5.5, playing the pipeline's AI-mapping step by hand (POC)",
+  "dataset": {
+    "repo": "/root/Software/book-notes",
+    "path": "pages/public/architectures/litefleet.json",
+    "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+    "diagramId": "query-flow",
+    "docId": "doc-query-flow"
+  },
+  "code": {
+    "repo": "/root/Software/book-notes",
+    "tag": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "presentation": "tabs expanded to 4 spaces; no other change"
+  },
+  "story": "Follow one tenant read along the C4 dynamic view query-flow (cache-hit path), then step into the node hop (relationship sql-tenant) and show the real Engine.Query guards and row caps as the request reaches them.",
+  "elements": [
+    {
+      "id": "tenant",
+      "label": "Tenant app",
+      "tech": "HTTP/JSON client"
+    },
+    {
+      "id": "ingress",
+      "label": "HAProxy ingress",
+      "tech": "HAProxy 3.2"
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway",
+      "tech": "Go / net/http"
+    },
+    {
+      "id": "control",
+      "label": "Control plane",
+      "tech": "Go / net/http"
+    },
+    {
+      "id": "registry",
+      "label": "Registry",
+      "tech": "PostgreSQL 17"
+    },
+    {
+      "id": "node",
+      "label": "Node agent",
+      "tech": "Go / net/http"
+    },
+    {
+      "id": "tenant-files",
+      "label": "Tenant SQLite files",
+      "tech": "SQLite / WAL"
+    }
+  ],
+  "snippets": [
+    {
+      "id": "query-guards",
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23",
+      "file": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "function": "func (e *Engine) Query",
+      "lines": [
+        130,
+        149
+      ]
+    },
+    {
+      "id": "query-caps",
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23",
+      "file": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "function": "func (e *Engine) Query",
+      "lines": [
+        194,
+        217
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "s1-request",
+      "kind": "follow-request",
+      "duration": 2.6,
+      "datasetStep": "query-flow-step-1",
+      "relationshipId": "tenant-edge",
+      "path": [
+        "tenant",
+        "ingress"
+      ],
+      "caption": "A tenant app sends a read: SQL plus a bearer API key."
+    },
+    {
+      "id": "s2-balance",
+      "kind": "follow-request",
+      "duration": 2.2,
+      "datasetStep": "query-flow-step-2",
+      "relationshipId": "balance",
+      "path": [
+        "ingress",
+        "gateway"
+      ],
+      "caption": "HAProxy picks a healthy gateway."
+    },
+    {
+      "id": "s3-cache-hit",
+      "kind": "state-change",
+      "duration": 2.6,
+      "datasetStep": "query-flow-step-3",
+      "relationshipId": "resolve",
+      "skipped": [
+        "control",
+        "registry"
+      ],
+      "caption": "Route cache hit: steps 3-5 (control plane, registry) are skipped."
+    },
+    {
+      "id": "s4-forward",
+      "kind": "follow-request",
+      "duration": 2.4,
+      "datasetStep": "query-flow-step-6",
+      "relationshipId": "forward",
+      "path": [
+        "gateway",
+        "node"
+      ],
+      "caption": "The gateway posts the query and the route's epoch (X-Epoch) to the owning node."
+    },
+    {
+      "id": "s5-into-code",
+      "kind": "code-explanation",
+      "duration": 1.4,
+      "datasetStep": "query-flow-step-7",
+      "focus": "node",
+      "snippet": "query-guards",
+      "caption": "Inside the node: Engine.Query, exec.go at release-it/v1-hardened."
+    },
+    {
+      "id": "s6-read-only",
+      "kind": "code-explanation",
+      "duration": 2.2,
+      "snippet": "query-guards",
+      "highlight": [
+        134,
+        136
+      ],
+      "caption": "Only a single read statement is accepted here; writes go to execute."
+    },
+    {
+      "id": "s7-epoch",
+      "kind": "code-explanation",
+      "duration": 2.4,
+      "snippet": "query-guards",
+      "highlight": [
+        142,
+        144
+      ],
+      "state": {
+        "epoch": "checked"
+      },
+      "caption": "admit: the node serves only requests routed with the database's current epoch."
+    },
+    {
+      "id": "s8-lane",
+      "kind": "code-explanation",
+      "duration": 2.4,
+      "snippet": "query-guards",
+      "highlight": [
+        145,
+        149
+      ],
+      "state": {
+        "readLanes": 1
+      },
+      "caption": "acquire takes a read lane: the per-database bulkhead (2 readers at once)."
+    },
+    {
+      "id": "s9-rows",
+      "kind": "code-explanation",
+      "duration": 2.6,
+      "snippet": "query-caps",
+      "relationshipId": "sql-tenant",
+      "path": [
+        "node",
+        "tenant-files"
+      ],
+      "state": {
+        "rowsStreaming": true
+      },
+      "caption": "Rows are scanned from the tenant's SQLite file and streamed as they arrive.",
+      "highlights": [
+        [
+          194,
+          194
+        ],
+        [
+          214,
+          216
+        ]
+      ]
+    },
+    {
+      "id": "s10-caps",
+      "kind": "code-explanation",
+      "duration": 2.8,
+      "snippet": "query-caps",
+      "highlights": [
+        [
+          195,
+          198
+        ],
+        [
+          206,
+          209
+        ]
+      ],
+      "state": {
+        "truncated": true
+      },
+      "caption": "Capped at MaxRows (1000) or MaxBytes (1 MiB): the answer says truncated."
+    },
+    {
+      "id": "s11-reply",
+      "kind": "follow-request",
+      "duration": 2.6,
+      "datasetStep": "query-flow-step-10",
+      "path": [
+        "node",
+        "gateway",
+        "ingress",
+        "tenant"
+      ],
+      "caption": "Capped rows stream back through gateway and HAProxy to the tenant."
+    }
+  ],
+  "narration": {
+    "status": "stubbed",
+    "note": "Captions carry the narration text. When ElevenLabs timing arrives, each scene's duration is replaced by its narration span; the scene code reads durations only from this file."
+  }
+}
