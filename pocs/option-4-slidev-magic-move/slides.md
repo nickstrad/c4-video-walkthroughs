@@ -12,7 +12,7 @@ fonts:
   mono: DejaVu Sans Mono
 drawings:
   enabled: false
-magicMoveDuration: 1400
+magicMoveDuration: 1000
 codeCopy: false
 ---
 
@@ -93,7 +93,7 @@ func New() *Client {
 
 <div class="lead">v0-flawed → v1-hardened</div>
 
-````md magic-move {duration:1400}
+````md magic-move {duration:1000}
 ```go
 func New() *Client {
 	return &Client{http: &http.Client{}}

@@ -12,7 +12,7 @@ fonts:
   mono: DejaVu Sans Mono
 drawings:
   enabled: false
-magicMoveDuration: 1400
+magicMoveDuration: 1000
 codeCopy: false
 ---
 
@@ -26,7 +26,7 @@ codeCopy: false
 @@flawed@@
 ```
 
-<div class="source">v0 · 6076a82 · internal/nodeclient/client.go:24–26 · New</div>
+<div class="source">@@cite_flawed@@</div>
 <div class="caption">An empty Go HTTP client has no overall timeout.</div>
 
 <!--
@@ -47,7 +47,7 @@ class: architecture
 @@wiring@@
 ```
 
-<div class="source">v1 · 9367863 · cmd/gateway/main.go:27–31 · main</div>
+<div class="source">@@cite_wiring@@</div>
 <div class="caption">API handlers use the node client to reach the owning node.</div>
 
 <!--
@@ -66,7 +66,7 @@ class: architecture
 @@hardened@@
 ```
 
-<div class="source">v1 · 9367863 · internal/nodeclient/client.go:36–42 · New</div>
+<div class="source">@@cite_hardened@@</div>
 <div class="caption">The same constructor also configures bounded read retries.</div>
 
 <!--
@@ -81,7 +81,7 @@ class: architecture
 
 <div class="lead">v0-flawed → v1-hardened</div>
 
-````md magic-move {duration:1400}
+````md magic-move {duration:1000}
 ```go
 @@flawed@@
 ```
@@ -90,7 +90,7 @@ class: architecture
 ```
 ````
 
-<div class="source">New · internal/nodeclient/client.go · 6076a82:24–26 → 9367863:36–42</div>
+<div class="source">@@cite_evolution@@</div>
 <div class="caption">The exact before/after source morphs on the timed click.</div>
 
 <!--
@@ -107,7 +107,7 @@ class: architecture
 @@transport@@
 ```
 
-<div class="source">v1 · 9367863 · internal/httpx/client.go:19–26 · NewClient (excerpt)</div>
+<div class="source">@@cite_transport@@</div>
 <div class="caption">DialContext, response headers, and the whole exchange each get a deadline.</div>
 
 <!--
@@ -124,7 +124,7 @@ class: architecture
 @@checks@@
 ```
 
-<div class="source">v1 · 9367863 · lab/verify/02-timeouts.sh:75–78 · top-level checks</div>
+<div class="source">@@cite_checks@@</div>
 <div class="lead">Blackhole node-a. Measure waiting, latency, and fast failures.</div>
 <div class="caption">Repository acceptance checks shown. The fault-injection lab was not run for this POC.</div>
 <div class="stub">NARRATION STUB · Speaker notes + timed captions · No synthesized voice</div>

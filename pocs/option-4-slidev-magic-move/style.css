@@ -14,3 +14,4 @@
 .diagram img { width: 1160px; max-width: none; margin-top: -157px; }
 .slidev-nav-controls, .slidev-slide-number { display: none !important; }
 .architecture pre, .architecture code { font-size: 13px !important; line-height: 1.5 !important; }
+.shiki-magic-move-container { white-space: pre-wrap !important; overflow-wrap: anywhere; }

@@ -8,7 +8,7 @@
 | 0–4 s | 1. Problem | Silent node, unbounded default client | v0 `internal/nodeclient/client.go`, `New`, 24–26 |
 | 4–8 s | 2. Architecture | Real C4 gateway component image → node client | v1 `cmd/gateway/main.go`, `main` excerpt, 27–31 |
 | 8–12 s | 3. Component | Node client attempt budgets and bounded read retries | v1 `internal/nodeclient/client.go`, `New`, 36–42 |
-| 12–19 s | 4. Evolution | Shiki Magic Move; timed click at 16 s, 1.4 s morph | v0 `New` 24–26 → v1 `New` 36–42 in `internal/nodeclient/client.go` |
+| 12–19 s | 4. Evolution | Shiki Magic Move; timed click at 16 s, 1.0 s transition duration (plus token delays) | v0 `New` 24–26 → v1 `New` 36–42 in `internal/nodeclient/client.go` |
 | 19–23 s | 5. Implementation | Client and transport apply the deadlines | v1 `internal/httpx/client.go`, `NewClient` excerpt, 19–26 |
 | 23–28 s | 6. Evidence | Blackhole-node acceptance assertions, explicitly not executed here | v1 `lab/verify/02-timeouts.sh`, top-level assertions, 75–78 |
 

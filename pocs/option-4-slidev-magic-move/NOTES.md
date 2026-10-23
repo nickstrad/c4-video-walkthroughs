@@ -32,8 +32,8 @@ external narration API, or repository upload is involved.
   hashes in `sources/manifest.json`. Every slide contains a real pinned excerpt.
 - `slides.template.md` generates `slides.md`; the latter runs as an ordinary Slidev
   deck. One click morphs actual v0 code into actual v1 code through Shiki Magic Move.
-- A timed Playwright recording advances all six slides and the extra animation
-  click. FFmpeg trims browser navigation lead-in, emits H.264/yuv420p with faststart,
+- The recorder first builds a static Slidev deck and serves it locally through
+  Vite preview. Playwright advances all six slides and the extra animation click. FFmpeg trims browser navigation lead-in, emits H.264/yuv420p with faststart,
   and extracts three PNG frames from the final MP4.
 - C4 diagram bytes come from the provided diagram-site evidence; the companion
   JSON is included. CSS crops empty canvas around the diagram; the image is unmodified.
@@ -74,7 +74,31 @@ incorrect claims and source drift. The current fixed scene schedule is encoded i
 Slidev syntax follows its official [Magic Move documentation](https://sli.dev/features/shiki-magic-move)
 and [speaker-note syntax](https://sli.dev/guide/syntax#notes).
 
-Render measurements and visual inspection results follow below after validation.
+## Final validation and measured render time
+
+- Final `demo.mp4`: **28.000 seconds**, **1280×720**, H.264/yuv420p,
+  30 fps output, **1,212,927 bytes** (about 1.21 MB). Silent by design.
+- Complete static-build / warm-up / recording / encoding / still-extraction run:
+  **87.1 seconds** on the shared 8 GB VM. Static build: **21.1 seconds**.
+  This is one measured run, not a throughput benchmark.
+- Before/after code text and **114 active token animations** were checked in the
+  browser. All settled hardened token bounds fit within the slide. No uncaught
+  page errors; the documented caught FloatingVue console error remains.
+- All six slide screenshots, the settled animation screenshot, and the final
+  MP4's architecture/motion/hardened frames were opened and visually inspected.
+  The long animated line now wraps within its code panel, with no clipped tokens.
+- `frames/01-architecture.png` is taken at 6 s; `02-magic-move.png` at 17.6 s;
+  `03-hardened.png` at 18.6 s. These are extracted from the delivered MP4.
+- `evidence/render.json` includes actual click times, browser build, console
+  diagnostics and complete ffprobe metadata. The largest observed click delay
+  was about 0.23 s on the shared host. Browser recording is timing-driven and can
+  drift with CPU load, unlike deterministic frame rendering.
+- Source provenance verification passes for all five ranges, hashes, deck code,
+  and the unchanged architecture PNG. `npm run sources` also generates screen
+  citations and rejects source-tag drift.
+- Independent Claude Opus implementation review: **NITS**, no material bugs.
+  Responses and the original review are under `evidence/`.
+
 
 Playwright installation note: on a shared host set `PLAYWRIGHT_SKIP_BROWSER_GC=1`
 when installing browsers. The first helper install unexpectedly garbage-collected
@@ -85,6 +109,10 @@ its own FFmpeg 1011 video helper even when a system encoder is installed.
 Slidev 53's installed Twoslash/FloatingVue combination logs a caught
 `Failed to patch FloatingVue ... Popper` error during startup; code highlighting,
 Magic Move and slide navigation still work. No Twoslash tooltips are used in this
-deck. The raw startup log is retained in `evidence/slidev.log`. The recorder also
+deck. Final console diagnostics are retained in `evidence/render.json`; the local
+server startup log is `evidence/slidev.log` and the static build log is `evidence/build.log`. The recorder also
 avoids `?print=false`: Slidev treats the presence of `print` as print mode regardless
-of its value. It waits for visible headings rather than hidden preloaded slides.
+of its value. It waits for visible headings rather than hidden preloaded slides. After repeat
+development-server captures hit transient async-module failures and network-idle
+timeouts, the final pipeline switched to a static build and Vite preview. This
+also makes the exported deck independently hostable; dist/ stays untracked.
