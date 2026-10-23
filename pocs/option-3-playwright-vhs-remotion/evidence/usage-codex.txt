@@ -1,0 +1,22 @@
+
+  >_ OpenAI Codex (v0.163.0)
+
+  Visit https://chatgpt.com/settings/usage for up-to-date
+  information on rate limits and credits
+
+  Server:              Local background server
+
+  Model:               GPT-6-Astra (reasoning medium)
+  Model provider:      openai
+  Directory:           ~/Software/c4video-work/option-3
+  Permissions:         Workspace (Ask for approval)
+  Agents.md:           ~/.codex/AGENTS.md
+  Collaboration mode:  Default
+
+  Weekly limit:        [█████████████████░░░] 86% left (resets 17:09 on 29 Oct)
+
+
+› Ask Codex to do anything
+
+  GPT-6-Astra · ~/Software/c4video-work/option-3 · poc/option-3 · Context 0% us…
+  ← for agents · ? for shortcuts

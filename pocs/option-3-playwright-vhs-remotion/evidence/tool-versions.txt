@@ -1,0 +1,12 @@
+v22.23.2
+go version go1.26.8 linux/amd64
+vhs version v0.10.0
+ttyd version 1.7.4
+ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+c4video-option-3-poc@1.0.0 /root/Software/c4video-work/option-3/pocs/option-3-playwright-vhs-remotion
+├── @remotion/cli@4.0.484
+├── playwright@1.64.0
+├── react-dom@19.2.0
+├── react@19.2.0
+└── remotion@4.0.484
+

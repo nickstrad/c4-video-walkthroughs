@@ -1,0 +1,14 @@
+{
+  "heading": "Litefleet: gateway components",
+  "errors": [],
+  "url": "http://127.0.0.1:4333/book-notes/#/architectures/litefleet/diagrams/gateway-components",
+  "viewport": "1280x720",
+  "workflow": [
+    "open catalog",
+    "select Litefleet",
+    "open containers",
+    "open gateway components",
+    "Fit View"
+  ],
+  "mockedRequests": false
+}

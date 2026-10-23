@@ -1,0 +1,38 @@
+[
+  {
+    "path": "architectures/litefleet.json",
+    "sha256": "89a86b3dff695672ad9415950f0c3996e90c5f7b29dbb312ac06c5b39128bd80"
+  },
+  {
+    "path": "architectures/queuelet.json",
+    "sha256": "0d1cd50a4985230834a1b5f60acaf7640d58fa2debb6af88577796653f25143f"
+  },
+  {
+    "path": "architectures/shell-alternate.json",
+    "sha256": "c54365c3ea922bdc18002eb18aafccdaadadbb485c26f3c4501b0b5f8dde9c15"
+  },
+  {
+    "path": "architectures/shell-example.json",
+    "sha256": "73b775095ebf62bfce95ba3bd7db47520dfd65e9b451fa44071f8aa06b2b3bfc"
+  },
+  {
+    "path": "assets/index-ChqLlcAG.css",
+    "sha256": "ddf99b2cd64affe5b52fd54cc3c8e15597f1e16bf2bf4dc0e24217ca960d994e"
+  },
+  {
+    "path": "assets/index-DeMpY6Is.js",
+    "sha256": "4a3171d3f55b94421917107edd1eaea377618ce6636bd81b78b8e5b871b5bb94"
+  },
+  {
+    "path": "assets/layout-worker-BeIcR9gj.js",
+    "sha256": "34020517e5f80f3a1559e04e19bb7c9a98a644ab2664af6cac35a3d5c8bbdedd"
+  },
+  {
+    "path": "catalog.json",
+    "sha256": "5a3a4c6cd806909f1cbe83439e9811e7f1ec1c283ca363015f2fc43d3f5928eb"
+  },
+  {
+    "path": "index.html",
+    "sha256": "24277630e2b2aaa580e987c211a24d0a65dd7ea3f4bbf00ecaca7f5f1a727a1e"
+  }
+]

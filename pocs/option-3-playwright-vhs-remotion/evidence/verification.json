@@ -1,0 +1,44 @@
+{
+  "verdict": "PASS",
+  "sourceCommit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "dimensions": [
+    1280,
+    720
+  ],
+  "fps": "30/1",
+  "frames": 960,
+  "seconds": 32,
+  "decodedWholeVideo": true,
+  "assets": [
+    {
+      "path": "demo.mp4",
+      "bytes": 1617487,
+      "sha256": "3244188b1b679b90d197c3b7d18535f81862fe7eba2ee5b54e69b23aa2610fd7",
+      "seconds": 32
+    },
+    {
+      "path": "public/browser.webm",
+      "bytes": 4706222,
+      "sha256": "78752e0d240a0d0dd8cf0d50e037dc1aab1333164ce7259604f57b8a806fbc84",
+      "seconds": 16.52
+    },
+    {
+      "path": "public/browser.mp4",
+      "bytes": 1050581,
+      "sha256": "f82ad685274d81908eea0296b7977ce7e5a3f1ecf038fde8ed10e06016414df5",
+      "seconds": 16.52
+    },
+    {
+      "path": "public/terminal-vhs.mp4",
+      "bytes": 84676,
+      "sha256": "d86a0d0255a2546fe227a6cf864539455f7a45b261ad5c70b140e5f9080e2498",
+      "seconds": 8.4
+    },
+    {
+      "path": "public/terminal.mp4",
+      "bytes": 141404,
+      "sha256": "864027dece4bef4d4b7cc14882f7179d36aab828736f155601d71489534360b5",
+      "seconds": 9
+    }
+  ]
+}
