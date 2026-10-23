@@ -42,9 +42,9 @@ external narration API, or repository upload is involved.
 
 ## Friction and limits
 
-- Slidev 53 uses `--bind` for remote binding and does not accept `--host`; the initial
-  launch failed with `Unknown argument: host`. The corrected launch uses its default
-  local host. This is a browser recording, not a deterministic frame renderer.
+- The initial Slidev development-server launch rejected `--host` (it uses
+  `--bind` for remote binding). The final recorder uses `vite preview --host
+  localhost`, where `--host` is supported. This is a browser recording, not a deterministic frame renderer.
 - Long real Go constructor lines require visual wrapping. Detailed C4 labels are
   small at 720p; a full technical video should zoom or render a selected component
   subgraph instead of trying to read every edge in a wide diagram.
@@ -97,7 +97,9 @@ and [speaker-note syntax](https://sli.dev/guide/syntax#notes).
   and the unchanged architecture PNG. `npm run sources` also generates screen
   citations and rejects source-tag drift.
 - Independent Claude Opus implementation review: **NITS**, no material bugs.
-  Responses and the original review are under `evidence/`.
+  A second fresh Opus review of the final recording/fixup commit `6cf86df`
+  returned **PASS**. Reports, responses and machine-readable output are under
+  `evidence/`.
 
 
 Playwright installation note: on a shared host set `PLAYWRIGHT_SKIP_BROWSER_GC=1`
