@@ -1,4 +1,0 @@
-check max_inflight "$inflight" "<=" 300
-check max_goroutines "$goroutines" "<=" 1000
-check outage_p99_s "$p99_out" "<" 3.0
-check outage_504_pct "$share_504" ">=" 90

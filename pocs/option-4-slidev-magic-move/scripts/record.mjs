@@ -54,10 +54,12 @@ try {
   await warm.addInitScript(()=>localStorage.setItem('slidev-wake-lock','false'));
   warm.on('console',observeConsole);
   warm.on('pageerror',e=>errors.push(e.message));
-  for(let slide=1;slide<=6;slide++) {
+  // Warm every scene and click state; screenshot each for evidence/.
+  const states=[[1,0],[2,0],[2,1],[3,0],[3,1],[3,2],[4,0],[5,0]];
+  for(const [slide,clicks] of states) {
     for(let attempt=0;attempt<3;attempt++) {
       try {
-        await warm.goto(`${url}/${slide}`,{waitUntil:'domcontentloaded',timeout:90000});
+        await warm.goto(`${url}/${slide}?clicks=${clicks}`,{waitUntil:'domcontentloaded',timeout:90000});
         await warm.locator('.slidev-page:visible h1').first().waitFor({timeout:30000});
         break;
       } catch(error) {
@@ -66,14 +68,18 @@ try {
       }
     }
     await warm.evaluate(()=>document.fonts.ready);
-    await warm.waitForTimeout(300);
-    await warm.screenshot({path:`evidence/slide-${slide}.png`});
-    if(slide===4) {
-      await warm.keyboard.press('ArrowRight');
-      await warm.waitForTimeout(2500);
-      await warm.screenshot({path:'evidence/slide-4-after.png'});
-      const clipped=await warm.locator('.slidev-page:visible .shiki-magic-move-item').evaluateAll(items=>items.some(el=>el.getBoundingClientRect().right>1225));
-      if(clipped) throw Error('Hardened Magic Move tokens overflow the slide');
+    await warm.waitForTimeout(2500);
+    await warm.screenshot({path:`evidence/slide-${slide}${clicks?`-click-${clicks}`:''}.png`});
+    if(slide===3) {
+      const layout=await warm.locator('.slidev-page:visible').evaluate(page=>{
+        const tokens=[...page.querySelectorAll('.shiki-magic-move-item')].map(el=>el.getBoundingClientRect());
+        const code=page.querySelector('.shiki-magic-move-container').getBoundingClientRect();
+        const cite=[...page.querySelectorAll('.cites .source')].map(el=>el.getBoundingClientRect().bottom);
+        const callouts=page.querySelector('.callouts').getBoundingClientRect();
+        return {maxRight:Math.max(...tokens.map(r=>r.right)),codeBottom:code.bottom,citeBottom:Math.max(...cite),calloutsTop:callouts.top,calloutsBottom:callouts.bottom};
+      });
+      if(layout.maxRight>1225) throw Error(`Magic Move tokens overflow the slide at click ${clicks}`);
+      if(layout.citeBottom>layout.calloutsTop || layout.calloutsBottom>646) throw Error(`Magic Move callout overlaps code or caption at click ${clicks}: ${JSON.stringify(layout)}`);
     }
   }
   await warm.close();
@@ -94,39 +100,53 @@ try {
     await page.keyboard.press('ArrowRight');
     timeline.push({targetSeconds:at,actualSeconds:(performance.now()-origin)/1000,label,url:page.url()});
   };
-  await advance(4,'architecture');
-  await advance(8,'node client');
-  await advance(12,'evolution before');
-  await waitUntil(14);
-  const before=await page.locator('.slidev-page:visible .shiki-magic-move-container').count();
-  if(before!==1) throw Error(`Expected one active Magic Move block, got ${before}`);
-  const beforeText=await page.locator('.slidev-page:visible .shiki-magic-move-container').innerText();
-  if(!beforeText.includes('http.Client{}')) throw Error('Magic Move before code missing');
-  await advance(16,'magic move click');
-  await waitUntil(17.2);
-  const moving=await page.locator('.slidev-page:visible .shiki-magic-move-container').evaluate(el=>({text:el.textContent,animations:el.getAnimations({subtree:true}).length}));
-  if(!moving.animations) throw Error('No active Magic Move animations detected');
-  await waitUntil(18.6);
-  const afterText=await page.locator('.slidev-page:visible .shiki-magic-move-container').innerText();
-  if(!afterText.includes('2500') || !afterText.includes('retry.Policy')) throw Error('Magic Move after code missing');
-  await advance(19,'transport');
-  await advance(23,'evidence');
-  await page.locator('[data-slidev-no="6"]:visible h1').waitFor();
-  await waitUntil(28);
+  // Scene schedule (seconds). Tuned from the recorded timeline: each code
+  // state gets a reading beat, and the Magic Move click waits for the morph.
+  const schedule={architecture:4.5,zoom:7.5,flawed:11.5,deadlines:15.5,hardened:21,evidence:27.5,end:34.5,stop:38.5};
+  const codeText=()=>page.locator('.slidev-page:visible .shiki-magic-move-container').innerText();
+  const animations=()=>page.locator('.slidev-page:visible .shiki-magic-move-container').evaluate(el=>el.getAnimations({subtree:true}).length);
+  await advance(schedule.architecture,'architecture');
+  await advance(schedule.zoom,'C4 zoom to node client');
+  await advance(schedule.flawed,'magic move: v0-flawed');
+  await waitUntil(schedule.flawed+1.5);
+  const active=await page.locator('.slidev-page:visible .shiki-magic-move-container').count();
+  if(active!==1) throw Error(`Expected one active Magic Move block, got ${active}`);
+  const flawedText=await codeText();
+  if(!flawedText.includes('http.Client{}')) throw Error('Magic Move v0 code missing');
+  await advance(schedule.deadlines,'magic move click: lesson-02 deadlines');
+  await waitUntil(schedule.deadlines+0.4);
+  const morph1=await animations();
+  if(!morph1) throw Error('No active Magic Move animations in the first morph');
+  await waitUntil(schedule.deadlines+2.5);
+  const deadlinesText=await codeText();
+  if(!deadlinesText.includes('Dial: 200') || deadlinesText.includes('retry.Policy')) throw Error('Magic Move lesson-02 code missing');
+  await advance(schedule.hardened,'magic move click: v1-hardened');
+  await waitUntil(schedule.hardened+0.4);
+  const morph2=await animations();
+  if(!morph2) throw Error('No active Magic Move animations in the second morph');
+  await waitUntil(schedule.hardened+2.5);
+  const hardenedText=await codeText();
+  if(!hardenedText.includes('2500') || !hardenedText.includes('retry.Policy')) throw Error('Magic Move v1 code missing');
+  await advance(schedule.evidence,'evidence');
+  await advance(schedule.end,'end card');
+  await page.locator('[data-slidev-no="5"]:visible h1').waitFor();
+  await waitUntil(schedule.stop);
   const video=page.video();
   await context.close();
   const raw=await video.path();
   const ffmpeg=process.env.FFMPEG || 'ffmpeg';
   const rawInfo=JSON.parse(execFileSync('ffprobe',['-v','quiet','-show_format','-show_streams','-of','json',raw],{encoding:'utf8'}));
   // Playwright begins video at page creation; cut the warm navigation lead-in
-  // by taking the final 28 seconds of the recorded context.
-  const trimStart=Math.max(0,Number(rawInfo.format.duration)-28);
-  execFileSync(ffmpeg,['-y','-v','error','-ss',String(trimStart),'-i',raw,'-t','28','-an','-vf','fps=30','-c:v','libx264','-threads','2','-preset','fast','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart','demo.mp4']);
-  for(const [name,t] of [['01-architecture',6],['02-magic-move',17.6],['03-hardened',18.6]]) {
+  // by taking the final scheduled seconds of the recorded context.
+  const length=schedule.stop;
+  const trimStart=Math.max(0,Number(rawInfo.format.duration)-length);
+  execFileSync(ffmpeg,['-y','-v','error','-ss',String(trimStart),'-i',raw,'-t',String(length),'-an','-vf','fps=30','-c:v','libx264','-threads','2','-preset','fast','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart','demo.mp4']);
+  const frames=[['01-opener',2.5],['02-architecture-zoom',10.5],['03-flawed',14.5],['04-magic-move',schedule.hardened+1.4],['05-hardened',25],['06-evidence',32],['07-end-card',37]];
+  for(const [name,t] of frames) {
     execFileSync(ffmpeg,['-y','-v','error','-ss',String(t),'-i','demo.mp4','-frames:v','1',`frames/${name}.png`]);
   }
   const probe=JSON.parse(execFileSync('ffprobe',['-v','quiet','-show_format','-show_streams','-of','json','demo.mp4'],{encoding:'utf8'}));
-  writeFileSync('evidence/render.json',JSON.stringify({elapsedSeconds:(performance.now()-started)/1000,buildSeconds,consoleMessages,chromium:browser.version(),executablePath:executablePath||chromium.executablePath(),timeline,magicMove:{beforeText,afterText,during:moving},trimStart,errors,probe},null,2)+'\n');
+  writeFileSync('evidence/render.json',JSON.stringify({elapsedSeconds:(performance.now()-started)/1000,buildSeconds,consoleMessages,chromium:browser.version(),executablePath:executablePath||chromium.executablePath(),timeline,schedule,frames,magicMove:{flawedText,deadlinesText,hardenedText,activeAnimations:[morph1,morph2]},trimStart,errors,probe},null,2)+'\n');
   if(errors.length) throw Error(`Browser errors: ${errors.join('; ')}`);
   console.log(`Recorded ${probe.format.duration}s MP4, ${probe.format.size} bytes; ${(performance.now()-started)/1000}s wall time`);
 } finally {

@@ -1,15 +1,18 @@
 # Option 4: Slidev + Shiki Magic Move
 
-A six-slide litefleet walkthrough, with real code moving from the flawed client
-constructor to the hardened constructor. The C4 gateway component image connects
-architecture to source. Speaker notes contain the narration; captions and timings
-stand in for ElevenLabs. The MP4 is intentionally silent.
+A five-slide, 38.5-second litefleet walkthrough that proves one design lesson: a
+timeout turns a hang into an error. The real C4 gateway render zooms to the node
+client. One Shiki Magic Move then carries the real constructor through three pinned
+commits (v0-flawed, lesson-02, v1-hardened), and the repository's recorded outage
+figures close the argument. Speaker notes are the narration script. Burned-in
+captions carry it on screen, because there is no ElevenLabs key and the MP4 is silent.
+The current version is the Opus improvement pass described at the end of this file.
 
 ## Reproduce
 
 ```sh
 export PATH="$HOME/.nvm/versions/node/v22.23.2/bin:$PATH"
-cd /root/Software/c4video-work/option-4/pocs/option-4-slidev-magic-move
+cd pocs/option-4-slidev-magic-move
 npm ci --no-audit --no-fund
 npm run sources
 python3 evidence/provenance-check.py
@@ -29,29 +32,33 @@ external narration API, or repository upload is involved.
 ## What is proved
 
 - Source extraction records full commits, paths, functions, line ranges and SHA-256
-  hashes in `sources/manifest.json`. Every slide contains a real pinned excerpt.
+  hashes in `sources/manifest.json`. Every excerpt on screen is a pinned range.
 - `slides.template.md` generates `slides.md`; the latter runs as an ordinary Slidev
-  deck. One click morphs actual v0 code into actual v1 code through Shiki Magic Move.
+  deck. Two clicks morph actual v0 code into actual lesson-02 code and then actual v1
+  code through Shiki Magic Move. Callouts, captions, step chips and citations switch
+  with Slidev's `$clicks`, so they add no clicks of their own.
 - The recorder first builds a static Slidev deck and serves it locally through
-  Vite preview. Playwright advances all six slides and the extra animation click. FFmpeg trims browser navigation lead-in, emits H.264/yuv420p with faststart,
-  and extracts three PNG frames from the final MP4.
+  Vite preview. Playwright warms and screenshots every slide and click state, then
+  records the timed schedule. FFmpeg trims browser navigation lead-in, emits
+  H.264/yuv420p with faststart, and extracts seven PNG frames from the final MP4.
 - C4 diagram bytes come from the provided diagram-site evidence; the companion
-  JSON is included. CSS crops empty canvas around the diagram; the image is unmodified.
-- The fault-injection checks shown at the end are repository source. This POC
-  does **not** run Docker/Toxiproxy or claim a successful reliability experiment.
+  JSON is included. CSS crops, zooms and rings the diagram; the image is unmodified.
+- The outage figures on slide 4 are quoted, byte-identical, from the repository's
+  `lessons/02-timeouts.md`. This POC does **not** run Docker/Toxiproxy; the slide
+  says so on screen.
 
 ## Friction and limits
 
 - The initial Slidev development-server launch rejected `--host` (it uses
   `--bind` for remote binding). The final recorder uses `vite preview --host
   localhost`, where `--host` is supported. This is a browser recording, not a deterministic frame renderer.
-- Long real Go constructor lines require visual wrapping. Detailed C4 labels are
-  small at 720p; a full technical video should zoom or render a selected component
-  subgraph instead of trying to read every edge in a wide diagram.
+- Long real Go constructor lines require visual wrapping. The C4 zoom upsamples a
+  1216-pixel render: component titles are readable, edge labels are not. A full
+  build should render the selected subgraph at a higher resolution instead.
 - There is no voice synthesis, voice timing measurement or audio mux proof here.
-  Speaker notes are the complete script. The final caption labels the narration stub.
-- The fixed timings are a compressed visual demonstration. The full speaker script
-  needs a slower recording or a longer video once voice is supplied.
+  Speaker notes are the complete script; captions are a condensed version of it.
+- The scene timings fit the captions, not the full speaker notes. Read aloud, the
+  notes need roughly twice as long; voice clips should drive the schedule.
 
 ## Cost of another project
 
@@ -74,7 +81,7 @@ incorrect claims and source drift. The current fixed scene schedule is encoded i
 Slidev syntax follows its official [Magic Move documentation](https://sli.dev/features/shiki-magic-move)
 and [speaker-note syntax](https://sli.dev/guide/syntax#notes).
 
-## Final validation and measured render time
+## Original POC validation (Sol, superseded by the improvement pass)
 
 - Final `demo.mp4`: **28.000 seconds**, **1280×720**, H.264/yuv420p,
   30 fps output, **1,212,927 bytes** (about 1.21 MB). Silent by design.
@@ -111,10 +118,92 @@ its own FFmpeg 1011 video helper even when a system encoder is installed.
 Slidev 53's installed Twoslash/FloatingVue combination logs a caught
 `Failed to patch FloatingVue ... Popper` error during startup; code highlighting,
 Magic Move and slide navigation still work. No Twoslash tooltips are used in this
-deck. Final console diagnostics are retained in `evidence/render.json`; the local
+deck. Console diagnostics are retained in `evidence/render.json`; the local
 server startup log is `evidence/slidev.log` and the static build log is `evidence/build.log`. The recorder also
 avoids `?print=false`: Slidev treats the presence of `print` as print mode regardless
 of its value. It waits for visible headings rather than hidden preloaded slides. After repeat
 development-server captures hit transient async-module failures and network-idle
 timeouts, the final pipeline switched to a static build and Vite preview. This
 also makes the exported deck independently hostable; dist/ stays untracked.
+
+## Improvement pass (Opus)
+
+Nick judged Sol's demo weak. This pass rebuilt the story and the deck within the
+same toolchain (Slidev 53 + Shiki Magic Move, Playwright recording, FFmpeg).
+
+| | Before (Sol) | After (Opus) |
+|---|---|---|
+| Duration | 28.000 s | 38.467 s |
+| Size | 1,212,927 bytes | 2,104,574 bytes |
+| Slides / clicks | 6 slides, 1 click | 5 slides, 3 clicks |
+| Magic Move | v0 → v1, at 16 s of 28 | v0 → lesson-02 → v1, 11.5–27.5 s |
+| Frames | 3 | 7, extracted from the new MP4 |
+
+Both videos: 1280×720, H.264, yuv420p, 30 fps, no audio stream.
+
+**Kept.** The toolchain and its proven mechanics: the git-pinned extractor with tag
+drift checks, the template → `slides.md` generation, the static build + Vite
+preview recorder, the warm-up pass, the tail trim, the clipping checks and the
+independent provenance check. Also kept: the subject (litefleet's node client
+deadline), the v0 and v1 `New` excerpts, the `cmd/gateway/main.go` wiring excerpt,
+the real C4 render and the dark theme palette.
+
+**Thrown away, and why.**
+
+- *The code-first opening.* Sol's slide 1 showed the flawed code with the title
+  "Put a deadline on waiting". It named a fix, not the lesson. The new opener states
+  the payoff, "A timeout turns a hang into an error", with no code.
+- *The standalone hardened slide (old 3).* It showed the v1 constructor before the
+  morph had earned it, which spoiled the centerpiece. Its content is now the morph's
+  final state.
+- *The transport slide (old 5) and the `httpx.NewClient` excerpt.* It added a dense
+  eight-line block for four seconds without changing the argument.
+- *The acceptance-check slide (old 6) and the `02-timeouts.sh` excerpt.* It showed
+  thresholds, not results, and had to apologise for that on screen. The same
+  repository records actual before/after numbers for this lesson in
+  `lessons/02-timeouts.md`; those quoted results now carry the evidence beat.
+- *The full-width static diagram crop.* Its labels were unreadable at 720p. The
+  render now opens wide, then zooms to the handler → node client → node agent path
+  with rings on those three boxes.
+- *Small green captions that sat in the content area.* They are now an opaque
+  bottom caption band in 23 px bold white, on every slide.
+
+**Added.**
+
+- *A three-state Magic Move.* `lesson-02` (`8e71627`) is the commit where the
+  constructor gained its deadlines, and v1 later added bounded read retries. Going
+  v0 → lesson-02 → v1 separates the timeout lesson from the retry policy. The
+  recorded outage figures also compare exactly that first step. Each state has its
+  own callout (the flaw; what changed and why it matters; then bounded retries),
+  caption, step chip and citation.
+- *Pacing from the recorded timings.* Sol's render showed a 0.23 s worst click delay
+  and 1.0 s nominal morphs that settled later. The new schedule has a 4 s beat on the
+  flaw, a 1.2 s morph plus about 3.7 s on the deadlines, and a morph plus about 4.5 s
+  on the hardened code. In this run the worst click delay was 0.21 s. The C4 zoom
+  gets 4 s after it lands, the evidence slide 7 s, and the end card 4 s. Dead air was
+  cut by dropping the redundant hardened slide and the two filler slides.
+- *Consistent title treatment.* Every content slide uses a `n / 3` eyebrow and a 40 px
+  heading. The opener and end card share a larger centred style.
+- *An end card* with the project name, the takeaway, the three source commits and
+  the silent-video note.
+- *Stronger recorder checks.* The recorder screenshots all eight slide/click states.
+  It asserts token bounds and callout clearance in every code state, checks each of
+  the three code texts in the live recording, and requires active animations in both
+  morphs (70 and 136 observed).
+
+**Fidelity.** `npm run sources` regenerated all six excerpts from git;
+`evidence/provenance-check.txt` passes for every range, hash and deck occurrence,
+and for the byte-identical C4 PNG. The outage figures are quoted lines, not
+reformatted, and the slide says what they measure: `lesson-01` vs `lesson-02`, the
+whole timeout patch, not re-run here. `lesson-01`'s `New` is byte-identical to
+v0's. The 2.5 s figure is described as per attempt. Speaker notes were rewritten to
+match the new order and timings. The scene times in three notes were corrected
+after the recording to the recorder's schedule. Notes are not rendered in the
+video, so the MP4 is unaffected.
+
+**Run.** Static build 14.4 s; complete build, warm-up, recording, encode and frame
+extraction 107.6 s on the shared VM (one run). Worst click delay 0.21 s. Full
+`ffmpeg -f null` decode of `demo.mp4`: 1154 frames, no errors. All seven frames in
+`frames/` and all eight state screenshots in `evidence/` were inspected visually.
+The `evidence/review*.md` and `evidence/final-review*` files are Sol's reviews of
+the original deck. No independent review of this pass was run.

@@ -1,2 +1,2 @@
-PASS: all five manifest ranges match git, local excerpts, hashes, and deck
+PASS: all 6 manifest ranges match git, local excerpts, hashes, and deck
 PASS: architecture PNG is byte-identical to diagram-site evidence

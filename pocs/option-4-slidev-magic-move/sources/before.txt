@@ -1,0 +1,4 @@
+  max gateway in-flight during the outage     1130
+  max gateway goroutines during the outage    4650
+  gateway in-flight 6 s after the toxic left  1200
+  node-a failures answered 504 by the gateway 0 of 2469 (0.0 %)
