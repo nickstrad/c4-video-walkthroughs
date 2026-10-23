@@ -21,7 +21,7 @@ import { validateTimeline } from "../src/narration/invariants.ts";
 import { buildTimeline } from "../src/narration/timeline.ts";
 import { mixTrack } from "../src/narration/track.ts";
 import { isCodeScene, type Storyboard } from "../src/storyboard/schema.ts";
-import { validateStoryboard } from "../src/storyboard/validate.ts";
+import { validateRefs, validateStoryboard } from "../src/storyboard/validate.ts";
 import { proveOutput } from "../src/verify/output.ts";
 
 const [cmd, dirArg, ...rest] = process.argv.slice(2);
@@ -60,6 +60,7 @@ function datasetCheck(): string[] {
 }
 
 async function build() {
+  die("dataset refs", validateRefs(sb, dataset));
   const v = views();
   die("storyboard", validateStoryboard(sb, v));
   die("dataset", datasetCheck());
@@ -94,7 +95,8 @@ async function build() {
 }
 
 function verify() {
-  const errs: string[] = [];
+  const errs: string[] = validateRefs(sb, dataset);
+  die("dataset refs", errs);
   errs.push(...validateStoryboard(sb, views()));
   errs.push(...datasetCheck());
   const bundle = JSON.parse(readFileSync(path.join(buildDir, "bundle.json"), "utf8")) as RenderBundle;
@@ -115,6 +117,7 @@ function verify() {
   }
   die("verify", errs);
   for (const x of excerpts) console.log(`  ok ${x.id.padEnd(13)} ${x.displayPath}:${x.lines.join("-")} @ ${x.commit.slice(0, 7)} blob ${x.blob.slice(0, 7)} sha256 ${x.sha256.slice(0, 12)} (${Buffer.byteLength(x.text)} B byte-identical)`);
+  console.log(`  ok every view, element, relationship and scenario step the storyboard names is in the dataset`);
   console.log(`  ok dataset snapshot byte-identical to ${sb.sources.dataset.path} @ ${sb.sources.dataset.commit.slice(0, 7)}`);
   console.log(`  ok ${Object.keys(loadTakes(sb, takesDir)).length} takes match their spoken text and model; timeline invariants hold; bundle timeline reproduces`);
   console.log("verify: pass");

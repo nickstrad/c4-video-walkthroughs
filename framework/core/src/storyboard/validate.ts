@@ -2,7 +2,7 @@
 // returns a list of problems, empty when the storyboard is renderable. The
 // pinned-git checks live in code-source/; the cue-phrase checks in
 // narration/timeline.ts, where the spoken text is known.
-import type { View } from "../diagram/view.ts";
+import type { Dataset, View } from "../diagram/view.ts";
 import { DIAGRAM_KINDS, SCHEMA, isCodeScene, type Hop, type Range, type Scene, type Storyboard } from "./schema.ts";
 
 const inside = ([a, b]: Range, [lo, hi]: Range) => a >= lo && b <= hi && a <= b;
@@ -96,6 +96,34 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
         checkCue(s, s.skip.cue);
       }
     }
+  }
+  return errs;
+}
+
+/**
+ * Every C4 reference the storyboard makes exists in the dataset itself: views
+ * in its diagrams, excerpt bindings in its model, scenario steps in their
+ * view. Run before views are projected, so a typo is a listed problem rather
+ * than a thrown projection error. Pure.
+ */
+export function validateRefs(sb: Storyboard, ds: Dataset): string[] {
+  const errs: string[] = [];
+  const diagrams = new Map(ds.diagrams.map((d) => [d.id, d]));
+  const elements = new Set(ds.model.elements.map((e) => e.id));
+  const rels = new Set(ds.model.relationships.map((r) => r.id));
+  for (const x of sb.excerpts) {
+    if (x.elementId && !elements.has(x.elementId)) errs.push(`excerpt ${x.id}: element ${x.elementId} not in the dataset model`);
+    if (x.relationshipId && !rels.has(x.relationshipId)) errs.push(`excerpt ${x.id}: relationship ${x.relationshipId} not in the dataset model`);
+  }
+  for (const s of sb.scenes) {
+    const viewId = isCodeScene(s) ? s.context?.view : s.view;
+    if (viewId === undefined) {
+      if (s.datasetStep) errs.push(`${s.id}: datasetStep ${s.datasetStep} needs a view or context view`);
+      continue;
+    }
+    const d = diagrams.get(viewId);
+    if (!d) { errs.push(`${s.id}: view ${viewId} not in the dataset's diagrams`); continue; }
+    if (s.datasetStep && !d.scenario?.children.some((c) => c.id === s.datasetStep)) errs.push(`${s.id}: datasetStep ${s.datasetStep} not in ${viewId}'s scenario`);
   }
   return errs;
 }

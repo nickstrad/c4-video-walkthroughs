@@ -62,7 +62,7 @@ function pinOne(x: ExcerptSpec, g: Git, ds: Dataset, c: { tag: string; commit: s
   if (x.wholeFunction) {
     if (kind !== "code") fail("evidence cannot be wholeFunction");
     if (!body[0].startsWith(x.symbol)) fail(`line ${x.lines[0]} is not ${x.symbol}: ${body[0]}`);
-    if (body.at(-1) !== "}") fail(`line ${x.lines[1]} does not close the function: ${body.at(-1)}`);
+    if (body.at(-1) !== (x.closing ?? "}")) fail(`line ${x.lines[1]} does not close the function: ${body.at(-1)}`);
   }
   let selector: Excerpt["selector"] = null;
   if (x.datasetSourceId) {

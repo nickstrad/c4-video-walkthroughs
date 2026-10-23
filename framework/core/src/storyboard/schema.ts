@@ -65,8 +65,10 @@ export type ExcerptSpec = {
   blob: string; // git blob SHA of `path` at the commit
   symbol: string; // code: must start a line at or above lines[1]; evidence: a description
   lines: Range;
-  /** lines[0] starts with `symbol` and lines[1] is the closing "}". */
+  /** lines[0] starts with `symbol` and lines[1] is exactly `closing`. */
   wholeFunction?: boolean;
+  /** The line that closes a wholeFunction excerpt; default "}" (brace languages). */
+  closing?: string;
   elementId?: string; // the element this code implements
   relationshipId?: string; // or the relationship it implements
   /** Dataset source selector naming this code; cited by the relationship, else the element. */

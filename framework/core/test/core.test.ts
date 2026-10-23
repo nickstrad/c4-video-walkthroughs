@@ -11,7 +11,7 @@ import { buildTimeline, lastSpoken } from "../src/narration/timeline.ts";
 import type { TakeRecord } from "../src/narration/types.ts";
 import { actAt, focusOf, hopsOf, packetLabelAt, stateAt } from "../src/play.ts";
 import { spokenText, type Storyboard } from "../src/storyboard/schema.ts";
-import { validateStoryboard } from "../src/storyboard/validate.ts";
+import { validateRefs, validateStoryboard } from "../src/storyboard/validate.ts";
 
 const P = new URL("../../projects/litefleet/", import.meta.url).pathname;
 const sb = JSON.parse(readFileSync(P + "storyboard.json", "utf8")) as Storyboard;
@@ -145,4 +145,18 @@ test("multi-line scenes chain separate takes, each measured to its last letter",
   // A phrase in both lines is refused rather than bound to the first match.
   ml.scenes[0].narration!.cues = { a: "a " };
   assert.throws(() => buildTimeline(ml, t), /occurs 2 times/);
+});
+
+test("C4 references are checked against the dataset model and scenarios", () => {
+  assert.deepEqual(validateRefs(sb, ds), []);
+  const bad = structuredClone(sb);
+  bad.excerpts[0].elementId = "nodee";
+  bad.excerpts[0].relationshipId = "sql-tenantt";
+  bad.scenes[0].datasetStep = "query-flow-step-99";
+  (bad.scenes[1] as { view: string }).view = "no-such-view";
+  const errs = validateRefs(bad, ds).join("\n");
+  assert.match(errs, /element nodee not in the dataset model/);
+  assert.match(errs, /relationship sql-tenantt not in the dataset model/);
+  assert.match(errs, /query-flow-step-99 not in query-flow's scenario/);
+  assert.match(errs, /view no-such-view not in the dataset's diagrams/);
 });
