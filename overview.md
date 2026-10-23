@@ -176,6 +176,24 @@ short cut. Each
 `NOTES.md` has a "Narration pass" section with the exact lines, character
 counts and sync checks.*
 
+## Framework (options 1 + 2)
+
+*Status 2026-10-23:* Nick picked options 1 and 2, and both now live as
+**renderers** in [`framework/`](framework/README.md), the seed of the video
+framework. Options 3 and 4 stay POCs only.
+
+- A shared core holds everything except drawing, once:
+  - the storyboard schema;
+  - ElevenLabs narration and a single alignment-to-timeline retimer;
+  - code excerpts pinned at a commit, with byte-identical checks;
+  - C4 view data with elkjs layout.
+- `renderer-remotion` and `renderer-motion-canvas` both play the same build
+  output: one litefleet storyboard (101.7 s, 14 scenes, merging both POC
+  stories) and its 14 committed narration takes.
+- Each renderer produced a narrated 720p MP4 under
+  `framework/projects/litefleet/renders/` (3.9 MB each), with no new TTS calls.
+- `pocs/` is unchanged as the historical record.
+
 ## Demo site
 
 https://nickstrad.github.io/c4-video-walkthroughs/ is a single hand-written,

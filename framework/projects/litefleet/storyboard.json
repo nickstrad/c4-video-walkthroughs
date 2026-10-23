@@ -1,0 +1,264 @@
+{
+  "schema": "c4v-storyboard/1",
+  "id": "litefleet-bounded-read",
+  "title": "Litefleet: one bounded read, gateway to SQLite",
+  "authoredBy": "Hand-written in place of the AI-mapping step. Merges the option-1 POC storyboard (node components, admission) into the option-2 POC storyboard (query-flow), keeping both POCs' committed narration takes.",
+  "format": { "fps": 30, "width": 1280, "height": 720, "outro": 0.4 },
+  "sources": {
+    "dataset": {
+      "repo": "nickstrad/book-notes",
+      "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+      "path": "pages/public/architectures/litefleet.json",
+      "snapshot": "sources/litefleet.dataset.json"
+    },
+    "code": {
+      "repo": "nickstrad/book-notes",
+      "tag": "release-it/v1-hardened",
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+      "stripPrefix": "books/release-it/project/"
+    }
+  },
+  "narration": {
+    "provider": "elevenlabs",
+    "voice": { "name": "Roger", "id": "CwhRBWXzGAHq8TQ4Fs17" },
+    "model": "eleven_multilingual_v2",
+    "outputFormat": "mp3_44100_128",
+    "leadIn": 0.2,
+    "tail": 0.4,
+    "stepLead": 0.25
+  },
+  "excerpts": [
+    {
+      "id": "query-guards",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "func (e *Engine) Query",
+      "lines": [130, 149],
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23"
+    },
+    {
+      "id": "query-caps",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "func (e *Engine) Query",
+      "lines": [194, 217],
+      "elementId": "node",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23"
+    },
+    {
+      "id": "acquire",
+      "path": "books/release-it/project/internal/engine/admission.go",
+      "blob": "e09ada334e75062d43504805678cdc5e4f9fdba6",
+      "symbol": "func (e *Engine) acquire",
+      "lines": [67, 113],
+      "wholeFunction": true,
+      "elementId": "nd-engine",
+      "datasetSourceId": "src-37"
+    }
+  ],
+  "statePanel": {
+    "title": "node state · illustrative request, not a live recording",
+    "fields": [
+      { "id": "epoch", "label": "epoch", "kind": "text", "initial": "X-Epoch received" },
+      { "id": "readLane", "label": "read lane", "kind": "slots", "of": 2, "initial": 0, "note": "(2 per database)" },
+      { "id": "rows", "label": "rows", "kind": "counter", "initial": 0, "suffix": " / MaxRows 1000" },
+      { "id": "truncated", "label": "truncated", "kind": "text", "initial": "false" }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "s1-request",
+      "kind": "follow-request",
+      "view": "query-flow",
+      "datasetStep": "query-flow-step-1",
+      "packet": { "label": "SELECT … + API key" },
+      "hops": [{ "from": "tenant", "to": "ingress", "edge": "tenant-edge", "cue": "send" }],
+      "caption": "A tenant app sends a read: SQL plus a bearer API key.",
+      "narration": { "cues": { "send": "sends" } }
+    },
+    {
+      "id": "s2-balance",
+      "kind": "follow-request",
+      "view": "query-flow",
+      "datasetStep": "query-flow-step-2",
+      "hops": [{ "from": "ingress", "to": "gateway", "edge": "balance", "cue": "travel" }],
+      "caption": "HAProxy picks a healthy gateway.",
+      "speech": "H-A-Proxy picks a healthy gateway.",
+      "narration": { "cues": { "travel": "picks" } }
+    },
+    {
+      "id": "s3-cache-hit",
+      "kind": "state-change",
+      "view": "query-flow",
+      "datasetStep": "query-flow-step-3",
+      "badge": { "elementId": "gateway", "text": "route cache: HIT", "tone": "ok", "cue": "badge" },
+      "skip": {
+        "elements": ["control", "registry"],
+        "edges": ["resolve", "sql-registry"],
+        "note": "steps 3-5 skipped on a live cache hit",
+        "cue": "skip"
+      },
+      "caption": "Route cache hit: steps 3-5 (control plane, registry) are skipped.",
+      "speech": "Route cache hit. Steps three to five, the control plane and the registry, are skipped.",
+      "narration": { "cues": { "badge": "cache hit", "skip": "Steps three" } }
+    },
+    {
+      "id": "s4-forward",
+      "kind": "follow-request",
+      "view": "query-flow",
+      "datasetStep": "query-flow-step-6",
+      "packet": { "label": "SQL + X-Epoch", "cue": "relabel" },
+      "hops": [{ "from": "gateway", "to": "node", "edge": "forward", "cue": "travel" }],
+      "caption": "The gateway posts the query and the route's epoch (X-Epoch) to the owning node.",
+      "speech": "The gateway posts the query and the route's epoch, X-Epoch, to the owning node.",
+      "narration": { "cues": { "relabel": "posts", "travel": "the route" } }
+    },
+    {
+      "id": "n-overview",
+      "kind": "architecture-overview",
+      "view": "node-components",
+      "title": "Litefleet · node components",
+      "caption": "Every Litefleet node runs six responsibilities. One of them decides whether a SQL statement may run at all.",
+      "narration": { "leadIn": 0.5 }
+    },
+    {
+      "id": "n-focus",
+      "kind": "focus-element",
+      "view": "node-components",
+      "elementId": "nd-engine",
+      "minDuration": 4,
+      "caption": "The admission engine: per-database lanes, then tenant and node limits.",
+      "narration": { "leadIn": 0.3 }
+    },
+    {
+      "id": "s5-into-code",
+      "kind": "code-explanation",
+      "excerpt": "query-guards",
+      "datasetStep": "query-flow-step-7",
+      "context": { "view": "query-flow", "elementId": "node" },
+      "caption": "Inside the node: Engine.Query, exec.go at release-it/v1-hardened.",
+      "speech": "Inside the node: Engine dot Query, in exec dot go, at release-it v1 hardened.",
+      "narration": { "cues": { "open": "Engine" } }
+    },
+    {
+      "id": "s6-read-only",
+      "kind": "code-explanation",
+      "excerpt": "query-guards",
+      "focus": [{ "ranges": [[134, 136]], "cue": "highlight" }],
+      "caption": "Only a single read statement is accepted here; writes go to execute.",
+      "narration": { "cues": { "highlight": "single read" } }
+    },
+    {
+      "id": "s7-epoch",
+      "kind": "code-explanation",
+      "excerpt": "query-guards",
+      "focus": [{ "ranges": [[142, 144]] }],
+      "state": [{ "field": "epoch", "value": "matches handle epoch ✓", "tone": "ok", "cue": "check" }],
+      "caption": "admit: the node serves only requests routed with the database's current epoch.",
+      "speech": "Admit: the node serves only requests routed with the database's current epoch.",
+      "narration": { "cues": { "check": "current epoch" } }
+    },
+    {
+      "id": "s8-lane",
+      "kind": "code-explanation",
+      "excerpt": "query-guards",
+      "focus": [{ "ranges": [[145, 149]] }],
+      "state": [{ "field": "readLane", "value": 1, "cue": "fill" }],
+      "caption": "acquire takes a read lane: the per-database bulkhead (2 readers at once).",
+      "speech": "Acquire takes a read lane: the per-database bulkhead, two readers at once.",
+      "narration": { "cues": { "fill": "read lane" } }
+    },
+    {
+      "id": "n-acquire",
+      "kind": "code-explanation",
+      "excerpt": "acquire",
+      "railTitle": "WHAT ACQUIRE CHECKS",
+      "narration": { "leadIn": 1 },
+      "steps": [
+        {
+          "id": "lane",
+          "label": "Pick read / write lane",
+          "lines": [67, 71],
+          "caption": "acquire picks the database's read lane, or its single write lane."
+        },
+        {
+          "id": "wait",
+          "label": "Queue ≤ 8, else 429",
+          "lines": [72, 87],
+          "caption": "No free lane? Eight statements may wait. The ninth gets 429 tenant_busy at once.",
+          "speech": "No free lane? Eight statements may wait. The ninth gets four-twenty-nine, tenant busy, at once."
+        },
+        {
+          "id": "tenant",
+          "label": "Tenant slot (4)",
+          "lines": [88, 97],
+          "caption": "Next, a tenant slot: four statements per tenant across the node, inside a 250 ms wait.",
+          "speech": "Next, a tenant slot: four statements per tenant across the node, inside a 250 millisecond wait."
+        },
+        {
+          "id": "node",
+          "label": "Node slot (16), else 503",
+          "lines": [98, 105],
+          "caption": "Then a node slot: sixteen per node, or 503 node_busy, handing back what it already holds.",
+          "speech": "Then a node slot: sixteen per node, or five-oh-three, node busy, handing back what it already holds."
+        },
+        {
+          "id": "release",
+          "label": "Return release func",
+          "lines": [106, 112],
+          "caption": "Success returns a release func that frees node, tenant and lane in reverse order."
+        }
+      ]
+    },
+    {
+      "id": "s9-rows",
+      "kind": "code-explanation",
+      "excerpt": "query-caps",
+      "context": { "view": "query-flow", "elementId": "node" },
+      "focus": [{ "ranges": [[194, 194], [214, 216]] }],
+      "packet": { "label": "rows", "cue": "fetch" },
+      "hops": [
+        { "from": "node", "to": "tenant-files", "edge": "sql-tenant", "cue": "fetch", "duration": 0.9 },
+        { "from": "tenant-files", "to": "node", "after": 0.9, "cue": "fetch", "duration": 0.7 }
+      ],
+      "state": [{ "field": "rows", "value": 640, "cue": "stream", "duration": 1.2 }],
+      "caption": "Rows are scanned from the tenant's SQLite file and streamed as they arrive.",
+      "narration": { "cues": { "fetch": "scanned", "stream": "streamed" } }
+    },
+    {
+      "id": "s10-caps",
+      "kind": "code-explanation",
+      "excerpt": "query-caps",
+      "focus": [
+        { "ranges": [[195, 198]] },
+        { "ranges": [[195, 198], [206, 209]], "cue": "bytes" }
+      ],
+      "state": [
+        { "field": "rows", "value": 1000, "cue": "rows", "duration": 0.8 },
+        { "field": "truncated", "value": "true", "tone": "warn", "cue": "truncated" }
+      ],
+      "caption": "Capped at MaxRows (1000) or MaxBytes (1 MiB): the answer says truncated.",
+      "speech": "Capped at Max Rows, one thousand, or Max Bytes, one mebibyte: the answer says truncated.",
+      "narration": { "cues": { "rows": "Max Rows", "bytes": "Max Bytes", "truncated": "truncated" } }
+    },
+    {
+      "id": "s11-reply",
+      "kind": "follow-request",
+      "view": "query-flow",
+      "datasetStep": "query-flow-step-10",
+      "packet": { "label": "rows + \"truncated\": true" },
+      "state": [{ "field": "readLane", "value": 0 }],
+      "hops": [
+        { "from": "node", "to": "gateway", "cue": "gateway", "arrive": true, "duration": 0.6 },
+        { "from": "gateway", "to": "ingress", "cue": "ingress", "arrive": true, "duration": 0.6 },
+        { "from": "ingress", "to": "tenant", "cue": "tenant", "arrive": true, "duration": 0.6 }
+      ],
+      "caption": "Capped rows stream back through gateway and HAProxy to the tenant.",
+      "speech": "Capped rows stream back through gateway and H-A-Proxy to the tenant.",
+      "narration": { "cues": { "gateway": "gateway", "ingress": "H-A-Proxy", "tenant": "to the tenant" } }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+node_modules/
+# Render scratch: exporter output and run logs (the finished MP4 is copied to <project>/renders/).
+output/
