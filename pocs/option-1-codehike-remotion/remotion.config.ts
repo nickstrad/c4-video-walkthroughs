@@ -5,3 +5,5 @@ Config.setConcurrency(2);
 Config.setVideoImageFormat("jpeg");
 Config.setCodec("h264");
 Config.setCrf(28);
+// The committed ElevenLabs takes are the only static files (staticFile()).
+Config.setPublicDir("narration");

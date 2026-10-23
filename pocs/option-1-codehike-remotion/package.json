@@ -8,9 +8,10 @@
     "highlight": "node scripts/highlight.mjs",
     "assets": "node scripts/extract.mjs && node scripts/layout.mjs && node scripts/highlight.mjs",
     "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts Walkthrough demo/walkthrough.mp4 --concurrency=2",
     "stills": "node scripts/stills.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "narrate": "node scripts/narrate.mjs",
+    "render": "remotion render src/index.ts Walkthrough demo/walkthrough.mp4 --concurrency=2"
   },
   "dependencies": {
     "@remotion/cli": "4.0.538",

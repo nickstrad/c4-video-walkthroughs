@@ -4,8 +4,8 @@ import { cues, storyboard } from "./storyboard";
 import { C, SANS } from "./theme";
 
 /**
- * Caption track standing in for narration. Each cue fades in over 8 frames.
- * With TTS, cues would come from the voice's word/phrase alignment.
+ * Caption track for the narration. Each cue fades in over 8 frames; cue
+ * times follow the speech because narrate.mjs retimes the storyboard.
  */
 export const Captions: React.FC = () => {
   const frame = useCurrentFrame();

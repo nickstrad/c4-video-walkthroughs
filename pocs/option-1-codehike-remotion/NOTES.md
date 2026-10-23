@@ -1,13 +1,14 @@
 # POC — Option 1: Code Hike + Remotion
 
-**Result: working end to end.** A 25-second, 1280×720 MP4 shows Option 1's
+**Result: working end to end.** A 47-second, 1280×720 MP4 shows Option 1's
 signature visual. It opens on the real Litefleet C4 view, lights up one
 component, moves the camera into it, then cuts to the real implementing
-function with animated line focus and a caption track. Narration is stubbed as
-captions.
+function with animated line focus and a caption track. It is narrated by
+ElevenLabs TTS; see [Narration pass (Opus)](#narration-pass-opus). The
+sections before that one describe the original silent 25-second build.
 
-- Demo video: [`demo/walkthrough.mp4`](demo/walkthrough.mp4), 827.6 kB
-  (827,562 bytes), H.264, 25.0 s, 30 fps, about 264 kb/s.
+- Demo video: [`demo/walkthrough.mp4`](demo/walkthrough.mp4), 2.94 MB
+  (2,941,777 bytes), H.264 + AAC, 47.33 s, 30 fps.
 - Stills (PNG, 1280×720):
   [overview](frames/01-overview.png) ·
   [focus + zoom](frames/02-focus-zoom.png) ·
@@ -192,8 +193,71 @@ Committed artefact sizes:
    `renderMedia`/`renderStill`) for unattended batch runs, plus the
    YouTube-upload step.
 
+## Narration pass (Opus)
+
+Real narration replaced the caption-only stub, which covers items 1 and 2 of
+"What the full build needs".
+
+- **Voice and model.** ElevenLabs voice "Roger" (`CwhRBWXzGAHq8TQ4Fs17`, the
+  default because `ELEVENLABS_VOICE_ID` is blank) and `eleven_multilingual_v2`.
+  Endpoint: `POST /v1/text-to-speech/{voice}/with-timestamps`, output
+  `mp3_44100_128`.
+- **Lines and calls.** The 7 storyboard narration lines were sent as 3 takes,
+  one per scene: overview (1 line), focus (1 line) and code (the 5 step lines
+  stitched with spaces into one take, so the delivery flows from step to step).
+  **617 characters** in total (107 + 70 + 440). Each take was generated once.
+- **Committed takes.** `narration/<scene>.mp3` plus `narration/<scene>.json`
+  (text, voice, model, character count, and the raw `alignment` and
+  `normalized_alignment`). Remotion's public dir is `narration/`
+  (`remotion.config.ts`), so the render needs no API access.
+  `scripts/narrate.mjs` synthesises only missing takes. It refuses to retime if
+  the storyboard text no longer matches a take's text, which means a stale take
+  can't be reused by accident.
+- **Speakability edits.** Captions are unchanged. Three code lines gained a
+  `speech` field, and only that field is sent to TTS:
+  - `429 tenant_busy` is spoken as "four-twenty-nine, tenant busy";
+  - `503 node_busy` is spoken as "five-oh-three, node busy";
+  - `250 ms` is spoken as "250 millisecond".
+
+  No claim changed. The constants are the same ones checked against the code
+  (`waitingPerDB = 8`, `statementsTenant = 4`, `NodeStatements = 16`,
+  `nodeWait = 250ms`, the `tenant_busy`/`node_busy` errors).
+- **How sync works.** `node scripts/narrate.mjs` (`npm run narrate`) rewrites
+  the timings in `storyboard.json` from the alignment. Every scene component,
+  the caption cues and the stills script already read their timings from
+  there.
+  - Overview and focus: the audio starts 0.5 s and 0.3 s into the scene. The
+    scene lasts lead + last character end + 0.4 s tail. The focus scene has a
+    4 s minimum so the zoom completes.
+  - Code: the take starts after the 1 s intro. Step *i* lights 0.25 s before
+    its first character is spoken; the alignment index comes from the step's
+    offset in the stitched text. The last step ends 0.4 s after the last
+    character. The step boundaries landed inside the take's sentence pauses
+    (checked with `silencedetect`), so each highlight and rail item changes
+    just before its words begin.
+  - One `<Audio>` per scene sits in a `<Sequence>` at
+    `scene.start + audio.at`. The title card's fade-out now follows the overview
+    duration instead of a fixed 4 s.
+- **New timings.** The scenes now run 0–7.96 s (overview), 7.96–12.65 s
+  (focus) and 12.65–47.34 s (code). The code steps last 4.88, 8.27, 7.38, 7.73
+  and 5.43 s.
+- **Before and after.** The video went from 25.0 s and 827,562 B (video only)
+  to 47.33 s and 2,941,777 B. The new file has an H.264 1280×720 video stream
+  of 47.333 s and an AAC 48 kHz audio stream of 47.317 s. Speech starts at
+  0.53 s, and the last word ends at 46.67 s, 0.66 s before the end. `ffmpeg -f
+  null` decodes the whole file with no errors. The audio is AAC at about
+  317 kb/s, Remotion's default. `Config.setAudioBitrate` would roughly halve the
+  file if size ever matters.
+- **Render.** 1,420 frames with `--concurrency=2` took 2 min 16 s wall time, and
+  the peak RSS was 1.29 GB.
+- **Stills.** All four were re-rendered. `scripts/stills.mjs` now derives the
+  focus still's time from the storyboard, because it was hard-set to 8.0 s.
+  Only `frames/02-focus-zoom.png` changed: it is now taken at the end of the
+  longer zoom. `01-overview`, `03-code-wait` and `04-code-node` came out
+  byte-identical, because the step-relative still times land on the same
+  visual state.
+
 ## Blockers
 
-None for the POC. Two items are deliberately out of scope: narration is
-stubbed because no ElevenLabs key was provided, and the AI step was played by
-hand (`storyboard.json`), as the brief specified.
+None for the POC. The AI step was played by hand (`storyboard.json`), as the
+brief specified.

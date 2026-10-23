@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
 import type { HighlightedCode } from "codehike/code";
 import view from "../data/view.json";
 import { Captions } from "./Captions";
@@ -10,9 +10,9 @@ import { C, MONO, SANS } from "./theme";
 
 export type WalkthroughProps = { highlighted: HighlightedCode };
 
-const TitleCard: React.FC<{ title: string }> = ({ title }) => {
+const TitleCard: React.FC<{ title: string; until: number }> = ({ title, until }) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 12, sec(4), sec(4.6)], [0, 1, 1, 0], { extrapolateRight: "clamp" });
+  const opacity = interpolate(frame, [0, 12, sec(until - 1), sec(until - 0.4)], [0, 1, 1, 0], { extrapolateRight: "clamp" });
   return (
     <div style={{ position: "absolute", left: 40, top: 26, opacity, fontFamily: SANS }}>
       <div style={{ fontSize: 12, letterSpacing: 1.5, fontWeight: 700, color: C.muted }}>C4 · {view.view.kind.toUpperCase()} VIEW</div>
@@ -39,11 +39,17 @@ export const Walkthrough: React.FC<WalkthroughProps> = ({ highlighted }) => {
           width={storyboard.width}
           height={storyboard.height}
         />
-        <TitleCard title={overview.title!} />
+        <TitleCard title={overview.title!} until={overview.duration} />
       </Sequence>
       <Sequence from={codeFrom} durationInFrames={sec(code.duration)}>
         <CodeScene highlighted={highlighted} steps={code.steps!} introFrames={sec(code.intro ?? 0)} title={`${storyboard.focus.function.replace(/^func \(e \*Engine\) /, "e.")}()`} />
       </Sequence>
+      {/* One ElevenLabs take per scene, placed where narrate.mjs timed it. */}
+      {storyboard.scenes.filter((s) => s.audio).map((s) => (
+        <Sequence key={s.id} from={sec(s.start + s.audio!.at)}>
+          <Audio src={staticFile(s.audio!.file)} />
+        </Sequence>
+      ))}
       <Captions />
     </AbsoluteFill>
   );
