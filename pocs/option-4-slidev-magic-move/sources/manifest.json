@@ -1,0 +1,57 @@
+[
+  {
+    "id": "flawed",
+    "ref": "release-it/v0-flawed",
+    "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944",
+    "path": "books/release-it/project/internal/nodeclient/client.go",
+    "symbol": "New",
+    "start": 24,
+    "end": 26,
+    "sha256": "c8e046ee5fd211350d4cdc83be771ae1cf9a1fe99fcee17be69c0c434f37818e",
+    "code": "func New() *Client {\n\treturn &Client{http: &http.Client{}}\n}\n"
+  },
+  {
+    "id": "wiring",
+    "ref": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/cmd/gateway/main.go",
+    "symbol": "main (excerpt)",
+    "start": 27,
+    "end": 31,
+    "sha256": "02e807f6cdb5849aac70f335e23af6a89cbad070d02126567fd10e07c328041d",
+    "code": "\tcontrolURL := env(\"CONTROL_URL\", \"http://control:8090\")\n\tg := &api.Gateway{\n\t\tRoutes: routes.New(controlURL),\n\t\tNodes:  nodeclient.New(),\n\t}\n"
+  },
+  {
+    "id": "hardened",
+    "ref": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/nodeclient/client.go",
+    "symbol": "New",
+    "start": 36,
+    "end": 42,
+    "sha256": "d0a291063b2ebc447da344047d809c244f97bd1016af52915ef17c0aaf5671ef",
+    "code": "func New() *Client {\n\treturn &Client{\n\t\thttp: httpx.NewClient(httpx.Timeouts{Dial: 200 * time.Millisecond, Header: 2500 * time.Millisecond, Total: 2500 * time.Millisecond}),\n\t\treads: retry.Policy{Base: 50 * time.Millisecond, Cap: 400 * time.Millisecond, MaxRetries: 2,\n\t\t\tMinAttempt: 100 * time.Millisecond, Budget: retry.NewBudget(0.1, 10)},\n\t}\n}\n"
+  },
+  {
+    "id": "transport",
+    "ref": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/httpx/client.go",
+    "symbol": "NewClient (excerpt)",
+    "start": 19,
+    "end": 26,
+    "sha256": "6dec1928f7b2df08bd204e3cb64643a5087e0443b208012f28d67e7252eaae1f",
+    "code": "\treturn &http.Client{\n\t\tTimeout: t.Total,\n\t\tTransport: &http.Transport{\n\t\t\tProxy:                 http.ProxyFromEnvironment,\n\t\t\tDialContext:           (&net.Dialer{Timeout: t.Dial, KeepAlive: 30 * time.Second}).DialContext,\n\t\t\tTLSHandshakeTimeout:   t.Dial,\n\t\t\tResponseHeaderTimeout: t.Header,\n\t\t\tMaxIdleConns:          1000,\n"
+  },
+  {
+    "id": "checks",
+    "ref": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/lab/verify/02-timeouts.sh",
+    "symbol": "top-level assertions (excerpt)",
+    "start": 75,
+    "end": 78,
+    "sha256": "9ff7bb0926954512e232488c140802896fa8db825d55799e6c6c2c91f2ee098b",
+    "code": "check max_inflight \"$inflight\" \"<=\" 300\ncheck max_goroutines \"$goroutines\" \"<=\" 1000\ncheck outage_p99_s \"$p99_out\" \"<\" 3.0\ncheck outage_504_pct \"$share_504\" \">=\" 90\n"
+  }
+]

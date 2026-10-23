@@ -1,0 +1,16 @@
+{
+  "name": "litefleet-slidev-magic-move-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --port 4314 --no-open",
+    "build": "slidev build slides.md",
+    "sources": "node scripts/sources.mjs",
+    "record": "node scripts/record.mjs"
+  },
+  "dependencies": {
+    "@slidev/cli": "53.0.0",
+    "@slidev/theme-default": "0.25.0",
+    "playwright": "1.61.1"
+  }
+}

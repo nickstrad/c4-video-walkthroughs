@@ -1,0 +1,5 @@
+	controlURL := env("CONTROL_URL", "http://control:8090")
+	g := &api.Gateway{
+		Routes: routes.New(controlURL),
+		Nodes:  nodeclient.New(),
+	}

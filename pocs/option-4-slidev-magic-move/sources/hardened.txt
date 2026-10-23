@@ -1,0 +1,7 @@
+func New() *Client {
+	return &Client{
+		http: httpx.NewClient(httpx.Timeouts{Dial: 200 * time.Millisecond, Header: 2500 * time.Millisecond, Total: 2500 * time.Millisecond}),
+		reads: retry.Policy{Base: 50 * time.Millisecond, Cap: 400 * time.Millisecond, MaxRetries: 2,
+			MinAttempt: 100 * time.Millisecond, Budget: retry.NewBudget(0.1, 10)},
+	}
+}

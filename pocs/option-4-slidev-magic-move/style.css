@@ -1,0 +1,16 @@
+:root { --slidev-theme-primary: #65e6c4; }
+.slidev-layout { background: #101b2c; color: #edf4ff; padding: 48px 60px; }
+.slidev-layout h1 { font-size: 48px; font-weight: 720; line-height: 1.12; margin: 20px 0 22px; letter-spacing: -1.8px; }
+.slidev-layout p { margin: 0; }
+.eyebrow { color: #65e6c4; letter-spacing: 3px; font-size: 14px; font-weight: 700; }
+.lead { font-size: 25px; color: #c4d4e9; margin: 16px 0 24px; }
+.slidev-layout pre, .slidev-layout code { font-family: 'DejaVu Sans Mono', monospace !important; font-size: 15px !important; line-height: 1.8 !important; }
+.slidev-layout pre { padding: 20px !important; border: 1px solid #30445d; border-radius: 12px; }
+.slidev-layout pre code { white-space: pre-wrap !important; overflow-wrap: anywhere; }
+.source { color: #8faac8; font-family: monospace; font-size: 14px; margin-top: 12px; }
+.caption { position: absolute; left: 60px; right: 60px; bottom: 64px; font-size: 22px; color: #65e6c4; }
+.stub { position: absolute; bottom: 26px; font-size: 13px; letter-spacing: 1.4px; color: #91a3bb; }
+.diagram { height: 275px; overflow: hidden; border-radius: 12px; margin: 0 0 16px; background: #f4f8fb; }
+.diagram img { width: 1160px; max-width: none; margin-top: -157px; }
+.slidev-nav-controls, .slidev-slide-number { display: none !important; }
+.architecture pre, .architecture code { font-size: 13px !important; line-height: 1.5 !important; }
