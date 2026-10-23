@@ -4,7 +4,7 @@
 // showing now (camera moves, morphs, fades). New transitions plug in here.
 import {Node, type View2D} from '@motion-canvas/2d';
 import {all, delay, easeInOutCubic, type ThreadGenerator} from '@motion-canvas/core';
-import {fit, packetLabelAt, sceneOf, type Box, type CodeScene, type Excerpt, type RenderBundle, type Scene} from '../../core/src/index.ts';
+import {fit, packetLabelAt, type Box, type Excerpt, type RenderBundle} from '../../core/src/index.ts';
 import {CodePanel, StepRail} from './code.tsx';
 import {DiagramView, type CameraTarget} from './diagram.tsx';
 import {captions, statePanel, titleCard, viewHeader} from './panels.tsx';
