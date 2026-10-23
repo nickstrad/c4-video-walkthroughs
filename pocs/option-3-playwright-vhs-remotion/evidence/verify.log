@@ -4,45 +4,118 @@
 
 {
   "verdict": "PASS",
+  "audio": {
+    "codec": "aac",
+    "seconds": 45.696,
+    "videoSeconds": 45.666667,
+    "lines": 8,
+    "perLine": [
+      {
+        "audio": "narration/title-1.mp3",
+        "start": 0.2,
+        "end": 6.166666666666667,
+        "meanDb": -27.2
+      },
+      {
+        "audio": "narration/where-1.mp3",
+        "start": 6.766666666666667,
+        "end": 11.7,
+        "meanDb": -27.5
+      },
+      {
+        "audio": "narration/where-2.mp3",
+        "start": 11.833333333333334,
+        "end": 16.633333333333333,
+        "meanDb": -28.2
+      },
+      {
+        "audio": "narration/how-client-1.mp3",
+        "start": 17.233333333333334,
+        "end": 21.433333333333334,
+        "meanDb": -26.9
+      },
+      {
+        "audio": "narration/how-guard-1.mp3",
+        "start": 22.033333333333335,
+        "end": 27.7,
+        "meanDb": -27.7
+      },
+      {
+        "audio": "narration/proof-test-1.mp3",
+        "start": 28.3,
+        "end": 33,
+        "meanDb": -26.8
+      },
+      {
+        "audio": "narration/proof-terminal-1.mp3",
+        "start": 33.6,
+        "end": 37.56666666666667,
+        "meanDb": -27.5
+      },
+      {
+        "audio": "narration/end-1.mp3",
+        "start": 39.03333333333333,
+        "end": 45.266666666666666,
+        "meanDb": -27.5
+      }
+    ],
+    "pausesMeanDb": [
+      -91,
+      -91,
+      -91,
+      -91,
+      -91,
+      -91
+    ]
+  },
   "sourceCommit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
   "dimensions": [
     1280,
     720
   ],
   "fps": "30/1",
-  "frames": 960,
-  "seconds": 32,
+  "frames": 1370,
+  "seconds": 45.696,
   "decodedWholeVideo": true,
+  "excerptsByteIdentical": [
+    "books/release-it/project/internal/routes/client.go:112-119",
+    "books/release-it/project/internal/breaker/breaker.go:84-92",
+    "books/release-it/project/internal/breaker/breaker_test.go:13-22"
+  ],
   "assets": [
     {
       "path": "demo.mp4",
-      "bytes": 1617487,
-      "sha256": "3244188b1b679b90d197c3b7d18535f81862fe7eba2ee5b54e69b23aa2610fd7",
-      "seconds": 32
+      "bytes": 5163807,
+      "sha256": "6a8c3c4a5d40163cf543b373b8010b5269b3b4a8efa92593902b72bf0a331c0b",
+      "seconds": 45.696
     },
     {
       "path": "public/browser.webm",
-      "bytes": 4706222,
-      "sha256": "78752e0d240a0d0dd8cf0d50e037dc1aab1333164ce7259604f57b8a806fbc84",
-      "seconds": 16.52
+      "bytes": 3647448,
+      "sha256": "83b8905899744adb999c62adbd7b921ec07928293eb100cf782f30ddf01a5a0e",
+      "seconds": 14.36
     },
     {
       "path": "public/browser.mp4",
-      "bytes": 1050581,
-      "sha256": "f82ad685274d81908eea0296b7977ce7e5a3f1ecf038fde8ed10e06016414df5",
-      "seconds": 16.52
+      "bytes": 1146971,
+      "sha256": "e2797ec29ad4d33750217e176bb3fe77ca9286e6ad6841bb91f3a247f1666d19",
+      "seconds": 14.366667
+    },
+    {
+      "path": "public/browser-actions.json",
+      "bytes": 903,
+      "sha256": "77fe701db9015f393a6cadc1fbb3929223bacc9ac31bdd1896d06ab803d4065b"
     },
     {
       "path": "public/terminal-vhs.mp4",
-      "bytes": 84676,
-      "sha256": "d86a0d0255a2546fe227a6cf864539455f7a45b261ad5c70b140e5f9080e2498",
-      "seconds": 8.4
+      "bytes": 83961,
+      "sha256": "cc0cd3ebfddeaae2a2d0b633836825384d4d07d747da7f1e674dddcfb6197a49",
+      "seconds": 5.44
     },
     {
-      "path": "public/terminal.mp4",
-      "bytes": 141404,
-      "sha256": "864027dece4bef4d4b7cc14882f7179d36aab828736f155601d71489534360b5",
-      "seconds": 9
+      "path": "public/code.json",
+      "bytes": 1922,
+      "sha256": "5d951fe6e12a9654be2cde5f633ba6f336cedcdf6ca37cacfed928826963c33d"
     }
   ]
 }

@@ -1,17 +1,17 @@
-Goal/spec: Sol's POC brief /root/c4v-poc3.md and the Opus improvement brief /root/c4v-improve3.md; Option 3 in ../../overview.md.
-Status: Opus improvement pass complete on branch improve/option-3 (worktree /root/Software/c4video-work/improve-3). Verified, committed; not pushed or merged. No independent cross-family review of this pass yet.
+Goal/spec: Sol's POC brief /root/c4v-poc3.md, the Opus improvement brief /root/c4v-improve3.md, and the narration brief (voice the existing script with ElevenLabs, let the audio drive scene lengths, replace demo.mp4 in place); Option 3 in ../../overview.md.
+Status: Opus narration pass complete on branch narration/option-3 (worktree /root/Software/c4video-work/narr-3). Verified and committed; not pushed or merged. No independent review of the narration pass yet.
 
 Done:
-- Sol's POC (0b85e6f, 708fe32, review handoff) merged on main via f4f1d25.
-- Opus improvement pass (this branch's commit, "option-3: rebuild demo as claim-first three-act film"):
-  - redesigned the film as title card → where (real site, cut to actions, live zoom on gw-breaker) → how (client.go 112–119, breaker.go 84–92) → proof (breaker_test.go 13–22, VHS go test) → end card;
-  - made the composition storyboard-driven;
-  - new Playwright and VHS captures.
-- Output: demo.mp4 31.40 s, 942 frames, 1280x720, 30 fps, 2,292,596 bytes, no audio. Render 185.33 s at --concurrency=2.
-- Verification passes (evidence/verification.json): byte-identical excerpts, C4 IDs, timeline continuity, 1x terminal, format, size and whole-file decode. Five frames were extracted from the render and inspected (evidence/inspection.md). Four real breaker tests pass.
+- Sol's POC and the Opus improvement pass (claim-first three-act film) are on main.
+- Narration pass (this branch's commit, "option-3: narrate the demo with ElevenLabs and time cuts from the voice"):
+  - 8 lines (638 characters), voice Roger, eleven_multilingual_v2; mp3 + alignment committed in narration/;
+  - scripts/retime.mjs times captions, cue-tied highlights and scene lengths from the alignment;
+  - the composition plays per-line audio, and the browser scene has a 31-frame disclosed hold.
+- Output: demo.mp4 45.67 s, 1,370 frames, 1280x720, 30 fps, H.264 + AAC (45.70 s), 5,163,807 bytes. Render 405.31 s at --concurrency=2.
+- Verification passes (evidence/verification.json): the rebuild's checks plus narration text/alignment match, line spacing and tails, audio stream and duration, per-line loudness, silent pauses, full decode of both streams.
 
-In progress: nothing. No background jobs; the local site server is stopped.
-Next steps (owner: Nick): decide whether to review this pass cross-family and merge improve/option-3 into main.
+In progress: nothing. No background jobs.
+Next steps (owner: Nick): listen to the narration (identifier pronunciation is unchecked by ear), decide on a cross-family review, merge narration/option-3.
 Open decisions/blockers: none.
 
-Resume/reproduce: follow NOTES.md "Reproduce" from this directory with nvm Node 22 on PATH. Scratch (.work/: site copy, pinned export, VHS binary, stills) is ignored and regenerable. Rerender only after changing storyboard.json, src/ or a capture. If you re-record VHS, re-check proof-terminal.highlight.
+Resume/reproduce: follow NOTES.md "Reproduce" from this directory with nvm Node 22 on PATH. Do not re-run narrate.mjs for existing lines (it skips them; deleting narration/ files would spend credits). Rerender after changing storyboard.json, narration/ or src/; run `npm run retime` first if any narration file changed.
