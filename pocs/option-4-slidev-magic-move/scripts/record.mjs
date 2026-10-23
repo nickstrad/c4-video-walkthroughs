@@ -1,11 +1,31 @@
 import {chromium} from 'playwright';
 import {spawn, execFileSync} from 'node:child_process';
-import {mkdirSync, writeFileSync, existsSync, readdirSync} from 'node:fs';
+import {mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync} from 'node:fs';
 import {performance} from 'node:perf_hooks';
 import {homedir} from 'node:os';
 import {resolve} from 'node:path';
 
 const started=performance.now();
+// Narration drives the schedule. Each slide's take (npm run narrate) starts
+// LEAD seconds after that slide appears; the next slide waits for the take's
+// last aligned character plus TAIL. Clicks fire CLICK_LEAD before the cue phrase,
+// so a morph or zoom plays while its words are spoken.
+const LEAD=0.3, TAIL=0.45, HOLD=1.5, CLICK_LEAD=0.2;
+const narration=JSON.parse(readFileSync('narration/script.json','utf8'));
+const takes=narration.slides.map(s=>{
+  const saved=JSON.parse(readFileSync(`narration/${s.id}.alignment.json`,'utf8'));
+  const al=saved.alignment, spoken=al.characters.join('');
+  if(saved.text!==s.text || spoken!==s.text) throw Error(`${s.id}: alignment does not match narration/script.json`);
+  const file=`narration/${s.id}.mp3`;
+  const audioSeconds=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',file],{encoding:'utf8'}));
+  const cues=s.cues.map(c=>{
+    const i=spoken.indexOf(c.phrase);
+    if(i<0) throw Error(`${s.id}: cue phrase not found: ${c.phrase}`);
+    return {...c,at:al.character_start_times_seconds[i]};
+  });
+  return {id:s.id,file,characters:s.text.length,speechEnd:al.character_end_times_seconds.at(-1),audioSeconds,cues};
+});
+if(takes.length!==5) throw Error('Expected one narration take per slide');
 const url='http://localhost:4314';
 mkdirSync('evidence',{recursive:true});
 mkdirSync('recordings',{recursive:true});
@@ -100,37 +120,51 @@ try {
     await page.keyboard.press('ArrowRight');
     timeline.push({targetSeconds:at,actualSeconds:(performance.now()-origin)/1000,label,url:page.url()});
   };
-  // Scene schedule (seconds). Tuned from the recorded timeline: each code
-  // state gets a reading beat, and the Magic Move click waits for the morph.
-  const schedule={architecture:4.5,zoom:7.5,flawed:11.5,deadlines:15.5,hardened:21,evidence:27.5,end:34.5,stop:38.5};
+  // Scene schedule (seconds), computed from each slide's actual start so
+  // browser drift never pushes a click or slide change into the wrong words.
+  const schedule={};
+  const placements=[];
+  const startSlide=(index,actual)=>{
+    placements.push({id:takes[index].id,file:takes[index].file,at:actual+LEAD,speechEnd:actual+LEAD+takes[index].speechEnd});
+    return actual;
+  };
+  const speechDone=index=>placements[index].speechEnd+TAIL;
+  const cueAt=(index,label)=>placements[index].at+takes[index].cues.find(c=>c.label===label).at-CLICK_LEAD;
+  const advanceAt=async(at,label)=>{schedule[label]=at;await advance(at,label);return timeline.at(-1).actualSeconds;};
   const codeText=()=>page.locator('.slidev-page:visible .shiki-magic-move-container').innerText();
   const animations=()=>page.locator('.slidev-page:visible .shiki-magic-move-container').evaluate(el=>el.getAnimations({subtree:true}).length);
-  await advance(schedule.architecture,'architecture');
-  await advance(schedule.zoom,'C4 zoom to node client');
-  await advance(schedule.flawed,'magic move: v0-flawed');
-  await waitUntil(schedule.flawed+1.5);
+  const s1=startSlide(0,0);
+  const s2=startSlide(1,await advanceAt(speechDone(0),'architecture'));
+  const zoom=await advanceAt(cueAt(1,'C4 zoom to node client'),'C4 zoom to node client');
+  const s3=startSlide(2,await advanceAt(speechDone(1),'magic move: v0-flawed'));
+  await waitUntil(s3+1.5);
   const active=await page.locator('.slidev-page:visible .shiki-magic-move-container').count();
   if(active!==1) throw Error(`Expected one active Magic Move block, got ${active}`);
   const flawedText=await codeText();
   if(!flawedText.includes('http.Client{}')) throw Error('Magic Move v0 code missing');
-  await advance(schedule.deadlines,'magic move click: lesson-02 deadlines');
-  await waitUntil(schedule.deadlines+0.4);
+  const deadlines=await advanceAt(cueAt(2,'magic move click: lesson-02 deadlines'),'magic move click: lesson-02 deadlines');
+  await waitUntil(deadlines+0.4);
   const morph1=await animations();
   if(!morph1) throw Error('No active Magic Move animations in the first morph');
-  await waitUntil(schedule.deadlines+2.5);
+  await waitUntil(deadlines+2.5);
   const deadlinesText=await codeText();
   if(!deadlinesText.includes('Dial: 200') || deadlinesText.includes('retry.Policy')) throw Error('Magic Move lesson-02 code missing');
-  await advance(schedule.hardened,'magic move click: v1-hardened');
-  await waitUntil(schedule.hardened+0.4);
+  const hardened=await advanceAt(cueAt(2,'magic move click: v1-hardened'),'magic move click: v1-hardened');
+  await waitUntil(hardened+0.4);
   const morph2=await animations();
   if(!morph2) throw Error('No active Magic Move animations in the second morph');
-  await waitUntil(schedule.hardened+2.5);
+  await waitUntil(hardened+2.5);
   const hardenedText=await codeText();
   if(!hardenedText.includes('2500') || !hardenedText.includes('retry.Policy')) throw Error('Magic Move v1 code missing');
-  await advance(schedule.evidence,'evidence');
-  await advance(schedule.end,'end card');
+  const s4=startSlide(3,await advanceAt(speechDone(2),'evidence'));
+  const s5=startSlide(4,await advanceAt(speechDone(3),'end card'));
   await page.locator('[data-slidev-no="5"]:visible h1').waitFor();
+  schedule.stop=placements[4].speechEnd+HOLD;
   await waitUntil(schedule.stop);
+  // No spoken word may run past its slide: each take must end before the next
+  // slide's actual start (and the last before the end of the video).
+  const slideStarts=[s1,s2,s3,s4,s5,schedule.stop];
+  placements.forEach((p,i)=>{if(p.speechEnd>slideStarts[i+1]-0.1) throw Error(`${p.id} speech runs past its slide`);});
   const video=page.video();
   await context.close();
   const raw=await video.path();
@@ -140,13 +174,19 @@ try {
   // by taking the final scheduled seconds of the recorded context.
   const length=schedule.stop;
   const trimStart=Math.max(0,Number(rawInfo.format.duration)-length);
-  execFileSync(ffmpeg,['-y','-v','error','-ss',String(trimStart),'-i',raw,'-t',String(length),'-an','-vf','fps=30','-c:v','libx264','-threads','2','-preset','fast','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart','demo.mp4']);
-  const frames=[['01-opener',2.5],['02-architecture-zoom',10.5],['03-flawed',14.5],['04-magic-move',schedule.hardened+1.4],['05-hardened',25],['06-evidence',32],['07-end-card',37]];
+  // Mux: each take is delayed to its slide's actual start + LEAD, mixed without
+  // level normalisation, padded with silence and cut with the video.
+  const audioInputs=placements.flatMap(p=>['-i',p.file]);
+  const delays=placements.map((p,i)=>`[${i+1}:a]adelay=${Math.round(p.at*1000)}:all=1[a${i}]`).join(';');
+  const mix=`${delays};${placements.map((_,i)=>`[a${i}]`).join('')}amix=inputs=${placements.length}:normalize=0:duration=longest,apad[aout]`;
+  execFileSync(ffmpeg,['-y','-v','error','-ss',String(trimStart),'-i',raw,...audioInputs,'-filter_complex',mix,'-map','0:v','-map','[aout]','-t',String(length),
+    '-vf','fps=30','-c:v','libx264','-threads','2','-preset','fast','-crf','23','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-ar','44100','-movflags','+faststart','demo.mp4']);
+  const frames=[['01-opener',s1+3],['02-architecture-zoom',zoom+3],['03-flawed',s3+6],['04-magic-move',hardened+1.4],['05-hardened',hardened+8],['06-evidence',s4+10],['07-end-card',s5+5]];
   for(const [name,t] of frames) {
     execFileSync(ffmpeg,['-y','-v','error','-ss',String(t),'-i','demo.mp4','-frames:v','1',`frames/${name}.png`]);
   }
   const probe=JSON.parse(execFileSync('ffprobe',['-v','quiet','-show_format','-show_streams','-of','json','demo.mp4'],{encoding:'utf8'}));
-  writeFileSync('evidence/render.json',JSON.stringify({elapsedSeconds:(performance.now()-started)/1000,buildSeconds,consoleMessages,chromium:browser.version(),executablePath:executablePath||chromium.executablePath(),timeline,schedule,frames,magicMove:{flawedText,deadlinesText,hardenedText,activeAnimations:[morph1,morph2]},trimStart,errors,probe},null,2)+'\n');
+  writeFileSync('evidence/render.json',JSON.stringify({elapsedSeconds:(performance.now()-started)/1000,buildSeconds,narration:{voice:narration.voice,lead:LEAD,tail:TAIL,hold:HOLD,clickLead:CLICK_LEAD,takes,placements},consoleMessages,chromium:browser.version(),executablePath:executablePath||chromium.executablePath(),timeline,schedule,frames,magicMove:{flawedText,deadlinesText,hardenedText,activeAnimations:[morph1,morph2]},trimStart,errors,probe},null,2)+'\n');
   if(errors.length) throw Error(`Browser errors: ${errors.join('; ')}`);
   console.log(`Recorded ${probe.format.duration}s MP4, ${probe.format.size} bytes; ${(performance.now()-started)/1000}s wall time`);
 } finally {

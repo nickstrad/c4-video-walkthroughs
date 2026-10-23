@@ -6,6 +6,7 @@
     "dev": "slidev slides.md --port 4314 --no-open",
     "build": "slidev build slides.md",
     "sources": "node scripts/sources.mjs",
+    "narrate": "node scripts/narrate.mjs",
     "record": "node scripts/record.mjs"
   },
   "dependencies": {

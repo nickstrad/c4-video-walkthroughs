@@ -1,16 +1,19 @@
 # Storyboard: a timeout turns a hang into an error
 
-38.5 seconds, five slides, 1280×720, silent. Speaker notes in `slides.md` are the
-narration script; the burned-in caption band carries a condensed line of it on
-every scene. Scene times are the recorder's `schedule` in `scripts/record.mjs`.
+151.0 seconds, five slides, 1280×720, narrated. Speaker notes in `slides.md` are the
+narration script; `narration/script.json` holds the spoken text (one ElevenLabs
+take per slide) and the burned-in caption band carries a condensed line of it on
+every scene. Scene times come from the takes' alignment: `scripts/record.mjs`
+computes them at record time and logs them in `evidence/render.json`. The times
+below are from the committed recording.
 
 | Time | Slide | Story / visual | Exact real source |
 |---|---|---|---|
-| 0–4.5 s | 1. Payoff | The lesson stated first: a timeout turns a hang into an error | — |
-| 4.5–11.5 s | 2. Architecture | Real C4 gateway render; click at 7.5 s zooms to API handlers → node client → node agent, with rings | v1 `project/cmd/gateway/main.go`, `main`, 27–31 |
-| 11.5–27.5 s | 3. Magic Move | v0 beat (4 s) → click 15.5 s morph to lesson-02 deadlines → click 21 s morph to v1 bounded retries; a callout names each change | v0 `New` 24–26 → lesson-02 `New` 26–28 → v1 `New` 36–42 in `project/internal/nodeclient/client.go` |
-| 27.5–34.5 s | 4. Evidence | Recorded before/after outage figures, quoted with an explicit not-re-run caveat | v1 `lessons/02-timeouts.md` 101–104 (before) and 113–117 (after) |
-| 34.5–38.5 s | 5. End card | Project name and takeaway, source commits, silent-video note | — |
+| 0–22.3 s | 1. Payoff | The lesson stated first: a timeout turns a hang into an error | — |
+| 22.3–44.2 s | 2. Architecture | Real C4 gateway render; click at 26.6 s ("Zoom in") zooms to API handlers → node client → node agent, with rings | v1 `project/cmd/gateway/main.go`, `main`, 27–31 |
+| 44.2–97.0 s | 3. Magic Move | v0 beat (15 s of narration) → click 59.7 s ("At lesson zero two") morph to lesson-02 deadlines → click 78.4 s ("At v one hardened") morph to v1 bounded retries; a callout names each change | v0 `New` 24–26 → lesson-02 `New` 26–28 → v1 `New` 36–42 in `project/internal/nodeclient/client.go` |
+| 97.0–138.3 s | 4. Evidence | Recorded before/after outage figures, quoted with an explicit not-re-run caveat | v1 `lessons/02-timeouts.md` 101–104 (before) and 113–117 (after) |
+| 138.3–151.0 s | 5. End card | Project name and takeaway, source commits, narration note | — |
 
 Paths are relative to `books/release-it/` in book-notes.
 

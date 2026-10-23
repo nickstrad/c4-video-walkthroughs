@@ -1,0 +1,21 @@
+{
+  "voice": {"name": "Roger", "voice_id": "CwhRBWXzGAHq8TQ4Fs17", "model_id": "eleven_multilingual_v2", "output_format": "mp3_44100_128"},
+  "note": "One take per slide, spoken from that slide's speaker notes in slides.template.md. Edits for speakability are listed in NOTES.md (Narration pass). Each cue names a phrase whose first character's start time in the alignment triggers a click.",
+  "slides": [
+    {"slide": 1, "id": "slide-1",
+     "text": "The design lesson first: a timeout turns a hang into an error, and an error is something the system can handle. Litefleet's gateway proves it with one constructor, the node client. We will see where it sits, how it changed across three pinned commits, and what the repository's own outage test recorded before and after.",
+     "cues": []},
+    {"slide": 2, "id": "slide-2",
+     "text": "This is the real C4 component render of the gateway process. Zoom in: API handlers resolve a route, then the node client forwards the statement over the network to the node agent that owns the database. The gateway wires that client with node client dot New. Whatever New builds decides how long a request can wait on a node.",
+     "cues": [{"label": "C4 zoom to node client", "phrase": "Zoom in:"}]},
+    {"slide": 3, "id": "slide-3",
+     "text": "The flawed v zero constructor returns an empty H T T P client: no connect timeout, no response-header timeout, no total. A node that accepts a connection and never answers holds the request and its goroutine indefinitely. At lesson zero two, the same function now builds its client from three numbers: two hundred milliseconds to dial, two and a half seconds for response headers, and two and a half seconds for the whole exchange. That is a per-attempt budget; a hang becomes an error the gateway answers with a five oh four. At v one hardened, the deadlines stay, and reads gain a bounded retry policy: at most two retries, backoff capped at four hundred milliseconds, only while retries stay under ten percent of node calls. Writes are never retried. Every line shown comes from one of the three pinned commits.",
+     "cues": [{"label": "magic move click: lesson-02 deadlines", "phrase": "At lesson zero two"}, {"label": "magic move click: v1-hardened", "phrase": "At v one hardened"}]},
+    {"slide": 4, "id": "slide-4",
+     "text": "The repository's lesson zero two records a before and after run: node A's proxy accepts connections and never answers for twenty seconds while the gateway serves three hundred reads per second. Before the timeouts, in-flight requests peaked at eleven thirty, goroutines at forty-six fifty, and none of node A's failures came back as a five oh four. After, in-flight peaked at one forty-nine, goroutines at six thirty-two, and ninety-nine point four percent of them did. These numbers are quoted from the lesson file at the v one hardened commit; they cover the whole lesson zero two patch, and this video did not re-run the experiment.",
+     "cues": []},
+    {"slide": 5, "id": "slide-5",
+     "text": "Litefleet's takeaway: never wait without a limit. Give every network call a deadline, because a timeout turns a hang into an error the rest of the system can retry, report or shed.",
+     "cues": []}
+  ]
+}
