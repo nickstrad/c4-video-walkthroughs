@@ -1,0 +1,87 @@
+// Pure playback queries over a bundle: "what is true at time t". Both
+// renderers ask these instead of re-deriving timing from the storyboard, so a
+// highlight, a hop or a state change lands on the same word in either engine.
+// Times are seconds; `rel` means relative to the scene start.
+import type { RenderBundle } from "./bundle.ts";
+import type { TimedScene } from "./narration/types.ts";
+import { isCodeScene, type Hop, type Range, type Scene, type StateChange } from "./storyboard/schema.ts";
+
+export const sceneOf = (b: RenderBundle, id: string): Scene => {
+  const s = b.storyboard.scenes.find((x) => x.id === id);
+  if (!s) throw new Error(`no scene ${id}`);
+  return s;
+};
+export const timedOf = (b: RenderBundle, id: string): TimedScene => {
+  const s = b.timeline.scenes.find((x) => x.id === id);
+  if (!s) throw new Error(`no timed scene ${id}`);
+  return s;
+};
+/** Cue time relative to its scene; undefined cue → 0 (the scene start). */
+export const cueAt = (t: TimedScene, cue?: string): number => {
+  if (cue === undefined) return 0;
+  const v = t.cues[cue];
+  if (v === undefined) throw new Error(`no cue ${t.id}.${cue}`);
+  return v;
+};
+
+/** The scene playing at absolute time t (the last one during the outro). */
+export const sceneAt = (b: RenderBundle, t: number): TimedScene =>
+  b.timeline.scenes.find((s) => t >= s.start && t < s.start + s.duration) ?? b.timeline.scenes.at(-1)!;
+
+export const captionAt = (b: RenderBundle, t: number) => b.timeline.captions.find((c) => t >= c.start && t < c.end);
+
+export type TimedHop = Hop & { start: number; duration: number; sceneId: string };
+/** A scene's hops with start/duration resolved (rel). `arrive` hops end on their cue. */
+export function hopsOf(b: RenderBundle, sceneId: string): TimedHop[] {
+  const sc = sceneOf(b, sceneId), t = timedOf(b, sceneId);
+  return (sc.hops ?? []).map((h) => {
+    const duration = h.duration ?? 1.1;
+    const at = cueAt(t, h.cue) + (h.after ?? 0);
+    return { ...h, duration, start: Math.max(0, h.arrive ? at - duration : at), sceneId };
+  });
+}
+
+/** Selection timeline of a code scene: ranges and when each takes over (rel). */
+export function focusOf(b: RenderBundle, sceneId: string): { at: number; ranges: Range[]; stepId?: string }[] {
+  const sc = sceneOf(b, sceneId), t = timedOf(b, sceneId);
+  if (!isCodeScene(sc)) return [];
+  if (sc.steps) return sc.steps.map((st, i) => ({ at: t.steps![i].start, ranges: [st.lines], stepId: st.id }));
+  return (sc.focus ?? []).map((f) => ({ at: cueAt(t, f.cue), ranges: f.ranges }));
+}
+
+export type StateEvent = StateChange & { at: number; sceneId: string }; // at: absolute
+/** Every state-panel change in the video, in time order (absolute). */
+export function stateEvents(b: RenderBundle): StateEvent[] {
+  const out: StateEvent[] = [];
+  for (const sc of b.storyboard.scenes) {
+    const t = timedOf(b, sc.id);
+    for (const c of sc.state ?? []) out.push({ ...c, at: t.start + cueAt(t, c.cue), sceneId: sc.id });
+  }
+  return out.sort((x, y) => x.at - y.at);
+}
+
+/** State-panel values at absolute t; counters tween linearly over `duration`. */
+export function stateAt(b: RenderBundle, t: number) {
+  const vals: Record<string, { value: string | number; tone?: string }> = {};
+  for (const f of b.storyboard.statePanel?.fields ?? []) vals[f.id] = { value: f.initial };
+  for (const e of stateEvents(b)) {
+    if (t < e.at) break;
+    const prev = vals[e.field].value;
+    const d = e.duration ?? 0;
+    const k = d > 0 ? Math.min(1, (t - e.at) / d) : 1;
+    const value = typeof e.value === "number" && typeof prev === "number" ? prev + (e.value - prev) * k : e.value;
+    vals[e.field] = { value, tone: e.tone };
+  }
+  return vals;
+}
+
+/** Packet label at absolute t: the latest `packet` change at or before t. */
+export function packetLabelAt(b: RenderBundle, t: number): string | undefined {
+  let label: string | undefined;
+  for (const sc of b.storyboard.scenes) {
+    if (!sc.packet) continue;
+    const ts = timedOf(b, sc.id);
+    if (t >= ts.start + cueAt(ts, sc.packet.cue)) label = sc.packet.label;
+  }
+  return label;
+}
