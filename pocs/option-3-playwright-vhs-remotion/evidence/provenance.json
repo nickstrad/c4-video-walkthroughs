@@ -1,0 +1,8 @@
+{
+  "sourceCommit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "siteAdaptation": "Existing production dist copied; Litefleet added to copied catalog only.",
+  "datasetSha256": "89a86b3dff695672ad9415950f0c3996e90c5f7b29dbb312ac06c5b39128bd80",
+  "siteCheckoutCommitObserved": "df033ddf832a317b10f36b655836f6dbe2ed3fbe",
+  "siteBuildRebuilt": false,
+  "siteBuildSourceCommit": "not independently established for pre-existing dist"
+}

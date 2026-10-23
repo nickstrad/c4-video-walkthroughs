@@ -1,0 +1,26 @@
+/usr/bin/ffmpeg
+/usr/bin/ttyd
+File: demo.tape
+Output .mp4 public/terminal.mp4
+Set Shell bash
+Set Width 1200
+Set Height 570
+Set FontSize 24
+Set Padding 24
+Set Framerate 30
+Set TypingSpeed 15ms
+Set Theme Dracula
+Hide 
+Type export PS1='litefleet@9367863 $ '; cd .work/pinned/books/release-it/project; clear
+Enter 1
+Sleep 300ms
+Show 
+Type go test -count=1 -v ./internal/breaker
+Enter 1
+WARN: 'Set WaitTimeout 60s' has been ignored. Move the directive to the top of the file.
+Learn more: https://github.com/charmbracelet/vhs#settings                               
+Set WaitTimeout 60s
+Wait Screen PASS
+Sleep 6s
+Creating public/terminal.mp4...
+Host your GIF on vhs.charm.sh: vhs publish <file>.gif

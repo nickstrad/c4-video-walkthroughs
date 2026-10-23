@@ -1,0 +1,10 @@
+=== RUN   TestOpensAfterConsecutiveFailures
+--- PASS: TestOpensAfterConsecutiveFailures (0.00s)
+=== RUN   TestHalfOpenTrialCloses
+--- PASS: TestHalfOpenTrialCloses (0.03s)
+=== RUN   TestHalfOpenTrialFailureReopens
+--- PASS: TestHalfOpenTrialFailureReopens (0.03s)
+=== RUN   TestAnswersDoNotCount
+--- PASS: TestAnswersDoNotCount (0.00s)
+PASS
+ok  	litefleet/internal/breaker	0.095s

@@ -1,0 +1,88 @@
+{
+  "title": "Litefleet: fail fast when control fails",
+  "scenario": "Run the real circuit breaker tests: five consecutive failures open the circuit; the next dependency call is not invoked. Browse its gateway C4 component, then explain the guard.",
+  "repo": "https://github.com/nickstrad/book-notes",
+  "tag": "release-it/v1-hardened",
+  "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "dataset": "public/litefleet.json",
+  "view": "gateway-components",
+  "elements": [
+    "gateway",
+    "gw-routes",
+    "gw-breaker",
+    "control"
+  ],
+  "sources": [
+    {
+      "element": "gw-breaker",
+      "path": "books/release-it/project/internal/breaker/breaker.go",
+      "symbol": "(*Breaker).Call",
+      "lines": [
+        84,
+        92
+      ],
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
+    },
+    {
+      "element": "gw-routes",
+      "path": "books/release-it/project/internal/routes/client.go",
+      "symbol": "(*Client).Create",
+      "lines": [
+        112,
+        119
+      ],
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
+    },
+    {
+      "evidence": "five failures then reject without invoking dependency",
+      "path": "books/release-it/project/internal/breaker/breaker_test.go",
+      "symbol": "TestOpensAfterConsecutiveFailures",
+      "lines": [
+        13,
+        22
+      ],
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
+    }
+  ],
+  "narration": {
+    "mode": "stubbed",
+    "audio": null,
+    "provider": null,
+    "note": "Caption text is the narration stub; no ElevenLabs call or key."
+  },
+  "browserPlaybackRate": 1.3766666666666667,
+  "fps": 30,
+  "width": 1280,
+  "height": 720,
+  "durationSeconds": 32,
+  "scenes": [
+    {
+      "kind": "diagram-still",
+      "from": 0,
+      "duration": 4,
+      "asset": "public/diagram.png",
+      "caption": "The gateway’s control circuit breaker guards calls to the control plane."
+    },
+    {
+      "kind": "playwright",
+      "from": 4,
+      "duration": 12,
+      "asset": "public/browser.mp4",
+      "caption": "Select Litefleet → containers → gateway components. This is the real diagrams site."
+    },
+    {
+      "kind": "code-callout",
+      "from": 16,
+      "duration": 7,
+      "asset": "public/code.json",
+      "caption": "Call checks admission first. A rejection increments a metric and returns ErrOpen."
+    },
+    {
+      "kind": "vhs",
+      "from": 23,
+      "duration": 9,
+      "asset": "public/terminal.mp4",
+      "caption": "Five failures → reject without calling. Recovery and non-counting errors are tested too."
+    }
+  ]
+}

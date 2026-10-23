@@ -1,0 +1,13 @@
+{
+  "prepare": 0,
+  "playwrightCapture": 0,
+  "pinnedBreakerTests": 0,
+  "vhsFinalCapture": 0,
+  "remotionRender": 0,
+  "streamCopyRemoveSilentAudio": 0,
+  "frameExtraction": 0,
+  "verification": 0,
+  "notes": "First VHS fixed-delay trial and superseded initial render are documented in NOTES.md; final successful artifacts only are retained.",
+  "kind": "builder-reported exit-code summary; not an automatically generated command ledger",
+  "reviewExitCode": 0
+}

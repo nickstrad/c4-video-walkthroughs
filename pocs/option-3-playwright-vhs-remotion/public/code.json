@@ -1,0 +1,18 @@
+{
+  "sha": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "path": "books/release-it/project/internal/breaker/breaker.go",
+  "symbol": "(*Breaker).Call",
+  "start": 84,
+  "end": 92,
+  "lines": [
+    "func (b *Breaker) Call(fn func() error, failure func(error) bool) error {",
+    "\tif !b.allow() {",
+    "\t\trejected.WithLabelValues(b.dep).Inc()",
+    "\t\treturn ErrOpen",
+    "\t}",
+    "\terr := fn()",
+    "\tb.record(err != nil && failure(err))",
+    "\treturn err",
+    "}"
+  ]
+}
