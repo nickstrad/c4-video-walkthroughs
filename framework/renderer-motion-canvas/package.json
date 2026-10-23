@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
     "render": "node scripts/render.mjs",
     "stills": "node scripts/stills.mjs"
   },

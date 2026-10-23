@@ -8,7 +8,8 @@
     "render": "node scripts/render.mjs",
     "stills": "node scripts/stills.mjs",
     "studio": "node scripts/prepare.mjs && remotion studio src/index.ts --props=out/props.json --public-dir=../projects/litefleet/build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.538",

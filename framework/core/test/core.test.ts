@@ -160,3 +160,11 @@ test("C4 references are checked against the dataset model and scenarios", () => 
   assert.match(errs, /query-flow-step-99 not in query-flow's scenario/);
   assert.match(errs, /view no-such-view not in the dataset's diagrams/);
 });
+
+test("the dumb-views lint flags authored text typed into source", async () => {
+  const { authoredText } = await import("../src/verify/dumb-views.ts");
+  const texts = authoredText(sb);
+  assert.ok(texts.includes("A tenant app sends a read: SQL plus a bearer API key."));
+  assert.ok(texts.includes("WHAT ACQUIRE CHECKS"));
+  assert.ok(!texts.includes("rows")); // too short to flag
+});
