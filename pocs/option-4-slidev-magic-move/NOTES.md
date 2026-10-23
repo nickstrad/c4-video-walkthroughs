@@ -1,12 +1,13 @@
 # Option 4: Slidev + Shiki Magic Move
 
-A five-slide, 38.5-second litefleet walkthrough that proves one design lesson: a
+A five-slide, 151-second narrated litefleet walkthrough that proves one design lesson: a
 timeout turns a hang into an error. The real C4 gateway render zooms to the node
 client. One Shiki Magic Move then carries the real constructor through three pinned
 commits (v0-flawed, lesson-02, v1-hardened), and the repository's recorded outage
-figures close the argument. Speaker notes are the narration script. Burned-in
-captions carry it on screen, because there is no ElevenLabs key and the MP4 is silent.
-The current version is the Opus improvement pass described at the end of this file.
+figures close the argument. Speaker notes are the narration script, spoken by an
+ElevenLabs voice; burned-in captions condense it on screen. The current version is
+the Opus narration pass described at the end of this file, on top of the Opus
+improvement pass before it.
 
 ## Reproduce
 
@@ -16,6 +17,7 @@ cd pocs/option-4-slidev-magic-move
 npm ci --no-audit --no-fund
 npm run sources
 python3 evidence/provenance-check.py
+npm run narrate   # reuses the committed narration/ takes; calls ElevenLabs only for missing ones
 npm run record
 ```
 
@@ -26,8 +28,10 @@ path. `SOURCE_REPO` can point the extractor at another book-notes clone containi
 the pinned tags. `FFMPEG` can override the encoder command (ffprobe remains on PATH).
 
 `npm run dev` serves the deck locally on port 4314. Stop any existing instance
-before recording: the recorder owns its Slidev process. No public hosting,
-external narration API, or repository upload is involved.
+before recording: the recorder owns its Slidev process. No public hosting or
+repository upload is involved. The only external API is ElevenLabs, called by
+`npm run narrate` and only for takes missing from `narration/`; its key is read
+from `ELEVENLABS_API_KEY` or `/root/Software/.secrets/c4-video.env` and never written.
 
 ## What is proved
 
@@ -59,6 +63,7 @@ external narration API, or repository upload is involved.
   Speaker notes are the complete script; captions are a condensed version of it.
 - The scene timings fit the captions, not the full speaker notes. Read aloud, the
   notes need roughly twice as long; voice clips should drive the schedule.
+  (Both points are resolved by the narration pass at the end of this file.)
 
 ## Cost of another project
 
@@ -207,3 +212,81 @@ extraction 107.6 s on the shared VM (one run). Worst click delay 0.21 s. Full
 `frames/` and all eight state screenshots in `evidence/` were inspected visually.
 The `evidence/review*.md` and `evidence/final-review*` files are Sol's reviews of
 the original deck. No independent review of this pass was run.
+
+## Narration pass (Opus)
+
+Nick supplied an ElevenLabs key; this pass gives the video a real voice and lets
+the voice drive the timing. The deck, story, code ranges and recorder checks are
+unchanged apart from the points below.
+
+**Voice and model.** ElevenLabs voice "Roger" (`CwhRBWXzGAHq8TQ4Fs17`; the env file's
+`ELEVENLABS_VOICE_ID` is blank), model `eleven_multilingual_v2`, `mp3_44100_128`,
+via `POST /v1/text-to-speech/{voice_id}/with-timestamps`. **Five lines, one take per
+slide, each generated once: 2,274 characters** (320 + 325 + 814 + 635 + 180). The
+account's shared counter went from 14 to 960 during this window. Other narration
+runs share that account, and the counter evidently does not bill one credit per
+submitted character, so 2,274 is the amount of text sent. The MP3s and alignment
+JSON are committed in `narration/`; `npm run narrate` reuses them. It refuses to
+reuse a take whose text no longer matches `narration/script.json`.
+
+**Script.** `narration/script.json` is each slide's speaker note with the time
+prefix removed. Edits for speech, none of which adds a claim:
+
+- Spelled for the voice: `v0` → "v zero", `v1-hardened` → "v one hardened",
+  `lesson-02` → "lesson zero two", `http.Client` → "H T T P client",
+  `nodeclient.New` → "node client dot New", `node-a` → "node A", `504` → "five oh
+  four", 1130 / 4650 / 149 / 632 / 99.4 → "eleven thirty", "forty-six fifty", "one
+  forty-nine", "six thirty-two", "ninety-nine point four percent".
+- Presenter cues became connectives: "First click, at lesson-02:" → "At lesson zero
+  two,"; "Second click, at v1-hardened:" → "At v one hardened,". The notes now use
+  the same wording, plus the click times.
+- Dropped from the end-card note: "Voice is not synthesized; these notes are the
+  narration script and the on-screen captions carry it." It is no longer true. The
+  end card's stub line now reads "NARRATION · ELEVENLABS VOICE “ROGER” · SPOKEN FROM
+  THE SPEAKER NOTES". The deck `info` and a CSS comment no longer say "silent".
+
+**Sync.** `scripts/record.mjs` reads each take's character alignment. A slide's take
+starts 0.3 s after the slide's *actual* advance time. The next slide advances
+0.45 s after the take's last aligned character, and the end card holds 1.5 s after
+its last word. Clicks fire 0.2 s before the start of a cue phrase in the
+alignment: "Zoom in:" for the C4 zoom, "At lesson zero two" and "At v one hardened"
+for the two morphs. The morphs therefore play while their own sentences are spoken.
+The schedule is recomputed from each actual slide start, so browser drift is not
+carried forward. FFmpeg places every take with `adelay` at its slide's measured
+start, mixes them without normalisation (`amix normalize=0`), pads with silence
+and cuts to the video length. The recorder fails if any take's speech would run
+past its slide.
+
+**Checked in the delivered MP4.** Slide fades detected with scene-change analysis
+land at 21.6, 43.8, 97.2 and 138.6 s. Silence detection puts each take's end
+before its fade and its next take's first word after it: speech ends at 21.3,
+43.3, 95.8 and 137.3 s and resumes at 22.6, 44.6, 97.3 and 138.7 s. No line is
+cut. Motion starts at 26.1 s for the zoom ("Zoom in" spoken at 26.8 s, in the pause
+just before), 59.3 s for morph 1 (phrase at 59.6 s) and 78.3 s for morph 2
+(phrase at 78.0 s). Both morphs run under their sentences. Recorded click delays
+against the computed targets were 0.04–0.58 s. The largest was the second morph,
+under load. Playwright's capture timing differs from the page clock by up to
+about 0.7 s, varying across the video. The 0.45 s tail plus the inter-sentence
+pauses absorbed it here. A deterministic frame renderer would remove it.
+
+| | Before (improvement pass) | After (narration pass) |
+|---|---|---|
+| Duration | 38.467 s | 151.009 s (video 151.000 s, audio 151.009 s) |
+| Size | 2,104,574 bytes | 6,789,314 bytes |
+| Audio | none | AAC-LC 44.1 kHz, 128 kb/s |
+| Video | 1280×720 H.264 yuv420p 30 fps | unchanged settings (CRF 23) |
+| Speech | — | 145.3 s across five takes |
+
+The video is about four times longer. Read aloud, the speaker notes take that long.
+The old schedule fitted the captions, and the earlier "Friction and limits" note
+predicted the gap. The captions are unchanged: they condense the spoken line.
+
+**Run.** Static build 20.1 s; complete build, warm-up, recording, mux and frame
+extraction 375.7 s on the shared VM (one run). The Magic Move checks passed: all
+three code texts were present, with 66 and 136 active animations in the two
+morphs, and there were no page errors. A full `ffmpeg -f null` decode reported
+no errors. The seven frames were regenerated from the new MP4 at times derived
+from the actual schedule, and the architecture, morph and end-card frames were
+inspected. The provenance check still passes. `slides.md` was regenerated after
+the recording, to update the speaker-note times and wording only. Notes are not
+rendered, so the MP4 is unaffected. No independent review of this pass was run.

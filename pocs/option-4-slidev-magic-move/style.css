@@ -15,7 +15,7 @@
 .facts { display: flex; gap: 12px; flex-wrap: wrap; }
 .facts span { border: 1px solid #30445d; border-radius: 999px; padding: 6px 14px; font-size: 15px; color: var(--muted); }
 
-/* Burned-in captions: the video is silent, so these carry the narration. */
+/* Burned-in captions: a condensed line of the spoken narration. */
 .caption { position: absolute; left: 0; right: 0; bottom: 0; height: 74px; display: flex; align-items: center; justify-content: center;
   padding: 0 60px; background: rgba(4, 9, 18, 0.92); border-top: 2px solid var(--accent); font-size: 23px; font-weight: 600; color: #fff; text-align: center; }
 .stub { position: absolute; left: 60px; bottom: 28px; font-size: 13px; letter-spacing: 1.6px; color: #91a3bb; }

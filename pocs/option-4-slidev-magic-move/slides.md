@@ -1,7 +1,7 @@
 ---
 theme: default
 title: Litefleet — a timeout turns a hang into an error
-info: Real C4 architecture and pinned Go code. Silent video; captions carry the narration.
+info: Real C4 architecture and pinned Go code. Narrated with ElevenLabs from the speaker notes; captions condense the narration.
 colorSchema: dark
 aspectRatio: 16/9
 canvasWidth: 1280
@@ -33,7 +33,7 @@ class: opener
 <div class="caption">The lesson: never wait on the network without a limit.</div>
 
 <!--
-0–4.5 seconds. The design lesson first: a timeout turns a hang into an error, and an error is something the system can handle. Litefleet's gateway proves it with one constructor, the node client. We will see where it sits, how it changed across three pinned commits, and what the repository's own outage test recorded before and after.
+0–22.3 seconds. The design lesson first: a timeout turns a hang into an error, and an error is something the system can handle. Litefleet's gateway proves it with one constructor, the node client. We will see where it sits, how it changed across three pinned commits, and what the repository's own outage test recorded before and after.
 -->
 
 ---
@@ -67,7 +67,7 @@ clicks: 1
 <div class="caption swap" :class="{ on: $clicks >= 1 }">Each statement leaves the gateway through the node client: a network wait.</div>
 
 <!--
-4.5–11.5 seconds. This is the real C4 component render of the gateway process. Zoom in: API handlers resolve a route, then the node client forwards the statement over the network to the node agent that owns the database. The gateway wires that client with nodeclient.New. Whatever New builds decides how long a request can wait on a node.
+22.3–44.2 seconds. This is the real C4 component render of the gateway process. Zoom in (click, about 26.6 s): API handlers resolve a route, then the node client forwards the statement over the network to the node agent that owns the database. The gateway wires that client with nodeclient.New. Whatever New builds decides how long a request can wait on a node.
 -->
 
 ---
@@ -121,11 +121,11 @@ func New() *Client {
 <div class="caption swap" :class="{ on: $clicks >= 2 }">v1 keeps those deadlines and bounds read retries, so waiting stays finite.</div>
 
 <!--
-11.5–27.5 seconds. The flawed v0 constructor returns an empty http.Client: no connect timeout, no response-header timeout, no total. A node that accepts a connection and never answers holds the request and its goroutine indefinitely.
+44.2–97.0 seconds. The flawed v0 constructor returns an empty http.Client: no connect timeout, no response-header timeout, no total. A node that accepts a connection and never answers holds the request and its goroutine indefinitely.
 
-First click, at lesson-02: the same function now builds its client from three numbers — two hundred milliseconds to dial, two and a half seconds for response headers, and two and a half seconds for the whole exchange. That is a per-attempt budget; a hang becomes an error the gateway answers with a 504.
+At lesson-02 (first click, about 59.7 s), the same function now builds its client from three numbers — two hundred milliseconds to dial, two and a half seconds for response headers, and two and a half seconds for the whole exchange. That is a per-attempt budget; a hang becomes an error the gateway answers with a 504.
 
-Second click, at v1-hardened: the deadlines stay, and reads gain a bounded retry policy — at most two retries, backoff capped at four hundred milliseconds, only while retries stay under ten percent of node calls. Writes are never retried. Every line shown comes from one of the three pinned commits.
+At v1-hardened (second click, about 78.4 s), the deadlines stay, and reads gain a bounded retry policy — at most two retries, backoff capped at four hundred milliseconds, only while retries stay under ten percent of node calls. Writes are never retried. Every line shown comes from one of the three pinned commits.
 -->
 
 ---
@@ -173,7 +173,7 @@ Second click, at v1-hardened: the deadlines stay, and reads gain a bounded retry
 <div class="caption">Recorded outage: peak in-flight 1130 → 149; failures answered 504: 0 % → 99.4 %.</div>
 
 <!--
-27.5–34.5 seconds. The repository's lesson 02 records a before and after run: node-a's proxy accepts connections and never answers for twenty seconds while the gateway serves three hundred reads per second. Before the timeouts, in-flight requests peaked at 1130, goroutines at 4650, and none of node-a's failures came back as a 504. After, in-flight peaked at 149, goroutines at 632, and 99.4 percent of them did. These numbers are quoted from the lesson file at the v1-hardened commit; they cover the whole lesson-02 patch, and this video did not re-run the experiment.
+97.0–138.3 seconds. The repository's lesson 02 records a before and after run: node-a's proxy accepts connections and never answers for twenty seconds while the gateway serves three hundred reads per second. Before the timeouts, in-flight requests peaked at 1130, goroutines at 4650, and none of node-a's failures came back as a 504. After, in-flight peaked at 149, goroutines at 632, and 99.4 percent of them did. These numbers are quoted from the lesson file at the v1-hardened commit; they cover the whole lesson-02 patch, and this video did not re-run the experiment.
 -->
 
 ---
@@ -191,8 +191,8 @@ class: endcard
   <span>book-notes · release-it/v0-flawed 6076a82 → lesson-02 8e71627 → v1-hardened 9367863</span>
 </div>
 
-<div class="stub">SILENT VIDEO · CAPTIONS CARRY THE NARRATION · NO SYNTHESIZED VOICE</div>
+<div class="stub">NARRATION · ELEVENLABS VOICE “ROGER” · SPOKEN FROM THE SPEAKER NOTES</div>
 
 <!--
-34.5–38.5 seconds. Litefleet's takeaway: never wait without a limit. Give every network call a deadline, because a timeout turns a hang into an error the rest of the system can retry, report or shed. Voice is not synthesized; these notes are the narration script and the on-screen captions carry it.
+138.3–151.0 seconds. Litefleet's takeaway: never wait without a limit. Give every network call a deadline, because a timeout turns a hang into an error the rest of the system can retry, report or shed.
 -->

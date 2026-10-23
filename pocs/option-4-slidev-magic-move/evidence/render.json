@@ -1,128 +1,231 @@
 {
-  "elapsedSeconds": 107.549504938,
-  "buildSeconds": 14.426937574,
+  "elapsedSeconds": 375.727971691,
+  "buildSeconds": 20.083585437999997,
+  "narration": {
+    "voice": {
+      "name": "Roger",
+      "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+      "model_id": "eleven_multilingual_v2",
+      "output_format": "mp3_44100_128"
+    },
+    "lead": 0.3,
+    "tail": 0.45,
+    "hold": 1.5,
+    "clickLead": 0.2,
+    "takes": [
+      {
+        "id": "slide-1",
+        "file": "narration/slide-1.mp3",
+        "characters": 320,
+        "speechEnd": 21.362,
+        "audioSeconds": 21.394286,
+        "cues": []
+      },
+      {
+        "id": "slide-2",
+        "file": "narration/slide-2.mp3",
+        "characters": 325,
+        "speechEnd": 21.084,
+        "audioSeconds": 21.133061,
+        "cues": [
+          {
+            "label": "C4 zoom to node client",
+            "phrase": "Zoom in:",
+            "at": 4.191
+          }
+        ]
+      },
+      {
+        "id": "slide-3",
+        "file": "narration/slide-3.mp3",
+        "characters": 814,
+        "speechEnd": 51.549,
+        "audioSeconds": 51.591837,
+        "cues": [
+          {
+            "label": "magic move click: lesson-02 deadlines",
+            "phrase": "At lesson zero two",
+            "at": 15.023
+          },
+          {
+            "label": "magic move click: v1-hardened",
+            "phrase": "At v one hardened",
+            "at": 33.495
+          }
+        ]
+      },
+      {
+        "id": "slide-4",
+        "file": "narration/slide-4.mp3",
+        "characters": 635,
+        "speechEnd": 40.402,
+        "audioSeconds": 40.437551,
+        "cues": []
+      },
+      {
+        "id": "slide-5",
+        "file": "narration/slide-5.mp3",
+        "characters": 180,
+        "speechEnd": 10.867,
+        "audioSeconds": 10.893061,
+        "cues": []
+      }
+    ],
+    "placements": [
+      {
+        "id": "slide-1",
+        "file": "narration/slide-1.mp3",
+        "at": 0.3,
+        "speechEnd": 21.662
+      },
+      {
+        "id": "slide-2",
+        "file": "narration/slide-2.mp3",
+        "at": 22.607504703999993,
+        "speechEnd": 43.691504703999996
+      },
+      {
+        "id": "slide-3",
+        "file": "narration/slide-3.mp3",
+        "at": 44.547040706,
+        "speechEnd": 96.096040706
+      },
+      {
+        "id": "slide-4",
+        "file": "narration/slide-4.mp3",
+        "at": 97.24971669700001,
+        "speechEnd": 137.651716697
+      },
+      {
+        "id": "slide-5",
+        "file": "narration/slide-5.mp3",
+        "at": 138.642562338,
+        "speechEnd": 149.509562338
+      }
+    ]
+  },
   "consoleMessages": [
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     },
     {
       "type": "error",
-      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-DCKc3LOK.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-DCKc3LOK.js:72:58347)\n    at http://localhost:4314/assets/index-DCKc3LOK.js:72:58369"
+      "text": "Failed to patch FloatingVue TypeError: Cannot read properties of undefined (reading 'Popper')\n    at e.component (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71565)\n    at Object.Ov [as install] (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:70848)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Object.install (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:10:71806)\n    at Object.use (http://localhost:4314/assets/modules/shiki-CXLz6JnV.js:3:16693)\n    at Js (http://localhost:4314/assets/index-CvmYuLnk.js:72:58217)\n    at Ys (http://localhost:4314/assets/index-CvmYuLnk.js:72:58347)\n    at http://localhost:4314/assets/index-CvmYuLnk.js:72:58369"
     }
   ],
   "chromium": "156.0.8078.4",
   "executablePath": "/root/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell",
   "timeline": [
     {
-      "targetSeconds": 4.5,
-      "actualSeconds": 4.5353800049999995,
+      "targetSeconds": 22.112,
+      "actualSeconds": 22.307504703999992,
       "label": "architecture",
       "url": "http://localhost:4314/2"
     },
     {
-      "targetSeconds": 7.5,
-      "actualSeconds": 7.520159301,
+      "targetSeconds": 26.598504703999993,
+      "actualSeconds": 26.642435796999997,
       "label": "C4 zoom to node client",
       "url": "http://localhost:4314/2?clicks=1"
     },
     {
-      "targetSeconds": 11.5,
-      "actualSeconds": 11.538953458999996,
+      "targetSeconds": 44.141504704,
+      "actualSeconds": 44.247040706,
       "label": "magic move: v0-flawed",
       "url": "http://localhost:4314/3"
     },
     {
-      "targetSeconds": 15.5,
-      "actualSeconds": 15.583005026999999,
+      "targetSeconds": 59.370040706,
+      "actualSeconds": 59.746839607999995,
       "label": "magic move click: lesson-02 deadlines",
       "url": "http://localhost:4314/3?clicks=1"
     },
     {
-      "targetSeconds": 21,
-      "actualSeconds": 21.208133099999998,
+      "targetSeconds": 77.84204070599999,
+      "actualSeconds": 78.42116908599999,
       "label": "magic move click: v1-hardened",
       "url": "http://localhost:4314/3?clicks=2"
     },
     {
-      "targetSeconds": 27.5,
-      "actualSeconds": 27.703426419999996,
+      "targetSeconds": 96.546040706,
+      "actualSeconds": 96.94971669700001,
       "label": "evidence",
       "url": "http://localhost:4314/4"
     },
     {
-      "targetSeconds": 34.5,
-      "actualSeconds": 34.558872752000006,
+      "targetSeconds": 138.101716697,
+      "actualSeconds": 138.342562338,
       "label": "end card",
       "url": "http://localhost:4314/5"
     }
   ],
   "schedule": {
-    "architecture": 4.5,
-    "zoom": 7.5,
-    "flawed": 11.5,
-    "deadlines": 15.5,
-    "hardened": 21,
-    "evidence": 27.5,
-    "end": 34.5,
-    "stop": 38.5
+    "architecture": 22.112,
+    "C4 zoom to node client": 26.598504703999993,
+    "magic move: v0-flawed": 44.141504704,
+    "magic move click: lesson-02 deadlines": 59.370040706,
+    "magic move click: v1-hardened": 77.84204070599999,
+    "evidence": 96.546040706,
+    "end card": 138.101716697,
+    "stop": 151.009562338
   },
   "frames": [
     [
       "01-opener",
-      2.5
+      3
     ],
     [
       "02-architecture-zoom",
-      10.5
+      29.642435796999997
     ],
     [
       "03-flawed",
-      14.5
+      50.247040706
     ],
     [
       "04-magic-move",
-      22.4
+      79.821169086
     ],
     [
       "05-hardened",
-      25
+      86.42116908599999
     ],
     [
       "06-evidence",
-      32
+      106.94971669700001
     ],
     [
       "07-end-card",
-      37
+      143.342562338
     ]
   ],
   "magicMove": {
@@ -130,11 +233,11 @@
     "deadlinesText": "func New() *Client {\n\treturn &Client{http: httpx.NewClient(httpx.Timeouts{Dial: 200 * time.Millisecond, Header: 2500 * time.Millisecond, Total: 2500 * time.Millisecond})}\n}\n",
     "hardenedText": "func New() *Client {\n\treturn &Client{\n\t\thttp: httpx.NewClient(httpx.Timeouts{Dial: 200 * time.Millisecond, Header: 2500 * time.Millisecond, Total: 2500 * time.Millisecond}),\n\t\treads: retry.Policy{Base: 50 * time.Millisecond, Cap: 400 * time.Millisecond, MaxRetries: 2,\n\t\t\tMinAttempt: 100 * time.Millisecond, Budget: retry.NewBudget(0.1, 10)},\n\t}\n}\n",
     "activeAnimations": [
-      70,
+      66,
       136
     ]
   },
-  "trimStart": 0.5399999999999991,
+  "trimStart": 2.1904376619999937,
   "errors": [],
   "probe": {
     "streams": [
@@ -168,13 +271,13 @@
         "r_frame_rate": "30/1",
         "avg_frame_rate": "30/1",
         "time_base": "1/15360",
-        "start_pts": 507,
-        "start_time": "0.033008",
-        "duration_ts": 590848,
-        "duration": "38.466667",
-        "bit_rate": "434714",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 2319360,
+        "duration": "151.000000",
+        "bit_rate": "216297",
         "bits_per_raw_sample": "8",
-        "nb_frames": "1154",
+        "nb_frames": "4530",
         "extradata_size": 51,
         "disposition": {
           "default": 1,
@@ -202,18 +305,69 @@
           "vendor_id": "[0][0][0][0]",
           "encoder": "Lavc60.31.102 libx264"
         }
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_long_name": "AAC (Advanced Audio Coding)",
+        "profile": "LC",
+        "codec_type": "audio",
+        "codec_tag_string": "mp4a",
+        "codec_tag": "0x6134706d",
+        "sample_fmt": "fltp",
+        "sample_rate": "44100",
+        "channels": 1,
+        "channel_layout": "mono",
+        "bits_per_sample": 0,
+        "initial_padding": 0,
+        "id": "0x2",
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/44100",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 6659497,
+        "duration": "151.009002",
+        "bit_rate": "134632",
+        "nb_frames": "6505",
+        "extradata_size": 5,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "SoundHandler",
+          "vendor_id": "[0][0][0][0]"
+        }
       }
     ],
     "format": {
       "filename": "demo.mp4",
-      "nb_streams": 1,
+      "nb_streams": 2,
       "nb_programs": 0,
       "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
       "format_long_name": "QuickTime / MOV",
-      "start_time": "0.033008",
-      "duration": "38.466667",
-      "size": "2104574",
-      "bit_rate": "437693",
+      "start_time": "0.000000",
+      "duration": "151.009002",
+      "size": "6789314",
+      "bit_rate": "359677",
       "probe_score": 100,
       "tags": {
         "major_brand": "isom",
