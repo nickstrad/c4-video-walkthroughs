@@ -1,14 +1,24 @@
 {
   "heading": "Litefleet: gateway components",
+  "inspectorHeading": "Control circuit breaker",
+  "pinnedRevisionShownInSources": true,
+  "breakerBoxAfterZoom": {
+    "x": 599.7840576171875,
+    "y": 338.6004943847656,
+    "width": 148.5142822265625,
+    "height": 125.66595458984375
+  },
   "errors": [],
-  "url": "http://127.0.0.1:4333/book-notes/#/architectures/litefleet/diagrams/gateway-components",
+  "url": "http://127.0.0.1:4333/book-notes/#/architectures/litefleet/diagrams/gateway-components/elements/gw-breaker",
   "viewport": "1280x720",
   "workflow": [
-    "open catalog",
-    "select Litefleet",
-    "open containers",
+    "open catalog (Litefleet is the site default)",
+    "Fit View at each level",
+    "open Litefleet containers",
     "open gateway components",
-    "Fit View"
+    "Inspect Control circuit breaker",
+    "ctrl+wheel zoom on the live canvas"
   ],
-  "mockedRequests": false
+  "mockedRequests": false,
+  "actionLog": "public/browser-actions.json (seconds since context creation; approximates video time)"
 }

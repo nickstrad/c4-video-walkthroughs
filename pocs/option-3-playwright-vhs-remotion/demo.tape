@@ -1,19 +1,22 @@
 Output public/terminal.mp4
 Set Shell "bash"
-Set Width 1200
-Set Height 570
-Set FontSize 24
-Set Padding 24
+Set Width 1152
+Set Height 500
+Set FontSize 26
+Set Padding 28
 Set Framerate 30
-Set TypingSpeed 15ms
+Set TypingSpeed 18ms
 Set Theme "Dracula"
-Set WaitTimeout 60s
+Set WaitTimeout 90s
 Hide
-Type "export PS1='litefleet@9367863 $ '; cd .work/pinned/books/release-it/project; clear"
+# Off camera: plain prompt (no vi-mode marker) and a warm Go build cache, so the take shows tests, not compiling.
+Type "bind 'set show-mode-in-prompt off'; export PS1='litefleet@9367863 $ '; cd .work/pinned/books/release-it/project && go test -count=1 ./internal/breaker >/dev/null; clear"
 Enter
-Sleep 300ms
+Wait /9367863 \$ ?$/
 Show
+Sleep 400ms
 Type "go test -count=1 -v ./internal/breaker"
+Sleep 300ms
 Enter
-Wait+Screen /PASS/
-Sleep 6s
+Wait+Screen /ok\s+litefleet.internal.breaker/
+Sleep 3s

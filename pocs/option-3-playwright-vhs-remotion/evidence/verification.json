@@ -6,39 +6,48 @@
     720
   ],
   "fps": "30/1",
-  "frames": 960,
-  "seconds": 32,
+  "frames": 942,
+  "seconds": 31.4,
   "decodedWholeVideo": true,
+  "excerptsByteIdentical": [
+    "books/release-it/project/internal/routes/client.go:112-119",
+    "books/release-it/project/internal/breaker/breaker.go:84-92",
+    "books/release-it/project/internal/breaker/breaker_test.go:13-22"
+  ],
   "assets": [
     {
       "path": "demo.mp4",
-      "bytes": 1617487,
-      "sha256": "3244188b1b679b90d197c3b7d18535f81862fe7eba2ee5b54e69b23aa2610fd7",
-      "seconds": 32
+      "bytes": 2292596,
+      "sha256": "6a9bcc387d678a4c312ca21535b95ebe9b298b412d76db42e740cbc600fdeb17",
+      "seconds": 31.4
     },
     {
       "path": "public/browser.webm",
-      "bytes": 4706222,
-      "sha256": "78752e0d240a0d0dd8cf0d50e037dc1aab1333164ce7259604f57b8a806fbc84",
-      "seconds": 16.52
+      "bytes": 3647448,
+      "sha256": "83b8905899744adb999c62adbd7b921ec07928293eb100cf782f30ddf01a5a0e",
+      "seconds": 14.36
     },
     {
       "path": "public/browser.mp4",
-      "bytes": 1050581,
-      "sha256": "f82ad685274d81908eea0296b7977ce7e5a3f1ecf038fde8ed10e06016414df5",
-      "seconds": 16.52
+      "bytes": 1146971,
+      "sha256": "e2797ec29ad4d33750217e176bb3fe77ca9286e6ad6841bb91f3a247f1666d19",
+      "seconds": 14.366667
+    },
+    {
+      "path": "public/browser-actions.json",
+      "bytes": 903,
+      "sha256": "77fe701db9015f393a6cadc1fbb3929223bacc9ac31bdd1896d06ab803d4065b"
     },
     {
       "path": "public/terminal-vhs.mp4",
-      "bytes": 84676,
-      "sha256": "d86a0d0255a2546fe227a6cf864539455f7a45b261ad5c70b140e5f9080e2498",
-      "seconds": 8.4
+      "bytes": 83961,
+      "sha256": "cc0cd3ebfddeaae2a2d0b633836825384d4d07d747da7f1e674dddcfb6197a49",
+      "seconds": 5.44
     },
     {
-      "path": "public/terminal.mp4",
-      "bytes": 141404,
-      "sha256": "864027dece4bef4d4b7cc14882f7179d36aab828736f155601d71489534360b5",
-      "seconds": 9
+      "path": "public/code.json",
+      "bytes": 1922,
+      "sha256": "5d951fe6e12a9654be2cde5f633ba6f336cedcdf6ca37cacfed928826963c33d"
     }
   ]
 }

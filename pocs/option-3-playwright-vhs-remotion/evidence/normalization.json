@@ -1,7 +1,24 @@
 {
-  "browserRawSeconds": 16.52,
-  "browserPlaybackRate": 1.3766666666666667,
-  "terminalVhsRawSeconds": 8.4,
-  "terminalComposedSeconds": 9,
-  "terminalTreatment": "Retimed actual VHS output to fill nine-second scene; no synthetic test output."
+  "browserRawSeconds": 14.36,
+  "browserKeptSeconds": 7.466666666666667,
+  "browserSegmentsFrames": [
+    [
+      62,
+      96
+    ],
+    [
+      139,
+      170
+    ],
+    [
+      213,
+      372
+    ]
+  ],
+  "browserTreatment": "Cut to the action windows from public/browser-actions.json; kept footage plays at 1x.",
+  "terminalVhsRawSeconds": 5.44,
+  "terminalVhsFrames": 136,
+  "terminalSceneFrames": 163,
+  "terminalTreatment": "Raw VHS take played at 1x, not retimed or padded; no synthetic test output.",
+  "filmFrames": 942
 }

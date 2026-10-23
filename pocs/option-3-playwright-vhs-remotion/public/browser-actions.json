@@ -1,0 +1,58 @@
+[
+  {
+    "t": 2.071,
+    "kind": "ready",
+    "label": "Catalog opens on Litefleet: system context",
+    "x": null,
+    "y": null
+  },
+  {
+    "t": 3.285,
+    "kind": "click",
+    "label": "Open Litefleet",
+    "x": 473,
+    "y": 360
+  },
+  {
+    "t": 4.621,
+    "kind": "ready",
+    "label": "Litefleet: containers",
+    "x": null,
+    "y": null
+  },
+  {
+    "t": 5.753,
+    "kind": "click",
+    "label": "Open Gateway",
+    "x": 384,
+    "y": 372
+  },
+  {
+    "t": 7.103,
+    "kind": "ready",
+    "label": "Litefleet: gateway components",
+    "x": null,
+    "y": null
+  },
+  {
+    "t": 8.138,
+    "kind": "click",
+    "label": "Inspect Control circuit breaker",
+    "x": 707,
+    "y": 401
+  },
+  {
+    "t": 9.385,
+    "kind": "zoom",
+    "label": "Zoom onto the breaker",
+    "x": 733,
+    "y": 401
+  },
+  {
+    "t": 12.492,
+    "kind": "end",
+    "label": "Hold",
+    "x": null,
+    "y": null
+  }
+]

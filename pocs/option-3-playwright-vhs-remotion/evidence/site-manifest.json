@@ -8,14 +8,6 @@
     "sha256": "0d1cd50a4985230834a1b5f60acaf7640d58fa2debb6af88577796653f25143f"
   },
   {
-    "path": "architectures/shell-alternate.json",
-    "sha256": "c54365c3ea922bdc18002eb18aafccdaadadbb485c26f3c4501b0b5f8dde9c15"
-  },
-  {
-    "path": "architectures/shell-example.json",
-    "sha256": "73b775095ebf62bfce95ba3bd7db47520dfd65e9b451fa44071f8aa06b2b3bfc"
-  },
-  {
     "path": "assets/index-ChqLlcAG.css",
     "sha256": "ddf99b2cd64affe5b52fd54cc3c8e15597f1e16bf2bf4dc0e24217ca960d994e"
   },
@@ -29,7 +21,7 @@
   },
   {
     "path": "catalog.json",
-    "sha256": "5a3a4c6cd806909f1cbe83439e9811e7f1ec1c283ca363015f2fc43d3f5928eb"
+    "sha256": "02e5eb07affa1501e0cd48c234f01fd32eecf7135b0569e7fc85683e5ea0da89"
   },
   {
     "path": "index.html",
