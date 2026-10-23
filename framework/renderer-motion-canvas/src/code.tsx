@@ -7,7 +7,7 @@
 import {Code, LezerHighlighter, Node, Rect, Txt, lines} from '@motion-canvas/2d';
 import {all, createSignal, easeInOutCubic, type SimpleSignal, type ThreadGenerator} from '@motion-canvas/core';
 import {parser} from '@lezer/go';
-import {fileLines, presentText, type Box, type Excerpt, type Range} from '../../core/src/index.ts';
+import {citation, fileLines, presentText, type Box, type Excerpt, type Range} from '../../core/src/index.ts';
 import {C, MONO, MONO_ADVANCE, SANS} from './theme.ts';
 
 // Go is the only language litefleet's excerpts use; the highlighter is the
@@ -45,7 +45,6 @@ export function fitExcerpt(x: Excerpt, box: Box): Fit {
 }
 
 const numbers = (x: Excerpt, width: number) => fileLines(x).map((n) => String(n).padStart(width, ' ')).join('\n');
-const short = (sha: string) => sha.slice(0, 7);
 
 export class CodePanel {
   readonly root: Rect;
@@ -116,7 +115,7 @@ export class CodePanel {
     const owner = this.ownerOf(x);
     return {
       title: `${owner ? `${owner}  →  ` : ''}${x.symbol}`,
-      source: `${x.displayPath}:${x.lines[0]}–${x.lines[1]} @ ${x.tag} · ${short(x.commit)}`,
+      source: citation(x, {symbol: false}),
     };
   }
 

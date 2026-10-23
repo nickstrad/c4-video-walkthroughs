@@ -15,6 +15,14 @@ export type Excerpt = {
 /** Display form for engines without tab stops (Motion Canvas): tabs → spaces. */
 export const presentText = (x: Excerpt, tabWidth = 4) => x.text.replace(/\t/g, " ".repeat(tabWidth));
 
+/**
+ * On-screen provenance, generated so it is never typed by hand:
+ * `tag · sha7 · path:start–end · symbol`. Pass symbol: false when the
+ * symbol is already shown elsewhere.
+ */
+export const citation = (x: Excerpt, o: { symbol?: boolean } = {}) =>
+  [x.tag, x.commit.slice(0, 7), `${x.displayPath}:${x.lines[0]}–${x.lines[1]}`, ...(o.symbol === false ? [] : [x.symbol])].join(" · ");
+
 /** File line numbers for each excerpt line. */
 export const fileLines = (x: Excerpt) =>
   Array.from({ length: x.lines[1] - x.lines[0] + 1 }, (_, i) => x.lines[0] + i);

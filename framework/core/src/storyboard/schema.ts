@@ -38,9 +38,14 @@ export type NarrationConfig = {
   stepLead: number; // a step lights this long before its first word, s
 };
 
-/** A code range pinned at sources.code.commit. */
+/** A tag and the commit it must resolve to; a tag that has moved is refused. */
+export type Pin = { tag: string; commit: string };
+
+/** A code range pinned at sources.code.commit, or at its own `at`. */
 export type ExcerptSpec = {
   id: string;
+  /** Pin this excerpt at another commit of sources.code.repo (e.g. one symbol across versions). */
+  at?: Pin;
   path: string;
   blob: string; // git blob SHA of `path` at the commit
   symbol: string; // must appear at or above lines[1]

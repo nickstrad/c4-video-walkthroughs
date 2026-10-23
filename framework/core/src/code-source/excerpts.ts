@@ -24,11 +24,23 @@ export function lineBytes(file: Buffer, [a, b]: [number, number]): Buffer {
   return file.subarray(starts[a - 1], end);
 }
 
+/**
+ * Pin every excerpt. Each one is read at its own pin (`at`, else
+ * sources.code), so one storyboard can quote several commits; every tag must
+ * still resolve to the commit the storyboard expects.
+ */
 export function pinExcerpts(sb: Storyboard, g: Git, ds: Dataset): Excerpt[] {
-  const { tag, commit, repo, stripPrefix = "" } = sb.sources.code;
-  const tagSha = g.revParse(`${tag}^{commit}`);
-  if (tagSha !== commit) throw new Error(`tag ${tag} -> ${tagSha}, storyboard pins ${commit}`);
-  return sb.excerpts.map((x) => pinOne(x, g, ds, { tag, commit, repo, stripPrefix }));
+  const { repo, stripPrefix = "" } = sb.sources.code;
+  const checked = new Set<string>();
+  return sb.excerpts.map((x) => {
+    const { tag, commit } = x.at ?? sb.sources.code;
+    if (!checked.has(tag + commit)) {
+      const tagSha = g.revParse(`${tag}^{commit}`);
+      if (tagSha !== commit) throw new Error(`${x.at ? `excerpt ${x.id}: ` : ""}tag ${tag} -> ${tagSha}, storyboard pins ${commit}`);
+      checked.add(tag + commit);
+    }
+    return pinOne(x, g, ds, { tag, commit, repo, stripPrefix });
+  });
 }
 
 function pinOne(x: ExcerptSpec, g: Git, ds: Dataset, c: { tag: string; commit: string; repo: string; stripPrefix: string }): Excerpt {
