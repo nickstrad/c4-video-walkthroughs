@@ -43,6 +43,7 @@ export type NarrationConfig = {
   leadIn: number; // default silence before a scene's speech, s
   tail: number; // padding after the last spoken letter, s
   stepLead: number; // a step lights this long before its first word, s
+  lineGap?: number; // silence between the lines of a multi-line scene, s (default 0.4)
 };
 
 /** A tag and the commit it must resolve to; a tag that has moved is refused. */
@@ -105,8 +106,21 @@ export type NarrationSpec = {
   cues?: Record<string, string>;
 };
 
-type SceneBase = Line & {
+/** One of several separately voiced lines of a scene; each is its own take. */
+export type SceneLine = Line & {
   id: string;
+  take?: string; // take file stem; defaults to "<scene id>.<line id>"
+  gap?: number; // silence before this line, s; overrides NarrationConfig.lineGap
+};
+
+/**
+ * What a scene says is exactly one of: a `caption` (one take), `steps` (code
+ * scenes: a stepped walk voiced as one take) or `lines` (several takes, in
+ * order, each with its own caption).
+ */
+type SceneBase = Partial<Line> & {
+  id: string;
+  lines?: SceneLine[];
   narration?: NarrationSpec;
   minDuration?: number;
   act?: string; // Storyboard.acts id
@@ -159,8 +173,23 @@ export type SceneKind = Scene["kind"];
 export const DIAGRAM_KINDS = ["architecture-overview", "focus-element", "follow-request", "state-change"] as const;
 export const isCodeScene = (s: Scene): s is CodeScene => s.kind === "code-explanation";
 
-/** What TTS speaks for a scene: steps' parts joined by spaces, else the line. */
+const said = (l: Partial<Line>, id: string) => {
+  const t = l.speech ?? l.caption;
+  if (t === undefined) throw new Error(`${id}: nothing to say (no caption)`);
+  return t;
+};
+
+/** What TTS speaks for a single-take scene: steps' parts (joined by spaces), else the line. */
 export const spokenParts = (s: Scene): string[] =>
-  isCodeScene(s) && s.steps ? s.steps.map((st) => st.speech ?? st.caption) : [s.speech ?? s.caption];
-export const spokenText = (s: Scene): string => spokenParts(s).join(" ");
-export const takeId = (s: Scene): string => s.narration?.take ?? s.id;
+  isCodeScene(s) && s.steps ? s.steps.map((st) => said(st, `${s.id}.${st.id}`)) : [said(s, s.id)];
+
+/** One take of a scene: its file stem and exact text. */
+export type TakeSpec = { id: string; text: string; caption: string; gap?: number; lineId?: string };
+
+/** A scene's takes in speaking order: one per line, else one for the scene. */
+export function takesOf(s: Scene): TakeSpec[] {
+  if (s.lines) return s.lines.map((l) => ({ id: l.take ?? `${s.id}.${l.id}`, text: said(l, `${s.id}.${l.id}`), caption: l.caption, gap: l.gap, lineId: l.id }));
+  return [{ id: s.narration?.take ?? s.id, text: spokenParts(s).join(" "), caption: s.caption ?? "" }];
+}
+/** Everything a scene says, its takes joined by spaces (prosody context for neighbours). */
+export const spokenText = (s: Scene): string => takesOf(s).map((t) => t.text).join(" ");

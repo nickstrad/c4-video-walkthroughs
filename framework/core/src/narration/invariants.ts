@@ -2,7 +2,7 @@
 // verify.mjs, audit-34 item 3.5). Pure: returns problems, empty when the
 // timeline is sound. It catches retime regressions that would otherwise only
 // show up as a cut word or a drifting cue in a finished video.
-import { spokenText, takeId, type Storyboard } from "../storyboard/schema.ts";
+import { takesOf, type Storyboard } from "../storyboard/schema.ts";
 import type { TakeRecord, Timeline } from "./types.ts";
 
 /** A line must end at least this long before its scene cuts, s. */
@@ -25,7 +25,12 @@ export function validateTimeline(tl: Timeline, sb: Storyboard, takes: Record<str
     frame += s.frames;
     const [a, z] = s.speech;
     if (!(a >= 0 && z > a)) err(`${s.id}: speech span ${a}-${z}`);
-    if (z + CUT_MARGIN > s.duration + EPS) err(`${s.id}: speech ends at ${z} s, less than ${CUT_MARGIN} s before the cut at ${s.duration} s`);
+    if (!s.takes.length || s.takes[0].at !== a || s.takes.at(-1)!.speech[1] !== z) err(`${s.id}: speech span disagrees with its takes`);
+    // Every line ends CUT_MARGIN before the next line starts, or before the scene cuts.
+    s.takes.forEach((t, k) => {
+      const cut = s.takes[k + 1]?.at ?? s.duration;
+      if (t.speech[1] + CUT_MARGIN > cut + EPS) err(`${t.take}: speech ends at ${t.speech[1]} s, less than ${CUT_MARGIN} s before the cut at ${cut} s`);
+    });
     for (const [name, at] of Object.entries(s.cues)) if (!(at >= 0 && at < s.duration)) err(`${s.id}: cue ${name} at ${at} s is outside the scene`);
     let prev = 0;
     for (const st of s.steps ?? []) {
@@ -41,19 +46,19 @@ export function validateTimeline(tl: Timeline, sb: Storyboard, takes: Record<str
   tl.captions.forEach((c, i) => {
     const s = scenes.get(c.sceneId);
     if (!s) return err(`caption "${c.text}" names no scene ${c.sceneId}`);
-    // Absolute caption times are rounded once, scene start and duration separately: allow 1 ms.
-    if (c.start + 1e-3 < s.start || c.end > s.start + s.duration + 1e-3 || c.end <= c.start) err(`${c.sceneId}: caption ${c.start}-${c.end} outside its scene`);
+    // Caption times are rounded once, scene start and duration separately: allow 1 ms each.
+    if (c.start + 2e-3 < s.start || c.end > s.start + s.duration + 2e-3 || c.end <= c.start) err(`${c.sceneId}: caption ${c.start}-${c.end} outside its scene`);
     const next = tl.captions[i + 1];
     if (next && next.start + EPS < c.end) err(`${c.sceneId}: caption overlaps the next one (${c.end} > ${next.start})`);
   });
 
-  for (const s of sb.scenes) {
-    const take = takes[takeId(s)];
-    if (!take) { err(`${s.id}: no take ${takeId(s)}`); continue; }
-    if (take.text !== spokenText(s)) err(`${s.id}: take text differs from the storyboard's spoken text`);
-    if (take.alignment.characters.join("") !== take.text) err(`${s.id}: alignment does not cover the take text 1:1`);
-    if (take.model !== sb.narration.model) err(`${s.id}: take voiced with ${take.model}, storyboard says ${sb.narration.model}`);
-    if (take.outputFormat !== sb.narration.outputFormat) err(`${s.id}: take format ${take.outputFormat}, storyboard says ${sb.narration.outputFormat}`);
+  for (const s of sb.scenes) for (const t of takesOf(s)) {
+    const take = takes[t.id];
+    if (!take) { err(`${s.id}: no take ${t.id}`); continue; }
+    if (take.text !== t.text) err(`${t.id}: take text differs from the storyboard's spoken text`);
+    if (take.alignment.characters.join("") !== take.text) err(`${t.id}: alignment does not cover the take text 1:1`);
+    if (take.model !== sb.narration.model) err(`${t.id}: take voiced with ${take.model}, storyboard says ${sb.narration.model}`);
+    if (take.outputFormat !== sb.narration.outputFormat) err(`${t.id}: take format ${take.outputFormat}, storyboard says ${sb.narration.outputFormat}`);
   }
   return errs;
 }

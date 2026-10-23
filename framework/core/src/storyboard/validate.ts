@@ -55,6 +55,13 @@ export function validateStoryboard(sb: Storyboard, views: Record<string, View>):
   };
 
   for (const s of sb.scenes) {
+    const says = [s.caption !== undefined, isCodeScene(s) && !!s.steps, !!s.lines].filter(Boolean).length;
+    if (says !== 1) err(`${s.id}: a scene says exactly one of caption, steps or lines`);
+    if (s.lines) {
+      if (!s.lines.length) err(`${s.id}: lines is empty`);
+      if (new Set(s.lines.map((l) => l.id)).size !== s.lines.length) err(`${s.id}: duplicate line id`);
+      if (s.narration?.take) err(`${s.id}: narration.take names one take; a multi-line scene sets take per line`);
+    }
     for (const c of s.state ?? []) {
       if (!fields.has(c.field)) err(`${s.id}: state field ${c.field} not in statePanel`);
       checkCue(s, c.cue);

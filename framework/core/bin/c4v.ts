@@ -116,7 +116,7 @@ function verify() {
   die("verify", errs);
   for (const x of excerpts) console.log(`  ok ${x.id.padEnd(13)} ${x.displayPath}:${x.lines.join("-")} @ ${x.commit.slice(0, 7)} blob ${x.blob.slice(0, 7)} sha256 ${x.sha256.slice(0, 12)} (${Buffer.byteLength(x.text)} B byte-identical)`);
   console.log(`  ok dataset snapshot byte-identical to ${sb.sources.dataset.path} @ ${sb.sources.dataset.commit.slice(0, 7)}`);
-  console.log(`  ok ${sb.scenes.length} takes match their spoken text and model; timeline invariants hold; bundle timeline reproduces`);
+  console.log(`  ok ${Object.keys(loadTakes(sb, takesDir)).length} takes match their spoken text and model; timeline invariants hold; bundle timeline reproduces`);
   console.log("verify: pass");
 }
 
@@ -143,6 +143,6 @@ else if (cmd === "verify") verify();
 else if (cmd === "proof") proof();
 else {
   const missing = missingTakes(sb, takesDir);
-  if (!missing.length) console.log("narrate: every scene has a take; nothing to voice (0 characters)");
+  if (!missing.length) console.log("narrate: every take is on disk; nothing to voice (0 characters)");
   else console.log(`narrate: voiced ${await synthesizeMissing(sb, takesDir)} characters`);
 }

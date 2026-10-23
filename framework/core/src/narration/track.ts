@@ -1,6 +1,6 @@
 // One mono narration track for the whole video, from option 2's narrate.mjs:
-// each take is placed at its scene start + lead-in and cut where its scene
-// ends with a 20 ms fade. A guard fails the build if the cut would drop
+// each take is placed at its scene start + its offset in the scene, and cut
+// with a 20 ms fade where the next take of the scene starts or the scene ends. A guard fails the build if the cut would drop
 // speech: no 10 ms window past the cut may exceed -40 dBFS, except the clip's
 // last 50 ms, where decoded MP3s carry an end-of-stream click.
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
@@ -41,19 +41,19 @@ export function mixTrack(tl: Timeline, takesDir: string, pad = 1): Buffer {
   const RATE = tl.audio.sampleRate;
   const W = RATE / 100;
   const track = new Int16Array(Math.ceil((tl.total + pad) * RATE));
-  for (const s of tl.scenes) {
-    const samples = decodeMono(path.join(takesDir, `${s.take}.mp3`), RATE);
-    const cut = Math.round((s.duration - s.leadIn) * RATE);
+  for (const s of tl.scenes) s.takes.forEach((t, i) => {
+    const samples = decodeMono(path.join(takesDir, `${t.take}.mp3`), RATE);
+    const cut = Math.round(((s.takes[i + 1]?.at ?? s.duration) - t.at) * RATE);
     for (let k = cut; k + W <= samples.length - RATE / 20; k += W) {
       let e = 0;
       for (let j = k; j < k + W; j++) e += samples[j] * samples[j];
       const db = 10 * Math.log10(e / W / 32767 ** 2 + 1e-12);
-      if (db > -40) throw new Error(`${s.id}: audio at ${(k / RATE).toFixed(2)}s (${db.toFixed(0)} dBFS) would be cut off`);
+      if (db > -40) throw new Error(`${t.take}: audio at ${(k / RATE).toFixed(2)}s (${db.toFixed(0)} dBFS) would be cut off`);
     }
     const kept = samples.slice(0, Math.min(cut, samples.length));
     const fade = Math.min(kept.length, RATE / 50);
     for (let j = 0; j < fade; j++) kept[kept.length - 1 - j] = Math.round((kept[kept.length - 1 - j] * j) / fade);
-    track.set(kept, Math.round((s.start + s.leadIn) * RATE));
-  }
+    track.set(kept, Math.round((s.start + t.at) * RATE));
+  });
   return wav(track, RATE);
 }

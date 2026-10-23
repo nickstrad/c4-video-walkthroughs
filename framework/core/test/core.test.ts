@@ -83,7 +83,7 @@ test("timeline invariants hold, and catch a retime regression", () => {
   assert.deepEqual(validateTimeline(tl, sb, takes), []);
   const bad = structuredClone(tl);
   bad.scenes[3].startFrame += 1;
-  bad.scenes[5].speech[1] = bad.scenes[5].duration - 0.1;
+  bad.scenes[5].takes[0].speech[1] = bad.scenes[5].speech[1] = bad.scenes[5].duration - 0.1;
   bad.captions[2].end = bad.captions[3].start + 0.5;
   const errs = validateTimeline(bad, sb, takes).join("\n");
   assert.match(errs, /starts at frame/);
@@ -116,4 +116,33 @@ test("skipped selections are carried by focusOf", () => {
   s6.focus[0].skipped = true;
   assert.equal(focusOf({ ...bundle, storyboard: sk }, "s6-read-only")[0].skipped, true);
   assert.equal(focusOf(bundle, "s6-read-only")[0].skipped, undefined);
+});
+
+const fakeTake = (sceneId: string, text: string, per = 0.06): TakeRecord => {
+  const chars = [...text];
+  const a = { characters: chars, character_start_times_seconds: chars.map((_, i) => i * per), character_end_times_seconds: chars.map((_, i) => (i + 1) * per) };
+  return { sceneId, text, voiceId: "v", model: sb.narration.model, outputFormat: sb.narration.outputFormat, characters: chars.length, alignment: a, normalized_alignment: a };
+};
+
+test("multi-line scenes chain separate takes, each measured to its last letter", () => {
+  const ml = structuredClone(sb);
+  const s1 = ml.scenes[0];
+  delete s1.caption;
+  s1.lines = [
+    { id: "a", caption: "A tenant app sends a read." },
+    { id: "b", caption: "It carries SQL and a key.", gap: 0.5 },
+  ];
+  s1.narration = { cues: { send: "sends", key: "a key" } };
+  const t = { ...takes, "s1-request.a": fakeTake("s1-request", "A tenant app sends a read."), "s1-request.b": fakeTake("s1-request", "It carries SQL and a key.") };
+  const tl = buildTimeline(ml, t);
+  const [a, b] = tl.scenes[0].takes;
+  assert.equal(a.at, 0.2);
+  assert.equal(a.speech[1], 0.2 + 25 * 0.06); // "read" ends at char 25; the "." is not speech
+  assert.equal(b.at, +(a.speech[1] + 0.5).toFixed(3));
+  assert.equal(tl.scenes[0].cues.key, +(b.at + 19 * 0.06).toFixed(3));
+  assert.deepEqual(tl.captions.slice(0, 2).map((c) => [c.lineId, c.start]), [["a", 0], ["b", b.at]]);
+  assert.deepEqual(validateTimeline(tl, ml, t), []);
+  // A phrase in both lines is refused rather than bound to the first match.
+  ml.scenes[0].narration!.cues = { a: "a " };
+  assert.throws(() => buildTimeline(ml, t), /occurs 2 times/);
 });

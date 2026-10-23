@@ -561,7 +561,16 @@
    {
     "id": "s1-request",
     "kind": "follow-request",
-    "take": "s1-request",
+    "takes": [
+     {
+      "take": "s1-request",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.275
+      ]
+     }
+    ],
     "startFrame": 0,
     "frames": 141,
     "start": 0,
@@ -578,7 +587,16 @@
    {
     "id": "s2-balance",
     "kind": "follow-request",
-    "take": "s2-balance",
+    "takes": [
+     {
+      "take": "s2-balance",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       2.336
+      ]
+     }
+    ],
     "startFrame": 141,
     "frames": 83,
     "start": 4.7,
@@ -595,7 +613,16 @@
    {
     "id": "s3-cache-hit",
     "kind": "state-change",
-    "take": "s3-cache-hit",
+    "takes": [
+     {
+      "take": "s3-cache-hit",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       5.332
+      ]
+     }
+    ],
     "startFrame": 224,
     "frames": 172,
     "start": 7.467,
@@ -613,7 +640,16 @@
    {
     "id": "s4-forward",
     "kind": "follow-request",
-    "take": "s4-forward",
+    "takes": [
+     {
+      "take": "s4-forward",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.519
+      ]
+     }
+    ],
     "startFrame": 396,
     "frames": 148,
     "start": 13.2,
@@ -631,7 +667,16 @@
    {
     "id": "n-overview",
     "kind": "architecture-overview",
-    "take": "n-overview",
+    "takes": [
+     {
+      "take": "n-overview",
+      "at": 0.5,
+      "speech": [
+       0.5,
+       7.187
+      ]
+     }
+    ],
     "startFrame": 544,
     "frames": 228,
     "start": 18.133,
@@ -646,7 +691,16 @@
    {
     "id": "n-focus",
     "kind": "focus-element",
-    "take": "n-focus",
+    "takes": [
+     {
+      "take": "n-focus",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       3.992
+      ]
+     }
+    ],
     "startFrame": 772,
     "frames": 132,
     "start": 25.733,
@@ -661,7 +715,16 @@
    {
     "id": "s5-into-code",
     "kind": "code-explanation",
-    "take": "s5-into-code",
+    "takes": [
+     {
+      "take": "s5-into-code",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       6.028
+      ]
+     }
+    ],
     "startFrame": 904,
     "frames": 193,
     "start": 30.133,
@@ -678,7 +741,16 @@
    {
     "id": "s6-read-only",
     "kind": "code-explanation",
-    "take": "s6-read-only",
+    "takes": [
+     {
+      "take": "s6-read-only",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.078
+      ]
+     }
+    ],
     "startFrame": 1097,
     "frames": 135,
     "start": 36.567,
@@ -695,7 +767,16 @@
    {
     "id": "s7-epoch",
     "kind": "code-explanation",
-    "take": "s7-epoch",
+    "takes": [
+     {
+      "take": "s7-epoch",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.275
+      ]
+     }
+    ],
     "startFrame": 1232,
     "frames": 141,
     "start": 41.067,
@@ -712,7 +793,16 @@
    {
     "id": "s8-lane",
     "kind": "code-explanation",
-    "take": "s8-lane",
+    "takes": [
+     {
+      "take": "s8-lane",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.798
+      ]
+     }
+    ],
     "startFrame": 1373,
     "frames": 156,
     "start": 45.767,
@@ -729,7 +819,16 @@
    {
     "id": "n-acquire",
     "kind": "code-explanation",
-    "take": "n-acquire",
+    "takes": [
+     {
+      "take": "n-acquire",
+      "at": 1,
+      "speech": [
+       1,
+       33.984
+      ]
+     }
+    ],
     "startFrame": 1529,
     "frames": 1032,
     "start": 50.967,
@@ -771,7 +870,16 @@
    {
     "id": "s9-rows",
     "kind": "code-explanation",
-    "take": "s9-rows",
+    "takes": [
+     {
+      "take": "s9-rows",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       4.078
+      ]
+     }
+    ],
     "startFrame": 2561,
     "frames": 135,
     "start": 85.367,
@@ -789,7 +897,16 @@
    {
     "id": "s10-caps",
     "kind": "code-explanation",
-    "take": "s10-caps",
+    "takes": [
+     {
+      "take": "s10-caps",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       6.609
+      ]
+     }
+    ],
     "startFrame": 2696,
     "frames": 211,
     "start": 89.867,
@@ -808,7 +925,16 @@
    {
     "id": "s11-reply",
     "kind": "follow-request",
-    "take": "s11-reply",
+    "takes": [
+     {
+      "take": "s11-reply",
+      "at": 0.2,
+      "speech": [
+       0.2,
+       3.95
+      ]
+     }
+    ],
     "startFrame": 2907,
     "frames": 131,
     "start": 96.9,

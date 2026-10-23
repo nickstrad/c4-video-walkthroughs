@@ -20,7 +20,7 @@ test("output proof passes the committed render and catches a timeline it does no
   assert.deepEqual(proveOutput(mp4, bundle.timeline).errors, []);
   const tl = structuredClone(bundle.timeline);
   tl.totalFrames += 1;
-  tl.scenes[0].speech = [0, 0.15]; // claims speech where the video is silent
+  tl.scenes[0].takes[0].speech = [0, 0.15]; // claims speech where the video is silent
   const errs = proveOutput(mp4, tl).errors.join("\n");
   assert.match(errs, /3050 frames, timeline 3051/);
   assert.match(errs, /s1-request: -\d/);
