@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "narrate": "node scripts/narrate.mjs",
     "render": "node scripts/render.mjs",
     "frames": "node scripts/frames.mjs"
   },

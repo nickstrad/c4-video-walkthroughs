@@ -92,7 +92,13 @@
         "tenant",
         "ingress"
       ],
-      "caption": "A tenant app sends a read: SQL plus a bearer API key."
+      "caption": "A tenant app sends a read: SQL plus a bearer API key.",
+      "narration": {
+        "text": "A tenant app sends a read: SQL plus a bearer API key.",
+        "cues": {
+          "send": "sends"
+        }
+      }
     },
     {
       "id": "s2-balance",
@@ -104,7 +110,13 @@
         "ingress",
         "gateway"
       ],
-      "caption": "HAProxy picks a healthy gateway."
+      "caption": "HAProxy picks a healthy gateway.",
+      "narration": {
+        "text": "H-A-Proxy picks a healthy gateway.",
+        "cues": {
+          "travel": "picks"
+        }
+      }
     },
     {
       "id": "s3-cache-hit",
@@ -116,7 +128,14 @@
         "control",
         "registry"
       ],
-      "caption": "Route cache hit: steps 3-5 (control plane, registry) are skipped."
+      "caption": "Route cache hit: steps 3-5 (control plane, registry) are skipped.",
+      "narration": {
+        "text": "Route cache hit. Steps three to five, the control plane and the registry, are skipped.",
+        "cues": {
+          "badge": "cache hit",
+          "skip": "Steps three"
+        }
+      }
     },
     {
       "id": "s4-forward",
@@ -128,7 +147,14 @@
         "gateway",
         "node"
       ],
-      "caption": "The gateway posts the query and the route's epoch (X-Epoch) to the owning node."
+      "caption": "The gateway posts the query and the route's epoch (X-Epoch) to the owning node.",
+      "narration": {
+        "text": "The gateway posts the query and the route's epoch, X-Epoch, to the owning node.",
+        "cues": {
+          "relabel": "posts",
+          "travel": "the route"
+        }
+      }
     },
     {
       "id": "s5-into-code",
@@ -137,7 +163,13 @@
       "datasetStep": "query-flow-step-7",
       "focus": "node",
       "snippet": "query-guards",
-      "caption": "Inside the node: Engine.Query, exec.go at release-it/v1-hardened."
+      "caption": "Inside the node: Engine.Query, exec.go at release-it/v1-hardened.",
+      "narration": {
+        "text": "Inside the node: Engine dot Query, in exec dot go, at release-it v1 hardened.",
+        "cues": {
+          "open": "Engine"
+        }
+      }
     },
     {
       "id": "s6-read-only",
@@ -148,7 +180,13 @@
         134,
         136
       ],
-      "caption": "Only a single read statement is accepted here; writes go to execute."
+      "caption": "Only a single read statement is accepted here; writes go to execute.",
+      "narration": {
+        "text": "Only a single read statement is accepted here; writes go to execute.",
+        "cues": {
+          "highlight": "single read"
+        }
+      }
     },
     {
       "id": "s7-epoch",
@@ -162,7 +200,13 @@
       "state": {
         "epoch": "checked"
       },
-      "caption": "admit: the node serves only requests routed with the database's current epoch."
+      "caption": "admit: the node serves only requests routed with the database's current epoch.",
+      "narration": {
+        "text": "Admit: the node serves only requests routed with the database's current epoch.",
+        "cues": {
+          "check": "current epoch"
+        }
+      }
     },
     {
       "id": "s8-lane",
@@ -176,7 +220,13 @@
       "state": {
         "readLanes": 1
       },
-      "caption": "acquire takes a read lane: the per-database bulkhead (2 readers at once)."
+      "caption": "acquire takes a read lane: the per-database bulkhead (2 readers at once).",
+      "narration": {
+        "text": "Acquire takes a read lane: the per-database bulkhead, two readers at once.",
+        "cues": {
+          "fill": "read lane"
+        }
+      }
     },
     {
       "id": "s9-rows",
@@ -201,7 +251,14 @@
           214,
           216
         ]
-      ]
+      ],
+      "narration": {
+        "text": "Rows are scanned from the tenant's SQLite file and streamed as they arrive.",
+        "cues": {
+          "fetch": "scanned",
+          "stream": "streamed"
+        }
+      }
     },
     {
       "id": "s10-caps",
@@ -221,7 +278,15 @@
       "state": {
         "truncated": true
       },
-      "caption": "Capped at MaxRows (1000) or MaxBytes (1 MiB): the answer says truncated."
+      "caption": "Capped at MaxRows (1000) or MaxBytes (1 MiB): the answer says truncated.",
+      "narration": {
+        "text": "Capped at Max Rows, one thousand, or Max Bytes, one mebibyte: the answer says truncated.",
+        "cues": {
+          "rows": "Max Rows",
+          "bytes": "Max Bytes",
+          "truncated": "truncated"
+        }
+      }
     },
     {
       "id": "s11-reply",
@@ -234,11 +299,27 @@
         "ingress",
         "tenant"
       ],
-      "caption": "Capped rows stream back through gateway and HAProxy to the tenant."
+      "caption": "Capped rows stream back through gateway and HAProxy to the tenant.",
+      "narration": {
+        "text": "Capped rows stream back through gateway and H-A-Proxy to the tenant.",
+        "cues": {
+          "gateway": "gateway",
+          "ingress": "H-A-Proxy",
+          "tenant": "to the tenant"
+        }
+      }
     }
   ],
   "narration": {
-    "status": "stubbed",
-    "note": "Captions carry the narration text. When ElevenLabs timing arrives, each scene's duration is replaced by its narration span; the scene code reads durations only from this file."
+    "status": "voiced",
+    "provider": "ElevenLabs text-to-speech/with-timestamps",
+    "voice": {
+      "name": "Roger",
+      "id": "CwhRBWXzGAHq8TQ4Fs17"
+    },
+    "model": "eleven_multilingual_v2",
+    "leadIn": 0.2,
+    "tail": 0.4,
+    "note": "Each scene.narration.text is the spoken form of scene.caption (edits for speakability only, listed in NOTES.md). scripts/narrate.mjs voices each line once into narration/<scene>.mp3 + .alignment.json, then derives narration/timeline.json: scene duration = max(storyboard duration, leadIn + last character end + tail), frame-rounded, and each cue = leadIn + start of its anchor phrase. The scene reads durations and cue times only from timeline.json."
   }
 }

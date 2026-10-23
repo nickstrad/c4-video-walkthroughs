@@ -20,12 +20,12 @@ import {
   createSignal,
   delay,
   easeInOutCubic,
-  sequence,
   waitFor,
 } from '@motion-canvas/core';
 import {parser} from '@lezer/go';
 import board from '../../storyboard/query-flow.storyboard.json';
 import extracted from '../snippets.json';
+import timeline from '../../narration/timeline.json';
 
 Code.defaultHighlighter = new LezerHighlighter(parser);
 
@@ -48,6 +48,14 @@ type Scene = {id: string; duration: number; caption: string; snippet?: string; h
 const snippets = extracted.snippets as unknown as Record<string, Snippet>;
 const scenes = board.scenes as unknown as Scene[];
 const scene = (id: string) => scenes.find(s => s.id === id)!;
+// Durations and cue times come from the narration alignment (scripts/narrate.mjs).
+type Timed = {id: string; duration: number; cues: Record<string, number>};
+const timed = (id: string) => (timeline.scenes as Timed[]).find(s => s.id === id)!;
+const cue = (id: string, name: string) => {
+  const t = timed(id).cues[name];
+  if (t === undefined) throw new Error(`no cue ${id}.${name}`);
+  return t;
+};
 
 // Phase A layout: the query-flow dynamic view, cache-hit path in the bottom row.
 const POS: Record<string, [number, number]> = {
@@ -254,10 +262,15 @@ export default makeScene2D(function* (view) {
     caption().text(s.caption);
     yield* caption().opacity(1, 0.2);
   }
-  // Each storyboard scene lasts exactly its duration; animations run inside it.
+  // Each storyboard scene lasts exactly its narrated duration; animations run inside it.
   function* beat(id: string, ...anims: ThreadGenerator[]) {
-    yield* all(say(id), waitFor(scene(id).duration), ...anims);
+    yield* all(say(id), waitFor(timed(id).duration), ...anims);
   }
+  // Start an animation when the narration reaches the scene's named cue phrase.
+  const on = (id: string, name: string, anim: ThreadGenerator) => delay(cue(id, name), anim);
+  // Start a hop so the packet arrives as its cue phrase is spoken.
+  const arrive = (id: string, name: string, from: string, to: string, t: number) =>
+    delay(Math.max(0, cue(id, name) - t), travel(from, to, undefined, t));
   function* light(id: string, on = true) {
     yield* boxes[id]().stroke(on ? C.accent : C.border, 0.3);
   }
@@ -274,17 +287,18 @@ export default makeScene2D(function* (view) {
   yield* all(
     packet().opacity(1, 0.3),
     light('tenant'),
-    beat('s1-request', delay(0.5, travel('tenant', 'ingress', 'tenant-edge'))),
+    beat('s1-request', on('s1-request', 'send', travel('tenant', 'ingress', 'tenant-edge'))),
   );
-  yield* beat('s2-balance', travel('ingress', 'gateway', 'balance'));
+  yield* beat('s2-balance', on('s2-balance', 'travel', travel('ingress', 'gateway', 'balance')));
   yield* beat(
     's3-cache-hit',
-    cacheBadge().opacity(1, 0.4),
-    delay(0.4, all(boxes.control().opacity(0.3, 0.5), boxes.registry().opacity(0.3, 0.5), edges.resolve().opacity(0.3, 0.5), edges['sql-registry']().opacity(0.3, 0.5), skipTag().opacity(1, 0.5))),
+    on('s3-cache-hit', 'badge', cacheBadge().opacity(1, 0.4)),
+    on('s3-cache-hit', 'skip', all(boxes.control().opacity(0.3, 0.5), boxes.registry().opacity(0.3, 0.5), edges.resolve().opacity(0.3, 0.5), edges['sql-registry']().opacity(0.3, 0.5), skipTag().opacity(1, 0.5))),
   );
   yield* beat(
     's4-forward',
-    chain(packetLabel().text('SQL + X-Epoch', 0.3), travel('gateway', 'node', 'forward')),
+    on('s4-forward', 'relabel', packetLabel().text('SQL + X-Epoch', 0.3)),
+    on('s4-forward', 'travel', travel('gateway', 'node', 'forward')),
   );
 
   // Scene 5: the camera pulls the diagram into a top strip and opens the node's code.
@@ -299,22 +313,22 @@ export default makeScene2D(function* (view) {
     title().opacity(0, 0.4),
     skipTag().opacity(0, 0.4),
     boxes.node().fill('#1f2a3a', 0.6),
-    delay(0.4, all(panel().opacity(1, 0.5), state().opacity(1, 0.5))),
+    on('s5-into-code', 'open', all(panel().opacity(1, 0.5), state().opacity(1, 0.5))),
   );
 
   const s6 = scene('s6-read-only');
-  yield* beat('s6-read-only', code().selection(select(guards, [s6.highlight!]), 0.5));
+  yield* beat('s6-read-only', on('s6-read-only', 'highlight', code().selection(select(guards, [s6.highlight!]), 0.5)));
   const s7 = scene('s7-epoch');
   yield* beat(
     's7-epoch',
     code().selection(select(guards, [s7.highlight!]), 0.5),
-    delay(0.6, all(epochTxt().text('matches handle epoch ✓', 0.4), epochTxt().fill(C.ok, 0.4))),
+    on('s7-epoch', 'check', all(epochTxt().text('matches handle epoch ✓', 0.4), epochTxt().fill(C.ok, 0.4))),
   );
   const s8 = scene('s8-lane');
   yield* beat(
     's8-lane',
     code().selection(select(guards, [s8.highlight!]), 0.5),
-    delay(0.6, all(lanes[0]().fill(C.packet, 0.3), lanes[0]().stroke(C.packet, 0.3))),
+    on('s8-lane', 'fill', all(lanes[0]().fill(C.packet, 0.3), lanes[0]().stroke(C.packet, 0.3))),
   );
 
   // Scene 9: the code morphs to the row loop while rows stream from the file.
@@ -331,25 +345,26 @@ export default makeScene2D(function* (view) {
       ),
       code().selection(select(caps, s9.highlights!), 0.4),
     ),
-    chain(packetLabel().text('rows', 0.2), travel('node', 'tenant-files', 'sql-tenant', 0.9), travel('tenant-files', 'node', undefined, 0.7)),
-    delay(0.9, rows(640, 1.6)),
+    on('s9-rows', 'fetch', chain(packetLabel().text('rows', 0.2), travel('node', 'tenant-files', 'sql-tenant', 0.9), travel('tenant-files', 'node', undefined, 0.7))),
+    on('s9-rows', 'stream', rows(640, 1.2)),
   );
   const s10 = scene('s10-caps');
   yield* beat(
     's10-caps',
-    code().selection(select(caps, s10.highlights!), 0.5),
-    sequence(0.2, rows(1000, 0.8), all(truncTxt().text('true', 0.3), truncTxt().fill(C.warn, 0.3))),
+    // MaxRows lights first, MaxBytes joins as each is named.
+    code().selection(select(caps, s10.highlights!.slice(0, 1)), 0.5),
+    on('s10-caps', 'rows', rows(1000, 0.8)),
+    on('s10-caps', 'bytes', code().selection(select(caps, s10.highlights!), 0.5)),
+    on('s10-caps', 'truncated', all(truncTxt().text('true', 0.3), truncTxt().fill(C.warn, 0.3))),
   );
 
   // Scene 11: the capped answer streams back to the tenant.
   yield* beat(
     's11-reply',
     all(code().selection(lines(0, Infinity), 0.4), lanes[0]().fill(C.bg, 0.4), packetLabel().text('rows + "truncated": true', 0.3)),
-    chain(
-      travel('node', 'gateway', undefined, 0.6),
-      travel('gateway', 'ingress', undefined, 0.6),
-      travel('ingress', 'tenant', undefined, 0.6),
-    ),
+    arrive('s11-reply', 'gateway', 'node', 'gateway', 0.6),
+    arrive('s11-reply', 'ingress', 'gateway', 'ingress', 0.6),
+    arrive('s11-reply', 'tenant', 'ingress', 'tenant', 0.6),
   );
   yield* waitFor(0.4);
 });
