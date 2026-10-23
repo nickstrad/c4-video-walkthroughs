@@ -21,7 +21,10 @@ beat. Experimenting is editing `storyboard.json`: reorder beats, drop the
 optional ones, swap a variant, add a new one, and `c4v verify` tells you
 whether the result still holds together. The existing `acts` field becomes the
 seam the arc hangs on, so the 14-scene litefleet storyboard keeps working
-unchanged (an arc-less storyboard is one implicit beat).
+unchanged (an arc-less storyboard is one implicit beat). A pointer (repo,
+commit, target) is a second way in: § 7 derives the arc from it and emits the
+same storyboard, so point-and-shoot videos and authored ones share every step
+after that.
 
 ```
                  storyboard.json
@@ -555,7 +558,239 @@ needs) and **series machinery with chapter markers** (it is what turns single
 videos into the playlist Nick is aiming at, for the cost of one data file and
 one pure function).
 
-## 7. Build sequence
+## 7. Point-and-shoot entry mode: a pointer in, a video out
+
+Nick's addition after the draft: he wants to point at something interesting
+in a codebase and get a video for it, with no storyboard authoring and no arc
+selection up front. This section specifies that mode as a **front door** onto
+everything above: it derives a `walkthrough` arc from a pointer, emits an
+ordinary storyboard, and hands over to the pipeline already planned. Nothing
+in a renderer changes except one ribbon (§ 7.4).
+
+### 7.1 The input: a pointer
+
+The only required input is a pointer: a repo, a pinned commit, and a target.
+An optional one-line note says why the thing is interesting.
+
+```ts
+export type Pointer = {
+  repo: string;                       // owner/name, as sources.code.repo
+  commit: string;                     // a SHA; a tag or branch given at the CLI is
+                                      // resolved to its SHA at point time and both are kept
+  target:
+    | { kind: "file";    path: string }
+    | { kind: "symbol";  path: string; symbol: string }       // function, method, type
+    | { kind: "range";   path: string; lines: Range }
+    | { kind: "element"; elementId: string; diagramId?: string }   // a C4 diagram element
+  why?: string;                       // one line, optional; becomes draft claim 1 (§ 7.2)
+  dataset?: Storyboard["sources"]["dataset"];   // optional; see decision 7 when absent
+};
+```
+
+Paths are repo-root paths at the pin (what `git ls-tree` prints), so a
+pointer into litefleet reads `books/release-it/project/internal/engine/exec.go`;
+`sources.code.stripPrefix` is applied for display only, as today. Two ways in,
+both producing the same `pointer.json` under the project:
+
+```
+c4v point <project> --repo nickstrad/book-notes --at release-it/v1-hardened \
+  --target 'books/release-it/project/internal/engine/exec.go:func (e *Engine) Query' \
+  --why "every query is guarded before it touches SQLite"
+
+c4v point <project> --pointer pointer.json
+```
+
+`--target` is parsed as `path`, `path:symbol`, `path:a-b` (a range) or
+`element:<id>`; `--why` is free text. On the platform (canvas § 1) the
+pointer is the job's admit payload instead of a storyboard, and it carries
+the same provenance rule: the SHA is frozen at request time.
+
+### 7.2 How the arc is derived from the pointer
+
+Derivation is split in two so the shape is testable without a model: a
+**deterministic skeleton** that core computes from the pointer, the pinned
+tree and the dataset, then the **AI mapping step** that fills words and
+drafts the close inside the skeleton's bounds. The skeleton is where the
+existing beats are chosen; the model never picks beats.
+
+**Step 1, resolve the target to a locus** (`path`, `lines`, `symbol`):
+
+- `symbol` → the line where `symbol` starts, through to the symbol's closing
+  line, under the existing excerpt rule (the symbol is declared at or above
+  the range; `wholeFunction` and `closing` as the excerpt format already
+  has them). Found by
+  `git grep -n` over the pinned tree first; Tree-sitter when the language has
+  a grammar wired in (decision 8).
+- `range` → as given; `symbol` is the nearest declaration above `lines[0]`,
+  else a description (an evidence excerpt).
+- `file` → the file's top-level declarations, ranked by size and by how many
+  other files reference them; the top one becomes the locus and the next two
+  become deep-dive candidates.
+- `element` → the element's `sourceIds` → `dataset.sources[].path` (and
+  `notes`, which in the book-notes format names the symbol) → the first
+  source's path and symbol become the locus; the rest become candidates.
+
+**Step 2, resolve the locus to the dataset** (the inverse of step 1's last
+case). Collect dataset sources whose `path` equals the locus path, then the
+elements and **relationships** that cite them. litefleet's `exec.go` is cited
+by three relationships and no element, so the rule must walk relationship
+endpoints: an element that cites the source directly wins; else the
+endpoints of citing relationships that are inside the system (not external);
+ties go to the deepest element (longest `parentId` chain), which for `exec.go`
+is `nd-engine` through `n-engine-handles`. The **focus view** is the deepest
+diagram whose nodes include that element (`node-components`), and the
+**descent chain** is the `detail.diagramId` path from the context view to it
+(`context → containers → node-components`), which is what the `architecture`
+beat's `descend` (§ 2.2, item 6) already walks.
+
+**Step 3, find the neighbours** for the deep dive, read-only at the pin
+(`ingest/neighbors.ts`, node-only like § 3): callers and callees of the locus
+symbol inside the repo, found by `git grep -nw <name>` over the pinned tree
+and filtered to lines that are not the declaration. Rank: same file, then
+same directory, then the rest, with tests last; keep the top two as excerpt
+candidates and record the full ranked list in `derived.candidates` (§ 7.3).
+Every candidate is turned into an `ExcerptSpec` by the existing pin and
+symbol machinery (`pinExcerpts`), so it is byte-checked like any excerpt. If
+the dataset relationship that cites the locus has an id, it goes on the
+excerpt as `relationshipId` and `datasetSourceId`, exactly as litefleet's
+`query-guards` excerpt does by hand.
+
+**Step 4, lay the beats** (all existing roles; `walkthrough` pattern):
+
+| Beat | Derived from | What the skeleton emits |
+|---|---|---|
+| `repo-intro` | `bundle.repo` (§ 3.1, item 4) and the README's first paragraph as an evidence excerpt | one `repo-card` scene, facts `commit, elements, containers, commits`; narration empty |
+| `architecture` | the descent chain from step 2 | one `architecture-overview` per level with `descend` on the element that opens the next; narration empty |
+| `focus` | the element from step 2, its `description`, its relationships in the focus view | one `focus-element` with `responsibilities` seeded from the description's clauses; one `follow-request` if a dynamic view passes through the element (litefleet: `usage-flow` does) |
+| `deep-dive` | the locus excerpt plus the top neighbours from step 3 | `code-explanation` scenes, `default` variant, one per excerpt, the locus first, context strip on the focus view |
+| `gains` | **drafted**, see below | one `gains-card` whose every claim carries `draft: true` |
+| `shoutout` | credits policy per decision 1 | present only if the default says so; its names are generated and verified as in § 2.6 |
+
+**Gains are drafted, never silently invented.** The close is the one beat a
+pointer cannot determine, because "what this code buys" is a judgement. The
+skeleton therefore emits claim *slots*, each with the evidence it may rest
+on, and the mapping step writes a sentence per slot. Slots, in order:
+
+1. The `why` note, verbatim, citing the locus excerpt (only if `why` was given).
+2. The element's `description` from the dataset, citing the locus excerpt.
+3. The doc comment or docstring immediately above the locus symbol, as an
+   evidence excerpt (pinned bytes, so the quote is checkable).
+4. Test names that reference the symbol (from step 3's grep, tests bucket), as
+   an evidence excerpt of the test file's relevant lines.
+
+A slot with no evidence is dropped, not filled. Each emitted claim is
+`{ lineId, excerpt, draft: true, basis: "why" | "description" | "doc-comment" | "tests" }`;
+the § 2.5 validation (claim cites an existing excerpt; a metric value must
+appear verbatim in it) applies unchanged, so a draft can still only say what
+the pinned repo contains. The flag is visible in three places:
+
+- **Storyboard**: `draft: true` on each claim and `draft: true` on the `gains`
+  act, so a reader of the JSON sees it before anything renders.
+- **Verify**: `c4v verify` reports every draft and **fails** unless run with
+  `--allow-drafts` (decision 6 fixes whether fail or warn). `c4v proof`
+  refuses an MP4 built from a storyboard with drafts, so an unconfirmed close
+  cannot be published through the pipeline.
+- **Render**: both renderers draw a `DRAFT` ribbon over a draft claim on the
+  gains card, from `claimsOf` (which already returns the claim; it gains the
+  flag). This is the only renderer change the mode needs.
+
+Confirming is editing: the author rewrites or keeps the sentence and deletes
+the `draft` flag; the act's flag clears when no claim carries one (verify
+checks they agree). Nothing else in the storyboard is marked draft, because
+nothing else was invented: beats 1–4 are facts and quotes from the pin, and
+their narration lines are checked the way every line is (§ 2.8).
+
+**Step 5, the AI fills the words.** The mapping brief (item 11) gets a
+point-and-shoot addendum: given the skeleton and `derived.candidates`, write
+the narration for each scene from that beat's `narrationSources`, write one
+sentence per gains slot from its basis, and optionally swap a neighbour for
+another candidate from the ranked list. It may not add scene kinds, beats or
+excerpts the skeleton did not offer; `c4v verify` enforces that by comparing
+the result against `derived` (same arc, excerpt ids drawn from the candidate
+set). Locally the step is a `claude -p` run over the brief; on the platform it
+is the canvas's mapping sandbox, unchanged.
+
+### 7.3 The intermediate artifact is an ordinary, editable storyboard
+
+`c4v point` writes `storyboard.json` in the § 1.2 format (schema
+`c4v-storyboard/1`, `arc.pattern: "walkthrough"`), plus one new optional
+block that records where it came from:
+
+```ts
+derived?: {
+  from: Pointer;                              // the pointer, SHA frozen
+  at: string;                                 // ISO time of derivation
+  by: string;                                 // "c4v point <version>" or the mapping agent id
+  locus: { path: string; lines: Range; symbol: string };
+  element: { id: string; via: "element" | "relationship"; sourceId: string };
+  candidates: { excerpts: ExcerptSpec[]; ranked: string[] };   // the neighbours it could have used
+};
+```
+
+`derived` is informational: validation does not depend on it except for the
+step-5 bound check, and deleting it turns the storyboard into a hand-written
+one. From here the video is like any other: reorder or drop beats in `arc`,
+swap the deep-dive variant to `code-evolution`, add a `cold-open`, hand-tune
+any line, then `narrate`, `build`, `verify`, `proof`. A point-and-shoot video
+can be re-beated or hand-tuned exactly like the litefleet storyboard.
+
+Re-pointing never clobbers edits: if `storyboard.json` exists, `c4v point`
+writes `storyboard.derived.json` beside it and prints a diff summary; `--force`
+replaces. The pointer file itself stays in the project so a series (§ 6.2)
+can list its videos as pointers and re-derive them at a new pin.
+
+### 7.4 What is reused and what is new
+
+Reused as planned, unchanged:
+
+- **Ingestion** (§ 3): `bundle.repo` for the repo card (item 4) and blame for
+  the optional shoutout (item 5); the pinned checkout and `pinExcerpts` from
+  `code-source` for every excerpt the mode emits.
+- **The beat registry and patterns** (item 1): the skeleton is a `walkthrough`
+  arc over existing roles; `BEATS[role].kinds` and `needs` are what the
+  derivation consults to know what each beat may contain.
+- **The AI-mapping brief** (item 11): the same generated document, with one
+  addendum; the model still reads `BEATS` and `PATTERNS`.
+- **Scene kinds**: `repo-card`, `architecture-overview` with `descend`,
+  `focus-element`, `follow-request`, `code-explanation`, `gains-card`,
+  `credits`. No new kind.
+- **The verify gate, both renderers, the act chrome**, as they are.
+
+Genuinely new:
+
+- `Pointer` type and `pointer.json`; the `c4v point` command and its
+  `--target` parser.
+- `core/src/derive.ts`: pointer → locus → element and view chain → skeleton.
+  Pure over the dataset and a tree listing; the only I/O is through
+  `code-source` and `ingest/neighbors.ts`.
+- `ingest/neighbors.ts`: callers and callees at the pin by `git grep`, ranked.
+- The `draft` flag on claims and acts, the verify rule and `--allow-drafts`,
+  the proof refusal, and the `DRAFT` ribbon in both renderers.
+- The `derived` block and the step-5 bound check.
+- The brief addendum and a litefleet fixture: the pointer above must derive a
+  storyboard that verify accepts, and its beats 1–3 must land on the same
+  element and view the hand-written litefleet storyboard uses.
+
+### 7.5 Worked example: litefleet at `Query`
+
+The pointer in § 7.1 resolves as follows at `release-it/v1-hardened`
+(`9367863`): locus `exec.go` lines 130–149, symbol `func (e *Engine) Query`,
+which is the existing `query-guards` excerpt; sources `src-23`, `src-42`,
+`src-46`, cited by relationships only; element `nd-engine` (deepest endpoint),
+view `node-components`, chain `context → containers → node-components`;
+neighbours are the callees `Handle` and `acquire` (the latter is the
+hand-written `n-acquire` excerpt, which is why item 12's proof expects the
+derived deep dive to overlap the authored one) and the callers of `Query`.
+A name-only grep at this pin also returns the gateway's `Client.Query` in
+`nodeclient/client.go` and its use in `api/handlers.go`, a different method
+with the same name: the same-directory ranking pushes them below the engine
+hits, but it is the imprecision decision 8 weighs. Gains slots: the `why`
+note; the `nd-engine` description ("Epoch check, per-database lanes,
+tenant/node limits; 2 second statement deadline"); the five-line doc comment
+above `Query` (lines 125–129 at the pin, which says what the function
+guarantees about partial writes); and the engine tests that name `Query`.
+
+## 8. Build sequence
 
 Seats follow the repo's conventions: Opus for correctness-sensitive core and
 first renderer ports, Sol for supporting code and the second renderer entry
@@ -576,12 +811,17 @@ protocol. Effort: S under half a day, M about a day, L several days.
 | 9 | **Series machinery** | `series.json`, `--video` builds, theme tokens into the bundle, chapter markers from acts | 3 | M | Sol | two litefleet videos build from one series file; a chapters file matches the timeline's acts |
 | 10 | **Convention pattern + `rule-card`** | pattern entry, one kind, docs | 3, 9 | S | Sol | a litefleet "how litefleet guards every query" video renders with three excerpts under one rule |
 | 11 | **AI-mapping instructions from the registry** | generate the producer brief (`BEATS`, `PATTERNS`, schema) as a document the mapping step reads; a fixture storyboard it must reproduce | 1, 8 | S | Luna | the brief is generated, not hand-written; `verify` accepts the fixture |
+| 12 | **Point-and-shoot entry mode** (§ 7) | `Pointer` + `pointer.json`, `c4v point`, `derive.ts` (locus → element → view chain → skeleton), `ingest/neighbors.ts`, the `draft` flag with its verify rule, `--allow-drafts` and proof refusal, `DRAFT` ribbon in both renderers, `derived` block, brief addendum, litefleet fixture | 3, 4, 6; 11's `walkthrough` half (11 can ship that before 8 lands) | M | Opus (derive, draft rule, bound check), Sol (neighbours, `c4v point`, ribbons in both renderers), Luna (brief addendum, fixture) | `c4v point` on litefleet at `Query` emits a storyboard that `verify` accepts with `--allow-drafts` and rejects without; its beats 1–3 land on `nd-engine` and `node-components` like the hand-written storyboard; after a `claude -p` mapping run and `narrate`, both renderers render it and the DRAFT ribbon is visible in committed stills; deleting the drafts passes `verify` and `proof` clean |
 
 Items 1–3 are the spine and should land first, in order. Items 4, 5 and 6
 are independent of each other after 3. Items 7 and 8 are the two L items and
-can run in parallel on different seats. 9–11 close the playlist loop.
+can run in parallel on different seats. 9–11 close the playlist loop. Item 12 is
+sequenced after the end-to-end proof (3) and its two small dependencies (4,
+6); it needs only the `walkthrough` half of 11, so it can land before the
+change pattern (8) and is the first item that makes a video without an
+authored storyboard.
 
-## 8. Open decisions for Nick
+## 9. Open decisions for Nick
 
 1. **Credits default.** Should `shoutout` be on by default for every arc, or
    off unless the storyboard asks? (Plan assumes: off in `walkthrough`, on in
@@ -597,3 +837,15 @@ can run in parallel on different seats. 9–11 close the playlist loop.
    generated) is settled. Should item 9 wait for that, or ship on litefleet?
 5. **Lower-third placement vs captions.** Above the caption row (plan) or
    replacing the view header at the top? A one-frame mock decides it.
+6. **Gains draft gate.** Should `verify` fail on any `draft: true` (plan),
+   so an unconfirmed point-and-shoot close cannot reach `proof`, or warn and
+   rely on the on-screen ribbon? And is confirmation just deleting the flag
+   by hand, or a `c4v confirm` that records who and when in `derived`?
+7. **Pointers into repos with no C4 dataset.** Refuse (plan: the mode needs an
+   element and a view), derive a thinner arc with `architecture` and `focus`
+   optional (a new `point` pattern), or generate the dataset first (canvas
+   open decision 4)?
+8. **Neighbour discovery.** `git grep` at the pin for every language (plan:
+   cheap, language-agnostic, imprecise) or Tree-sitter call graphs for the
+   languages the mapping sandbox already has grammars for? Also the cap: two
+   neighbours by default, or let the `why` note's length set it?
