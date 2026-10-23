@@ -1,0 +1,85 @@
+{
+  "$comment": "Stage 2 output, hand-authored for the POC in place of the Claude Agent SDK step. Every code anchor is checked by scripts/extract.mjs against pinned git objects. Times are seconds; narration is stubbed as captions (no TTS).",
+  "title": "Litefleet: how a node says no",
+  "fps": 30,
+  "width": 1280,
+  "height": 720,
+  "dataset": {
+    "repo": "nickstrad/book-notes",
+    "repoCommit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+    "path": "pages/public/architectures/litefleet.json",
+    "viewId": "node-components"
+  },
+  "focus": {
+    "elementId": "nd-engine",
+    "elementName": "Admission + SQL engine",
+    "tag": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/admission.go",
+    "function": "func (e *Engine) acquire",
+    "signature": "func (e *Engine) acquire(",
+    "lines": [67, 113]
+  },
+  "scenes": [
+    {
+      "id": "overview",
+      "type": "architecture-overview",
+      "start": 0,
+      "duration": 5,
+      "title": "Litefleet · node components",
+      "narration": "Every Litefleet node runs six responsibilities. One of them decides whether a SQL statement may run at all."
+    },
+    {
+      "id": "focus",
+      "type": "focus-element",
+      "start": 5,
+      "duration": 4,
+      "elementId": "nd-engine",
+      "narration": "The admission engine: per-database lanes, then tenant and node limits."
+    },
+    {
+      "id": "code",
+      "type": "code-explanation",
+      "start": 9,
+      "duration": 16,
+      "intro": 1,
+      "steps": [
+        {
+          "id": "lane",
+          "label": "Pick read / write lane",
+          "lines": [67, 71],
+          "duration": 2.5,
+          "narration": "acquire picks the database's read lane, or its single write lane."
+        },
+        {
+          "id": "wait",
+          "label": "Queue ≤ 8, else 429",
+          "lines": [72, 87],
+          "duration": 3.5,
+          "narration": "No free lane? Eight statements may wait. The ninth gets 429 tenant_busy at once."
+        },
+        {
+          "id": "tenant",
+          "label": "Tenant slot (4)",
+          "lines": [88, 97],
+          "duration": 3,
+          "narration": "Next, a tenant slot: four statements per tenant across the node, inside a 250 ms wait."
+        },
+        {
+          "id": "node",
+          "label": "Node slot (16), else 503",
+          "lines": [98, 105],
+          "duration": 3,
+          "narration": "Then a node slot: sixteen per node, or 503 node_busy, handing back what it already holds."
+        },
+        {
+          "id": "release",
+          "label": "Return release func",
+          "lines": [106, 112],
+          "duration": 3,
+          "narration": "Success returns a release func that frees node, tenant and lane in reverse order."
+        }
+      ]
+    }
+  ]
+}

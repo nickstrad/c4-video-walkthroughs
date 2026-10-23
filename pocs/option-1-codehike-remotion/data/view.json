@@ -1,0 +1,214 @@
+{
+  "provenance": {
+    "repo": "nickstrad/book-notes",
+    "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+    "path": "pages/public/architectures/litefleet.json",
+    "datasetRevision": "release-it/v1-hardened · 9367863"
+  },
+  "view": {
+    "id": "node-components",
+    "kind": "component",
+    "title": "Litefleet: node components"
+  },
+  "scope": {
+    "id": "node",
+    "kind": "container",
+    "name": "Node agent",
+    "description": "Two stateful copies, collapsed here. Files do not fail over to another node.",
+    "technology": "Go / net/http",
+    "tags": [
+      "external"
+    ],
+    "status": "existing"
+  },
+  "nodes": [
+    {
+      "id": "nd-engine",
+      "kind": "component",
+      "name": "Admission + SQL engine",
+      "description": "Epoch check, per-database lanes, tenant/node limits; 2 second statement deadline.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    },
+    {
+      "id": "nd-handles",
+      "kind": "component",
+      "name": "Handle manager",
+      "description": "Bounded pools and LRU; singleflight open; close releases resources.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    },
+    {
+      "id": "tenant-files",
+      "kind": "container",
+      "name": "Tenant SQLite files",
+      "description": "One WAL-mode database per tenant database in /data/tenants.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+        "external"
+      ],
+      "status": "existing"
+    },
+    {
+      "id": "nd-backup",
+      "kind": "component",
+      "name": "Backup job + blob client",
+      "description": "Snapshots under writer lock; uploads after releasing lock.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    },
+    {
+      "id": "blob",
+      "kind": "softwareSystem",
+      "name": "Blob-store partner (lab fake)",
+      "description": "Stores backup generations. The Compose service is a Go fake.",
+      "technology": null,
+      "tags": [
+        "external"
+      ],
+      "status": "existing"
+    },
+    {
+      "id": "nd-usage",
+      "kind": "component",
+      "name": "Bounded usage queue + shippers",
+      "description": "1024 queued events; four shippers; batches up to 100; overflow after 20 ms.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    },
+    {
+      "id": "nd-outbox",
+      "kind": "component",
+      "name": "Outbox access + sweeper",
+      "description": "Reads at most 500 rows every 5 seconds; deletes only after delivery.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    },
+    {
+      "id": "node-state",
+      "kind": "container",
+      "name": "Node-local outbox storage",
+      "description": "/data/_node.db: node_info and usage_outbox. Separate from tenant files.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+        "external"
+      ],
+      "status": "existing"
+    },
+    {
+      "id": "meter",
+      "kind": "softwareSystem",
+      "name": "Metering partner (lab fake)",
+      "description": "Accepts usage batches; deduplicates event IDs in memory.",
+      "technology": null,
+      "tags": [
+        "external"
+      ],
+      "status": "existing"
+    },
+    {
+      "id": "nd-maintain",
+      "kind": "component",
+      "name": "Maintenance + drain",
+      "description": "Checkpoints WALs; evicts idle handles; SIGTERM stops admission and spills usage.",
+      "technology": "Go",
+      "tags": [],
+      "status": "existing"
+    }
+  ],
+  "edges": [
+    {
+      "id": "n-engine-handles",
+      "n": 1,
+      "from": "nd-engine",
+      "to": "nd-handles",
+      "label": "Acquires / releases database handle",
+      "technology": "Go call"
+    },
+    {
+      "id": "n-handles-files",
+      "n": 2,
+      "from": "nd-handles",
+      "to": "tenant-files",
+      "label": "Opens per-database pools",
+      "technology": "SQLite / file I/O"
+    },
+    {
+      "id": "n-backup-handles",
+      "n": 3,
+      "from": "nd-backup",
+      "to": "nd-handles",
+      "label": "Obtains handle; snapshots under lock",
+      "technology": "Go call"
+    },
+    {
+      "id": "n-backup-blob",
+      "n": 4,
+      "from": "nd-backup",
+      "to": "blob",
+      "label": "Uploads snapshot after lock release",
+      "technology": "HTTP PUT / SQLite snapshot"
+    },
+    {
+      "id": "n-engine-usage",
+      "n": 5,
+      "from": "nd-engine",
+      "to": "nd-usage",
+      "label": "Records completed read / committed write usage",
+      "technology": "Go call"
+    },
+    {
+      "id": "n-usage-outbox",
+      "n": 6,
+      "from": "nd-usage",
+      "to": "nd-outbox",
+      "label": "Persists overflow / failed batches / spill",
+      "technology": "Go call"
+    },
+    {
+      "id": "n-outbox-state",
+      "n": 7,
+      "from": "nd-outbox",
+      "to": "node-state",
+      "label": "Inserts, selects and deletes usage_outbox rows",
+      "technology": "SQLite / file I/O"
+    },
+    {
+      "id": "n-queue-meter",
+      "n": 8,
+      "from": "nd-usage",
+      "to": "meter",
+      "label": "Sends queued batches, 2 second budget",
+      "technology": "HTTP/JSON"
+    },
+    {
+      "id": "n-sweep-meter",
+      "n": 9,
+      "from": "nd-outbox",
+      "to": "meter",
+      "label": "Redelivers; deletes after success",
+      "technology": "HTTP/JSON"
+    },
+    {
+      "id": "n-maintain-handles",
+      "n": 10,
+      "from": "nd-maintain",
+      "to": "nd-handles",
+      "label": "Checkpoints and closes handles",
+      "technology": "Go call"
+    },
+    {
+      "id": "n-drain-queue",
+      "n": 11,
+      "from": "nd-maintain",
+      "to": "nd-usage",
+      "label": "Spills pending and stuck in-flight events",
+      "technology": "Go call"
+    }
+  ]
+}
