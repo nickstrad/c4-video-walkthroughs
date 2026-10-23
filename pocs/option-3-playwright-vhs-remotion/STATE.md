@@ -1,8 +1,16 @@
-Goal: execute /root/c4v-poc3.md; Option 3 in ../../overview.md.
-Status: build and validation complete at 0b85e6f; fresh Claude/Opus review running.
-Scope: only this directory; never push/merge or change book-notes.
-Done: real browser/VHS recordings, pinned source/storyboard, 32 s 720p Remotion film (concurrency 2), 3 inspected final stills, four passing breaker tests, complete MP4 decode and source/media verification. Render: 468.42 s; measurements in NOTES.md/evidence/verification.json.
-In progress: read-only cross-family review in .work/review at 0b85e6f; output evidence/review.json and evidence/review-stderr.log. Knowledge/script assessment complete; docs/knowledge/ and work-scripts/ index capture reusable findings.
-Next: independent review; address findings if needed; commit review and final state; separate knowledge/script-index commit; clean review worktree and confirm clean tree.
-Blockers: none. Site's existing dist exact build commit is unverified; local catalog adaptation and file hashes documented. Muse gauge unavailable; Claude weekly 29% used, Codex weekly 86% remaining checked before dispatch.
-Resume: /root/Software/c4video-work/option-3, branch poc/option-3. No render or capture server remains. Check `pgrep -af "claude --model opus"` for the review; if dead, inspect evidence/review.json before restarting a fresh review. Reproduction in NOTES.md; scratch in ignored .work/.
+Goal/spec: /root/c4v-poc3.md; Option 3 in ../../overview.md.
+Status: complete; artifacts validated, independent review NITS/no blockers, review worktree cleaned. No push or merge.
+
+Done:
+- 0b85e6f: storyboard, real Playwright/VHS recordings, exact pinned code, Remotion composition and final MP4, three inspected frames, reproduction and evidence. Source: release-it/v1-hardened = 936786399d7bab3ebbfa845b9a07df02b41ed363.
+- 708fe32: separate durable project knowledge and indexed reusable scripts.
+- Final review/handoff commit: Claude Opus 5.5 independent review result and dispositions, caption consistency check, evidence labels and this state. Review inspected 0b85e6f; later changes are documentation/metadata/checks, with composition/video unchanged.
+- Output: demo.mp4, exactly 32 s, 1280x720, 30 fps, 960 frames, 1,617,487 bytes, H.264. Render took 468.42 s at concurrency 2. No audio/narration track.
+- Four real pinned breaker tests pass; Playwright route/page-error assertions pass; exact source mapping, C4 IDs, caption consistency, complete video decode, media properties, size and hashes pass. Final frames visually inspected. See evidence/verification.json and evidence/inspection.md.
+- Book-notes stayed clean (before/after git-status captures). Local capture server and review process stopped; fresh review worktree removed. No other project's worktree was changed.
+
+In progress: nothing.
+Next steps: none for this POC. Full-build requirements and limitations are in NOTES.md.
+Open decisions/blockers: none for the requested proof. Future owner: source-pin a rebuilt site bundle, implement focus/zoom and syntax-aware storyboard generation, add narration and isolated live-outage demonstrations.
+
+Resume/reproduce: branch poc/option-3 at /root/Software/c4video-work/option-3. Run commands from this POC directory as documented in NOTES.md. There is no background job to resume or relaunch. Scratch exports, dependencies and verbose review transcript are ignored under .work/ and node_modules/; tracked artifacts are self-contained. Final measured source/video checks are in scripts/verify.mjs; rerender only for a new composition/capture.

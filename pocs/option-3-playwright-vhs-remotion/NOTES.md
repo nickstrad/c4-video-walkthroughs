@@ -64,6 +64,12 @@ npm run verify
 
 `CHROME_PATH` selects VHS’s browser; use Remotion’s `--browser-executable` flag for another installation. `normalize.mjs` follows a fresh VHS recording, because it renames that input before retiming it. Close the local server when capture finishes. No publication, remote write, push or merge is part of this POC.
 
+## Review and limitations
+
+Fresh cross-family review by Claude Opus 5.5 of build `0b85e6f` returned **NITS, no blockers**; see `evidence/review.json` and the dispositions in `evidence/review-response.md`. Storyboard caption text now matches the rendered cards exactly. Scene timing is manually mirrored between JSON and composition; the caption check guards text drift, while a future build should generate scenes directly from the storyboard.
+
+Extraction intentionally uses a pinned declaration plus a fixed nine-line range, and the highlight uses offsets within that excerpt. Verification compares the exact excerpt against the pinned source; it is not a syntax-aware extraction proof. Output is H.264 full-range `yuvj420p`; general player color handling has not been validated. The retained terminal prompt includes readline’s `(ins)` indicator, and the diagram still retains real site zoom controls. The explicit brief’s 15–40 s range takes precedence over the overview’s 10–30 s suggestion.
+
 ## Full-build needs
 
 Replace manual scenario/source mapping with a checked AI storyboard plus syntax-aware extraction; connect real demonstrations to declared assertions; pin the site build and browser environment; introduce per-scene focus/zoom and audio timing. Add ElevenLabs narration and audio/caption synchronization, then a licensed publishing pipeline. For live outage evidence, run a separately isolated Litefleet stack and record observable breaker metrics alongside injected failures.

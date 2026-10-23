@@ -18,6 +18,7 @@ assert.equal(createHash('sha256').update(readFileSync('public/litefleet.json')).
 assert.deepEqual(read('evidence/browser.json').errors,[]);
 assert.match(readFileSync('evidence/breaker-tests.txt','utf8'),/PASS\nok\s+litefleet\/internal\/breaker/);
 let end=0;for(const scene of s.scenes){assert.equal(scene.from,end);end+=scene.duration;}assert.equal(end,32);
+for(const scene of s.scenes)assert.ok(readFileSync('src/index.tsx','utf8').includes(scene.caption),'Storyboard caption matches composition source');
 const probe=p=>JSON.parse(execFileSync('ffprobe',['-v','error','-show_format','-show_streams','-of','json',p],{encoding:'utf8'}));
 const film=probe('demo.mp4'),v=film.streams.find(x=>x.codec_type==='video');
 assert.ok(!film.streams.some(x=>x.codec_type==='audio'),'Narration stub has no audio track');

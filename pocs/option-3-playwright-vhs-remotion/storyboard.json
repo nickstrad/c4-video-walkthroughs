@@ -61,28 +61,28 @@
       "from": 0,
       "duration": 4,
       "asset": "public/diagram.png",
-      "caption": "The gateway control circuit breaker guards calls to the control plane."
+      "caption": "The gateway’s control circuit breaker guards calls to the control plane."
     },
     {
       "kind": "playwright",
       "from": 4,
       "duration": 12,
       "asset": "public/browser.mp4",
-      "caption": "Select Litefleet, open containers, open gateway components."
+      "caption": "Select Litefleet → containers → gateway components. This is the real diagrams site."
     },
     {
       "kind": "code-callout",
       "from": 16,
       "duration": 7,
       "asset": "public/code.json",
-      "caption": "An open circuit returns ErrOpen before calling the dependency."
+      "caption": "Call checks admission first. A rejection increments a metric and returns ErrOpen."
     },
     {
       "kind": "vhs",
       "from": 23,
       "duration": 9,
       "asset": "public/terminal.mp4",
-      "caption": "Real tests at the pinned commit; unit evidence, not a live outage demo."
+      "caption": "Five failures → reject without calling. Recovery and non-counting errors are tested too."
     }
   ]
 }
