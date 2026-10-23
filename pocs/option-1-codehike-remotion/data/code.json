@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "repo": "nickstrad/book-notes",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "tag": "release-it/v1-hardened",
+    "path": "books/release-it/project/internal/engine/admission.go",
+    "lines": [
+      67,
+      113
+    ],
+    "selector": "Symbol/config selector: func (e *Engine) acquire; line 67. Pinned as built, not the proposed plan.",
+    "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/admission.go#L67"
+  },
+  "firstLine": 67,
+  "code": "func (e *Engine) acquire(ctx context.Context, h *Handle, write bool) (func(), error) {\n\tlane := h.lanes.read\n\tif write {\n\t\tlane = h.lanes.write\n\t}\n\tselect {\n\tcase lane <- struct{}{}:\n\tdefault:\n\t\tif h.lanes.waiting.Add(1) > waitingPerDB {\n\t\t\th.lanes.waiting.Add(-1)\n\t\t\tadmissionRejected.WithLabelValues(\"tenant_busy\").Inc()\n\t\t\treturn nil, ErrTenantBusy\n\t\t}\n\t\tselect {\n\t\tcase lane <- struct{}{}:\n\t\t\th.lanes.waiting.Add(-1)\n\t\tcase <-ctx.Done():\n\t\t\th.lanes.waiting.Add(-1)\n\t\t\treturn nil, classify(ctx, ctx.Err())\n\t\t}\n\t}\n\twait, cancel := context.WithTimeout(ctx, nodeWait)\n\tdefer cancel()\n\ttenant := e.tenantSlots(h.TenantID)\n\tselect {\n\tcase tenant <- struct{}{}:\n\tcase <-wait.Done():\n\t\t<-lane\n\t\tadmissionRejected.WithLabelValues(\"tenant_busy\").Inc()\n\t\treturn nil, ErrTenantBusy\n\t}\n\tselect {\n\tcase e.slots <- struct{}{}:\n\tcase <-wait.Done():\n\t\t<-tenant\n\t\t<-lane\n\t\tadmissionRejected.WithLabelValues(\"node_busy\").Inc()\n\t\treturn nil, ErrNodeBusy\n\t}\n\tstatementsRunning.Inc()\n\treturn func() {\n\t\tstatementsRunning.Dec()\n\t\t<-e.slots\n\t\t<-tenant\n\t\t<-lane\n\t}, nil\n}"
+}
