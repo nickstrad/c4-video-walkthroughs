@@ -150,10 +150,10 @@ need. Videos and frames are linked here so they can be watched from GitHub.
 
 | Option | Builder | Status | Demo |
 |---|---|---|---|
-| 1 — Code Hike + Remotion | Opus | **works end to end** — 25 s, 720p: C4 view, component lights up, camera zooms in, real function with animated line focus | [walkthrough.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-1-codehike-remotion/demo/walkthrough.mp4) |
-| 2 — Motion Canvas | Opus | **works end to end, fully unattended** — 26.6 s, 720p: request packet animates the query flow, then real code highlights in sync; no editor needed | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-2-motion-canvas/demo.mp4) |
-| 3 — Playwright + VHS + Remotion | Sol, rebuilt by Opus | **works end to end** — 31.4 s, 720p: claim-first title card → live site inspection of the breaker → stepped code excerpts → terminal running the real tests (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-3-playwright-vhs-remotion/demo.mp4) |
-| 4 — Slidev + Shiki Magic Move | Sol, rebuilt by Opus | **works end to end** — 38.5 s, 720p: five-slide deck recorded to MP4; a three-state Magic Move (v0 → lesson-02 → v1) is the centerpiece (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-4-slidev-magic-move/demo.mp4) |
+| 1 — Code Hike + Remotion | Opus | **works end to end, narrated** — 47.3 s, 720p: C4 view, component lights up, camera zooms in, real function with animated line focus | [walkthrough.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-1-codehike-remotion/demo/walkthrough.mp4) |
+| 2 — Motion Canvas | Opus | **works end to end, narrated, fully unattended** — 55.3 s, 720p: request packet animates the query flow, then real code highlights in sync; no editor needed | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-2-motion-canvas/demo.mp4) |
+| 3 — Playwright + VHS + Remotion | Sol, rebuilt by Opus | **works end to end, narrated** — 45.7 s, 720p: claim-first title card → live site inspection of the breaker → stepped code excerpts → terminal running the real tests (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-3-playwright-vhs-remotion/demo.mp4) |
+| 4 — Slidev + Shiki Magic Move | Sol, rebuilt by Opus | **works end to end, narrated** — 151 s (2:31), 720p: five-slide deck recorded to MP4 and voiced from its speaker notes; a three-state Magic Move (v0 → lesson-02 → v1) is the centerpiece (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-4-slidev-magic-move/demo.mp4) |
 
 All four POCs were built against litefleet at `release-it/v1-hardened`
 (`9367863`) on 2026-10-22; each folder's `NOTES.md` records what worked,
@@ -162,9 +162,19 @@ one honest caveat: the diagrams site's catalog did not yet contain the real
 datasets at capture time, so it appended litefleet to a local copy of the
 site bundle only.
 
-*Narration note: the POCs stub the ElevenLabs step (captions/titles instead
-of voice) until an API key is provided; the timing-driven sync is designed
-so the voice track drops in without rework.*
+*Narration note: all four demos carry real ElevenLabs narration (voice
+"Roger", model `eleven_multilingual_v2`). Each line was generated once
+through the `with-timestamps` endpoint, and its per-character alignment
+drives the timing: scene cuts, highlights, zooms and morphs land on the
+spoken words. The on-screen captions stay and transcribe the voice. Each
+POC commits its takes and alignment JSON under `narration/`, so re-renders
+reuse those files and make no new API calls; the narrate scripts call the
+API only for a take that is missing. Option 4 grew from 38.5 s to 2:31
+because its full speaker notes take that long to read aloud — it is now
+well past the 10–30 s target, and the notes would need trimming for a
+short cut. Each
+`NOTES.md` has a "Narration pass" section with the exact lines, character
+counts and sync checks.*
 
 ## Demo site
 
