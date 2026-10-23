@@ -1,0 +1,10 @@
+PASS: all five source ranges, hashes, deck excerpts and original C4 PNG verified.
+PASS: six slides, one additional Magic Move click, speaker notes and explicit voice stub.
+PASS: hardened Magic Move token bounds fit within 720p slide.
+PASS: before/after code states verified, 114 active animations observed.
+PASS: final slide reached; zero uncaught page errors.
+PASS: MP4 28.000 s, 1280x720, H.264, yuv420p, 30 fps, 1212927 bytes.
+PASS: three PNG frames extracted from final MP4 and visually inspected.
+KNOWN: caught FloatingVue/Twoslash console error; no tooltip behavior used.
+KNOWN: wide C4 labels small at 720p; captions orient the viewer.
+NOT RUN: Docker/Toxiproxy reliability lab; no voice synthesis or audio mux.

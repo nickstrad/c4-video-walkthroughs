@@ -1,0 +1,6 @@
+Usage gauges checked interactively before review dispatch, 2026-10-23 UTC:
+- Claude /usage: current session about 10% used; week all models about 29% used.
+- Codex /status: weekly limit 86% left, resets 29 October 17:09.
+- Muse /usage: subscription gauge says Currently unavailable (session tokens 0).
+No account, pricing tier, API key, or contributor-mode setting was changed.
+Review will use Claude's subscription; no pool is observed at a weekly limit.
