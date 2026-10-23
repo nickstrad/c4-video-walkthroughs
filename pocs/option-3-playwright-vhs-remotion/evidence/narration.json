@@ -1,0 +1,100 @@
+{
+  "voice": "Roger",
+  "voiceId": "CwhRBWXzGAHq8TQ4Fs17",
+  "model": "eleven_multilingual_v2",
+  "lines": 8,
+  "characters": 638,
+  "timing": {
+    "leadFrames": 6,
+    "gapFrames": 4,
+    "tailFrames": 12,
+    "cueLeadFrames": 2
+  },
+  "holds": {
+    "where": 31
+  },
+  "filmFrames": 1370,
+  "filmSeconds": 45.666666666666664,
+  "perLine": [
+    {
+      "id": "title-1",
+      "scene": "title",
+      "characters": 99,
+      "alignedEndSeconds": 5.944,
+      "audioSeconds": 5.982041,
+      "startFrame": 6,
+      "at": 6,
+      "audioFrames": 179
+    },
+    {
+      "id": "where-1",
+      "scene": "where",
+      "characters": 70,
+      "alignedEndSeconds": 4.923,
+      "audioSeconds": 4.963265,
+      "startFrame": 203,
+      "at": 6,
+      "audioFrames": 148
+    },
+    {
+      "id": "where-2",
+      "scene": "where",
+      "characters": 82,
+      "alignedEndSeconds": 4.783,
+      "audioSeconds": 4.832653,
+      "startFrame": 355,
+      "at": 158,
+      "audioFrames": 144
+    },
+    {
+      "id": "how-client-1",
+      "scene": "how-client",
+      "characters": 75,
+      "alignedEndSeconds": 4.18,
+      "audioSeconds": 4.205714,
+      "startFrame": 517,
+      "at": 6,
+      "audioFrames": 126
+    },
+    {
+      "id": "how-guard-1",
+      "scene": "how-guard",
+      "characters": 82,
+      "alignedEndSeconds": 5.666,
+      "audioSeconds": 5.694694,
+      "startFrame": 661,
+      "at": 6,
+      "audioFrames": 170
+    },
+    {
+      "id": "proof-test-1",
+      "scene": "proof-test",
+      "characters": 78,
+      "alignedEndSeconds": 4.69,
+      "audioSeconds": 4.728163,
+      "startFrame": 849,
+      "at": 6,
+      "audioFrames": 141
+    },
+    {
+      "id": "proof-terminal-1",
+      "scene": "proof-terminal",
+      "characters": 63,
+      "alignedEndSeconds": 3.947,
+      "audioSeconds": 3.996735,
+      "startFrame": 1008,
+      "at": 6,
+      "audioFrames": 119
+    },
+    {
+      "id": "end-1",
+      "scene": "end",
+      "characters": 89,
+      "alignedEndSeconds": 6.223,
+      "audioSeconds": 6.269388,
+      "startFrame": 1171,
+      "at": 6,
+      "audioFrames": 187
+    }
+  ]
+}

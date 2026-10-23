@@ -52,10 +52,13 @@
     }
   ],
   "narration": {
-    "mode": "stubbed",
-    "audio": null,
-    "provider": null,
-    "note": "Caption text is the narration stub; no ElevenLabs call or key."
+    "mode": "elevenlabs",
+    "provider": "ElevenLabs text-to-speech with-timestamps",
+    "voice": "Roger",
+    "voiceId": "CwhRBWXzGAHq8TQ4Fs17",
+    "model": "eleven_multilingual_v2",
+    "dir": "narration/",
+    "note": "Each caption's spoken text was synthesised once; audio and per-character alignment are committed. scripts/retime.mjs times captions, steps and scene lengths from the alignment."
   },
   "fps": 30,
   "width": 1280,
@@ -70,21 +73,31 @@
       "id": "title",
       "kind": "title-card",
       "from": 0,
-      "duration": 90,
+      "duration": 197,
       "headline": "After 5 failures, Litefleet's gateway stops calling the control plane.",
       "steps": [
         "Find it in the C4 diagram",
         "Read the guard at commit 9367863",
         "Watch the real tests pass"
       ],
-      "captions": []
+      "captions": [
+        {
+          "at": 6,
+          "lowerThird": false,
+          "text": "After 5 failures, Litefleet's gateway stops calling the control plane. The proof, in three acts.",
+          "spoken": "After five failures, Litefleet's gateway stops calling the control plane. The proof, in three acts.",
+          "audio": "narration/title-1.mp3",
+          "alignment": "narration/title-1.json",
+          "audioFrames": 179
+        }
+      ]
     },
     {
       "id": "where",
       "act": "where",
       "kind": "playwright",
-      "from": 90,
-      "duration": 224,
+      "from": 197,
+      "duration": 314,
       "asset": "public/browser.mp4",
       "segments": [
         [
@@ -97,7 +110,7 @@
         ],
         [
           213,
-          372
+          431
         ]
       ],
       "actionsAsset": "public/browser-actions.json",
@@ -110,21 +123,30 @@
       },
       "captions": [
         {
-          "at": 0,
-          "text": "The real C4 site: Litefleet → containers → gateway components."
+          "at": 6,
+          "text": "The real C4 site: Litefleet → containers → gateway components.",
+          "spoken": "The real C4 site: Litefleet, then containers, then gateway components.",
+          "audio": "narration/where-1.mp3",
+          "alignment": "narration/where-1.json",
+          "audioFrames": 148
         },
         {
-          "at": 62,
-          "text": "Inspect the Control circuit breaker: it guards gateway calls to the control plane."
+          "at": 158,
+          "text": "Inspect the Control circuit breaker: it guards gateway calls to the control plane.",
+          "spoken": "Inspect the Control circuit breaker: it guards gateway calls to the control plane.",
+          "audio": "narration/where-2.mp3",
+          "alignment": "narration/where-2.json",
+          "audioFrames": 144
         }
-      ]
+      ],
+      "holdFrames": 31
     },
     {
       "id": "how-client",
       "act": "how",
       "kind": "code",
-      "from": 314,
-      "duration": 105,
+      "from": 511,
+      "duration": 144,
       "source": "client",
       "steps": [
         {
@@ -139,8 +161,12 @@
       ],
       "captions": [
         {
-          "at": 0,
-          "text": "The route client sends every control-plane Create through breaker.Call."
+          "at": 6,
+          "text": "The route client sends every control-plane Create through breaker.Call.",
+          "spoken": "The route client sends every control-plane Create through breaker dot Call.",
+          "audio": "narration/how-client-1.mp3",
+          "alignment": "narration/how-client-1.json",
+          "audioFrames": 126
         }
       ]
     },
@@ -148,8 +174,8 @@
       "id": "how-guard",
       "act": "how",
       "kind": "code",
-      "from": 419,
-      "duration": 165,
+      "from": 655,
+      "duration": 188,
       "source": "guard",
       "steps": [
         {
@@ -160,26 +186,32 @@
           "note": "First: is the breaker admitting calls?"
         },
         {
-          "at": 50,
+          "at": 37,
           "lines": [
             86,
             87
           ],
-          "note": "No: count the rejection and return ErrOpen"
+          "note": "No: count the rejection and return ErrOpen",
+          "cue": "Count"
         },
         {
-          "at": 100,
+          "at": 118,
           "lines": [
             89
           ],
           "skipped": true,
-          "note": "fn() — the control-plane call — never runs"
+          "note": "fn() — the control-plane call — never runs",
+          "cue": "The call"
         }
       ],
       "captions": [
         {
-          "at": 0,
-          "text": "Breaker open? Count the rejection and return ErrOpen. The call itself never runs."
+          "at": 6,
+          "text": "Breaker open? Count the rejection and return ErrOpen. The call itself never runs.",
+          "spoken": "Breaker open? Count the rejection and return Err Open. The call itself never runs.",
+          "audio": "narration/how-guard-1.mp3",
+          "alignment": "narration/how-guard-1.json",
+          "audioFrames": 170
         }
       ]
     },
@@ -187,8 +219,8 @@
       "id": "proof-test",
       "act": "proof",
       "kind": "code",
-      "from": 584,
-      "duration": 105,
+      "from": 843,
+      "duration": 159,
       "source": "test",
       "steps": [
         {
@@ -201,19 +233,24 @@
           "note": "Five failing calls"
         },
         {
-          "at": 45,
+          "at": 57,
           "lines": [
             18,
             19,
             20
           ],
-          "note": "Then: must get ErrOpen, and called must stay false"
+          "note": "Then: must get ErrOpen, and called must stay false",
+          "cue": "then"
         }
       ],
       "captions": [
         {
-          "at": 0,
-          "text": "The test: five failures, then one call that must get ErrOpen without running."
+          "at": 6,
+          "text": "The test: five failures, then one call that must get ErrOpen without running.",
+          "spoken": "The test: five failures, then one call that must get Err Open without running.",
+          "audio": "narration/proof-test-1.mp3",
+          "alignment": "narration/proof-test-1.json",
+          "audioFrames": 141
         }
       ]
     },
@@ -221,7 +258,7 @@
       "id": "proof-terminal",
       "act": "proof",
       "kind": "vhs",
-      "from": 689,
+      "from": 1002,
       "duration": 163,
       "asset": "public/terminal-vhs.mp4",
       "highlight": {
@@ -236,25 +273,40 @@
       },
       "captions": [
         {
-          "at": 0,
-          "text": "Real go test at the pinned commit: all four breaker tests pass."
+          "at": 6,
+          "text": "Real go test at the pinned commit: all four breaker tests pass.",
+          "spoken": "Real go test at the pinned commit: all four breaker tests pass.",
+          "audio": "narration/proof-terminal-1.mp3",
+          "alignment": "narration/proof-terminal-1.json",
+          "audioFrames": 119
         }
-      ]
+      ],
+      "holdFrames": 0
     },
     {
       "id": "end",
       "kind": "end-card",
-      "from": 852,
-      "duration": 90,
+      "from": 1165,
+      "duration": 205,
       "checks": [
         "Located gw-breaker in the real C4 site",
         "Read the guard at pinned commit 9367863",
         "4 / 4 breaker tests pass on camera"
       ],
-      "caveat": "Unit-level proof: no live outage was injected. Captions stand in for narration.",
-      "captions": []
+      "caveat": "Unit-level proof: no live outage was injected. Captions transcribe the narration.",
+      "captions": [
+        {
+          "at": 6,
+          "lowerThird": false,
+          "text": "4 / 4 breaker tests pass on camera. Unit-level proof: no live outage was injected.",
+          "spoken": "Four of four breaker tests pass on camera. Unit-level proof: no live outage was injected.",
+          "audio": "narration/end-1.mp3",
+          "alignment": "narration/end-1.json",
+          "audioFrames": 187
+        }
+      ]
     }
   ],
-  "durationFrames": 942,
-  "durationSeconds": 31.4
+  "durationFrames": 1370,
+  "durationSeconds": 45.667
 }

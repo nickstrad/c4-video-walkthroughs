@@ -1,6 +1,6 @@
 # Option 3 — Playwright + VHS + Remotion
 
-[Watch the 31-second demo](demo.mp4) · [Storyboard](storyboard.json) · Frames: [title](frames/title.png) · [architecture](frames/architecture.png) · [code](frames/code.png) · [terminal](frames/terminal.png) · [end](frames/end.png)
+[Watch the 46-second narrated demo](demo.mp4) · [Storyboard](storyboard.json) · Frames: [title](frames/title.png) · [architecture](frames/architecture.png) · [code](frames/code.png) · [terminal](frames/terminal.png) · [end](frames/end.png)
 
 This demo makes one claim about Litefleet's gateway control circuit breaker and proves it in three acts. **Where:** find the breaker in the real C4 site and inspect it. **How:** read the pinned code that routes control-plane calls through the breaker, then the guard that rejects them. **Proof:** read the test that asserts the claim, then watch the project's real tests pass. It proves the capture and composition pipeline and one real unit-level behavior. It does not show a running Litefleet deployment or an injected control-plane outage.
 
@@ -16,7 +16,8 @@ The browser subject is the existing book-notes production site bundle (`pages/di
 - **Cuts.** The browser clip is cut to its action windows. Kept footage plays at 1x; nothing is sped up.
 - **Click and zoom markers.** These are drawn at the coordinates and times in `public/browser-actions.json`, which logs each click and zoom from the capture. Playwright renders no cursor.
 - **One 1.18× push-in.** This is a Remotion camera move on the real pixels after the live canvas zoom.
-- **Line highlights, a test-line box and captions.**
+- **Line highlights, a test-line box and captions.** Captions transcribe the ElevenLabs narration (see *Narration pass*).
+- **One held frame at the end of the browser scene** (31 frames, 1.03 s), only because the narration outlasts the real footage; see *Narration pass*.
 
 The VHS take plays unretimed and unpadded. Before recording, a `Hide` block warmed the Go build cache and turned off readline's `(ins)` marker. `-count=1` still forces the tests to execute on camera.
 
@@ -49,13 +50,62 @@ Nick judged Sol's demo weak. The brief gave full licence to redo it within this 
 
 The film runs 31.4 s rather than stretching toward 40 s. The cuts removed dead time, and every scene holds long enough to read its caption.
 
+## Narration pass (Opus)
+
+Nick supplied an ElevenLabs key and asked for real narration. This pass voices the film's existing captions and lets the voice drive the cuts. Captures, excerpts and tests are unchanged.
+
+**Voice and model.** ElevenLabs voice **Roger** (`CwhRBWXzGAHq8TQ4Fs17`; `ELEVENLABS_VOICE_ID` was blank), model `eleven_multilingual_v2`, through `POST /v1/text-to-speech/{voice_id}/with-timestamps`. `scripts/narrate.mjs` sends each caption's `spoken` text once and saves `narration/<scene>-<n>.mp3` plus the per-character alignment as `.json`. Both are committed, so a re-render needs no API call; the script skips any line whose files exist. The key is read from the environment only and is not in any repo file.
+
+**Characters consumed: 638**, over **8 lines**, one request each with no re-takes. The account counter went from 14 to 960 during this work, but it is shared with the other narration runs, so 638 is the sum of this POC's request texts.
+
+**Script.** Every line is a caption already in `storyboard.json`, or text already on the title or end card:
+
+| Line | Spoken text | Source |
+|---|---|---|
+| title-1 | After five failures, Litefleet's gateway stops calling the control plane. The proof, in three acts. | title `headline` + the card's "The proof, in three acts:" |
+| where-1 | The real C4 site: Litefleet, then containers, then gateway components. | where caption 1 |
+| where-2 | Inspect the Control circuit breaker: it guards gateway calls to the control plane. | where caption 2 (verbatim) |
+| how-client-1 | The route client sends every control-plane Create through breaker dot Call. | how-client caption; `client.go` 115–117 |
+| how-guard-1 | Breaker open? Count the rejection and return Err Open. The call itself never runs. | how-guard caption; `breaker.go` 85–89 |
+| proof-test-1 | The test: five failures, then one call that must get Err Open without running. | proof-test caption; `breaker_test.go` 15–20 |
+| proof-terminal-1 | Real go test at the pinned commit: all four breaker tests pass. | proof-terminal caption (verbatim) |
+| end-1 | Four of four breaker tests pass on camera. Unit-level proof: no live outage was injected. | end card check 3 + caveat |
+
+Speakability edits, recorded so each line stays traceable: "5" → "five" and "4 / 4" → "Four of four"; the arrows "→" → ", then"; `breaker.Call` → "breaker dot Call"; `ErrOpen` → "Err Open", so the voice says the identifier as two words. The on-screen captions keep the original text (arrows, `breaker.Call`, `ErrOpen`); each caption's `spoken` field holds what was sent. No line adds a claim. The end card's caveat changed from "Captions stand in for narration" to "Captions transcribe the narration", because the old text is no longer true. The title and end lines are not repeated in the lower third: their words are already the card's text.
+
+**Sync.** `scripts/retime.mjs` reads each alignment and rewrites the storyboard timing; the composition reads that timing.
+- **Line timing.** Each caption, and its audio `<Sequence>`, starts 6 frames into its scene, or 4 frames after the previous line's aligned end. The caption therefore changes when the voice starts that line.
+- **Highlight timing.** Steps with a `cue` start 2 frames before that word's aligned start: how-guard's "Count" (line 86–87 highlight) and "The call" (line 89 strike-through), and proof-test's "then" (lines 18–20).
+- **Scene length.** Each scene lasts until its last line's aligned end plus **12 frames (0.4 s)** of tail. The 8-frame fade-out sits inside that tail, so no word is clipped by a cut.
+- **The browser scene** needed 314 frames but had 224 frames of cut footage. Its last cut now runs at 1x into the clip's real final 59 frames (source 372 → 431), which show the same static inspector view as the original hold. The remaining **31 frames (1.03 s) hold the last real frame** (`holdFrames` in the storyboard, Remotion `<Freeze>`). The cut starts were not moved earlier: the frames before them show the page scrolling before Fit View.
+- **The terminal** take plays at 1x. Its 163 frames already outlast its line, so it has no hold.
+- **Audio in the render.** The render copies `narration/` into ignored `public/narration/` so that `staticFile` can serve it. `finalize.sh` now stream-copies the AAC narration track instead of dropping it.
+
+**Verification** (`npm run verify`, `evidence/verification.json`):
+- each alignment's text equals its caption's `spoken` text, and its model matches;
+- no two lines overlap, and every line ends at least 0.3 s before its scene's cut;
+- the film has one AAC track, 45.696 s against 45.667 s of video;
+- every line's window is audible in the final mix (mean −26.8 to −28.2 dB), and the six pauses between scenes measure −91 dB;
+- `ffmpeg -map 0 -f null` decodes both streams of the whole file with no errors.
+
+The excerpt byte-identity, C4 ID, real-test and 1x-footage checks from the rebuild still pass unchanged. Per-line timings are in `evidence/narration.json`.
+
+| | Before (captions only) | After (narrated) |
+|---|---:|---:|
+| Duration | 31.40 s (942 frames) | **45.67 s (1,370 frames)** |
+| `demo.mp4` size | 2,292,596 bytes | **5,163,807 bytes** |
+| Audio | none | AAC, 45.70 s, 8 voiced lines |
+| Render (`--concurrency=2`) | 185.33 s | 405.31 s (max RSS 703,812 KB) |
+
+**Limits.** The pronunciation of "Err Open" and "C4" was not checked by ear in this headless session; the alignment confirms only timing. The where scene's second line ("Inspect the Control circuit breaker…") starts about 2 s after the on-screen Inspect click, because the first line needs that long. This pass has had no independent review.
+
 ## Measurements
 
-Final render **185.33 s** at `--concurrency=2`. Final video **31.40 s**, 1280×720, 30 fps, 942 frames, H.264, no audio track. The whole file decodes cleanly. Exact bytes and hashes are in `evidence/verification.json`.
+Final render **405.31 s** at `--concurrency=2`. Final video **45.67 s**, 1280×720, 30 fps, 1,370 frames, H.264, with an AAC narration track. The whole file decodes cleanly. Exact bytes and hashes are in `evidence/verification.json`.
 
 | Artifact | Bytes | Duration |
 |---|---:|---:|
-| `demo.mp4` | 2,292,596 | 31.40 s |
+| `demo.mp4` | 5,163,807 | 45.67 s |
 | `public/browser.webm` (raw Playwright) | 3,647,448 | 14.36 s |
 | `public/browser.mp4` (H.264, 30 fps CFR; 7.47 s kept in the film) | 1,146,971 | 14.37 s |
 | `public/terminal-vhs.mp4` (raw VHS, played at 1x) | 83,961 | 5.44 s |
@@ -67,7 +117,7 @@ Final render **185.33 s** at `--concurrency=2`. Final video **31.40 s**, 1280×7
 - **Canvas pan and zoom.** A plain wheel pans the diagram canvas; ctrl+wheel zooms at the pointer.
 - **VHS frame rate.** VHS wrote 25 fps despite `Set Framerate 30`, so scene length comes from the probed duration.
 - **VHS regexes.** VHS regexes cannot escape `/`.
-- **Silent audio track.** Remotion still emits a silent AAC track. `finalize.sh` stream-copies it away.
+- **Audio track.** Remotion always emits an AAC track; `finalize.sh` keeps it now that it carries the narration.
 - **Frame extraction.** `frames.sh` needed `ffmpeg -nostdin` inside its read loop.
 
 ## Reproduce
@@ -86,6 +136,8 @@ npm run capture                   # browser.webm + browser-actions.json + browse
 GOMAXPROCS=2 go test -C .work/pinned/books/release-it/project -p 2 -count=1 -v ./internal/breaker > evidence/breaker-tests.txt
 bash scripts/record-terminal.sh   # VHS → public/terminal.mp4
 node scripts/normalize.mjs        # cuts + measured timings → storyboard.json
+npm run narrate                   # only for lines missing from narration/; needs ELEVENLABS_API_KEY
+npm run retime                    # caption, step and scene timing from the alignment
 /usr/bin/time -f 'elapsed_seconds=%e\nmax_rss_kb=%M' -o evidence/render-time.txt npm run render -- --browser-executable=/root/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome > evidence/render.log 2>&1
 bash scripts/finalize.sh && bash scripts/frames.sh && npm run verify
 ```
@@ -106,7 +158,7 @@ Sol's build `0b85e6f` had a fresh Claude Opus 5.5 review: **NITS, no blockers** 
 - Generate storyboards with AI and check them, using syntax-aware extraction.
 - Pin the site build and the browser environment.
 - Derive terminal highlight positions from the terminal grid rather than by inspection.
-- Add ElevenLabs narration with audio/caption sync, then a licensed publishing pipeline.
+- Review the narration by ear (pronunciation of identifiers), then build a licensed publishing pipeline.
 - For live outage evidence, run an isolated Litefleet stack and record breaker metrics alongside injected failures.
 
 References: [Remotion render CLI](https://www.remotion.dev/docs/cli/render), [Charm VHS](https://github.com/charmbracelet/vhs), [Playwright video capture](https://playwright.dev/docs/videos).

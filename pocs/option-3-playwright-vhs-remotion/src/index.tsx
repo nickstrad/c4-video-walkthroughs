@@ -1,10 +1,10 @@
 import React from 'react';
-import {AbsoluteFill,Composition,Sequence,OffthreadVideo,staticFile,useCurrentFrame,interpolate,Easing,registerRoot} from 'remotion';
+import {AbsoluteFill,Composition,Sequence,OffthreadVideo,Audio,Freeze,staticFile,useCurrentFrame,interpolate,Easing,registerRoot} from 'remotion';
 import code from '../public/code.json';
 import actions from '../public/browser-actions.json';
 import storyboard from '../storyboard.json';
 // Every scene, caption, cut and highlight below is read from storyboard.json; nothing is timed here.
-type Caption={at:number,text:string};
+type Caption={at:number,text:string,audio:string,audioFrames:number,lowerThird?:boolean};
 type Step={at:number,lines:number[],note:string,skipped?:boolean};
 type Scene={id:string,kind:string,from:number,duration:number,act?:string,captions:Caption[],[k:string]:any};
 const sb=storyboard as unknown as {fps:number,width:number,height:number,durationFrames:number,commit:string,acts:Record<string,string>,scenes:Scene[]};
@@ -17,7 +17,7 @@ const fade=(f:number,len:number,edge=8)=>interpolate(f,[0,edge,len-edge,len],[0,
 const rise=(f:number,at:number)=>({opacity:interpolate(f,[at,at+8],[0,1],clamp),transform:`translateY(${interpolate(f,[at,at+8],[14,0],{...clamp,easing:Easing.out(Easing.cubic)})}px)`});
 const short=sb.commit.slice(0,7);
 
-// Lower third: act name, act progress and the caption (the narration stub). Persistent across scenes of one act.
+// Lower third: act name, act progress and the caption of the line being spoken. Persistent across scenes of one act.
 const actOrder=Object.keys(sb.acts);
 function LowerThird(){
  const f=useCurrentFrame();
@@ -59,6 +59,7 @@ function EndCard({scene}:{scene:Scene}){
 }
 
 // Real browser footage cut to its action windows (1x), with click/zoom markers from the capture's action log.
+// If the narration outlasts the footage, the last real frame is held for scene.holdFrames.
 type Action={t:number,kind:string,label:string,x:number|null,y:number|null};
 function Browser({scene}:{scene:Scene}){
  const f=useCurrentFrame(),segs:[number,number][]=scene.segments;
@@ -70,7 +71,7 @@ function Browser({scene}:{scene:Scene}){
  const push=zoom?interpolate(f,[zoom.at+scene.pushIn.delayFrames,zoom.at+scene.pushIn.delayFrames+40],[1,scene.pushIn.scale],{...clamp,easing:Easing.inOut(Easing.cubic)}):1;
  return <AbsoluteFill style={{background:'#fff',opacity:fade(f,scene.duration)}}>
   <AbsoluteFill style={{transform:`scale(${push})`,transformOrigin:`${scene.pushIn.originX*100}% ${scene.pushIn.originY*100}%`}}>
-   {segs.map(([s,e],i)=><Sequence key={i} from={starts[i]} durationInFrames={e-s}><OffthreadVideo muted src={staticFile(scene.asset.replace('public/',''))} trimBefore={s} trimAfter={e} style={{width:sb.width,height:sb.height}}/></Sequence>)}
+   {segs.map(([s,e],i)=>{const last=i===segs.length-1,hold=last?scene.holdFrames??0:0;return <Sequence key={i} from={starts[i]} durationInFrames={e-s+hold}><Freeze frame={e-s-1} active={hold>0&&f-starts[i]>=e-s}><OffthreadVideo muted src={staticFile(scene.asset.replace('public/',''))} trimBefore={s} trimAfter={e} style={{width:sb.width,height:sb.height}}/></Freeze></Sequence>;})}
    {marks.map(m=>{const lead=m.kind==='click'?14:10,d=f-(m.at-lead);if(d<0||d>lead+24)return null;
     const ring=interpolate(d,[lead-2,lead+14],[0.3,1.6],clamp),ringO=interpolate(d,[lead-2,lead+18],[0.9,0],clamp),o=interpolate(d,[0,5,lead+16,lead+24],[0,1,1,0],clamp);
     return <div key={m.label} style={{position:'absolute',left:m.x!,top:m.y!,opacity:o}}>
@@ -112,7 +113,7 @@ function Terminal({scene}:{scene:Scene}){
     {['#ff5f57','#febc2e','#28c840'].map(c=><span key={c} style={{width:12,height:12,borderRadius:6,background:c}}/>)}
     <span style={{marginLeft:14,fontFamily:mono}}>VHS · pinned export of {short} · unmodified tests</span></div>
    <div style={{position:'relative',height:500}}>
-    <OffthreadVideo muted src={staticFile(scene.asset.replace('public/',''))} style={{width:1152,height:500,display:'block'}}/>
+    <Freeze frame={scene.duration-(scene.holdFrames??0)-1} active={f>=scene.duration-(scene.holdFrames??0)}><OffthreadVideo muted src={staticFile(scene.asset.replace('public/',''))} style={{width:1152,height:500,display:'block'}}/></Freeze>
     <div style={{position:'absolute',left:x,top:y,width:w,height:hh,border:`3px solid ${accent}`,borderRadius:6,background:'rgba(101,228,205,0.10)',opacity:o}}/>
     <div style={{position:'absolute',left:x+w+14,top:y-2,...rise(f,h.at+4),background:accent,color:bg,fontWeight:700,fontSize:19,padding:'6px 12px',borderRadius:8}}>← the claim, passing</div>
    </div>
@@ -125,6 +126,8 @@ function Film(){
  const f=useCurrentFrame();
  return <AbsoluteFill style={{background:bg}}>
   {scenes.map(s=>{const View=views[s.kind];return <Sequence key={s.id} from={s.from} durationInFrames={s.duration} name={s.id}><View scene={s}/></Sequence>;})}
+  {/* Narration: each line's ElevenLabs audio starts at its caption, so caption and voice share one clock. */}
+  {scenes.flatMap(s=>s.captions.map(c=><Sequence key={c.audio} from={s.from+c.at} durationInFrames={c.audioFrames+6} name={c.audio}><Audio src={staticFile(c.audio)}/></Sequence>))}
   <LowerThird/>
   <div style={{position:'absolute',bottom:0,left:0,height:4,width:`${f/(sb.durationFrames-1)*100}%`,background:accent}}/>
  </AbsoluteFill>;
