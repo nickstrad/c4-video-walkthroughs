@@ -149,8 +149,8 @@ need. Videos and frames are linked here so they can be watched from GitHub.
 |---|---|---|---|
 | 1 — Code Hike + Remotion | Opus | **works end to end** — 25 s, 720p: C4 view, component lights up, camera zooms in, real function with animated line focus | [walkthrough.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-1-codehike-remotion/demo/walkthrough.mp4) |
 | 2 — Motion Canvas | Opus | **works end to end, fully unattended** — 26.6 s, 720p: request packet animates the query flow, then real code highlights in sync; no editor needed | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-2-motion-canvas/demo.mp4) |
-| 3 — Playwright + VHS + Remotion | Sol | **works end to end** — 32 s, 720p: real browser recording of the diagrams site → code excerpt → VHS terminal running the actual tests | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-3-playwright-vhs-remotion/demo.mp4) |
-| 4 — Slidev + Shiki Magic Move | Sol | **works end to end** — six-slide deck recorded to MP4; Magic Move morphs the flawed v0 code into the hardened v1 code | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-4-slidev-magic-move/demo.mp4) |
+| 3 — Playwright + VHS + Remotion | Sol, rebuilt by Opus | **works end to end** — 31.4 s, 720p: claim-first title card → live site inspection of the breaker → stepped code excerpts → terminal running the real tests (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-3-playwright-vhs-remotion/demo.mp4) |
+| 4 — Slidev + Shiki Magic Move | Sol, rebuilt by Opus | **works end to end** — 38.5 s, 720p: five-slide deck recorded to MP4; a three-state Magic Move (v0 → lesson-02 → v1) is the centerpiece (Opus rebuild at Nick's direction) | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-4-slidev-magic-move/demo.mp4) |
 
 All four POCs were built against litefleet at `release-it/v1-hardened`
 (`9367863`) on 2026-10-22; each folder's `NOTES.md` records what worked,
