@@ -1,0 +1,24 @@
+{
+  "name": "@c4v/renderer-remotion",
+  "private": true,
+  "type": "module",
+  "description": "Remotion + Code Hike renderer for a c4v render bundle (<project>/build/bundle.json + track.wav).",
+  "scripts": {
+    "prepare-props": "node scripts/prepare.mjs",
+    "render": "node scripts/render.mjs",
+    "stills": "node scripts/stills.mjs",
+    "studio": "node scripts/prepare.mjs && remotion studio src/index.ts --props=out/props.json --public-dir=../projects/litefleet/build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.538",
+    "codehike": "1.1.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.538"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "typescript": "7.0.2"
+  }
+}
