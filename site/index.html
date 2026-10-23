@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b1020">
+<title>C4 → Video Walkthroughs · POC demos</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --card: #141b2e;
+    --line: #26304a;
+    --text: #e8ecf5;
+    --muted: #9aa5bd;
+    --accent: #5ee0c4;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+             max(24px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  header { padding: 8px 4px 20px; }
+  .kicker {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 10px; }
+  header p { color: var(--muted); margin: 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0 0 20px;
+  }
+  video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  .body { padding: 14px 16px 16px; }
+  h2 { font-size: 20px; line-height: 1.3; margin: 0 0 6px; }
+  h2 .num { color: var(--accent); }
+  .desc { margin: 0 0 12px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .meta li {
+    font-size: 14px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  .meta li.opus { color: var(--accent); border-color: var(--accent); }
+  .link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin-top: 14px;
+    border-radius: 12px;
+    background: #1d2640;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .link:active { background: #26304a; }
+  footer { color: var(--muted); font-size: 14px; text-align: center; padding: 8px 4px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="kicker">Proofs of concept</p>
+    <h1>C4 diagrams → code walkthrough videos</h1>
+    <p>Four toolchains, one subject: litefleet at commit 9367863. Each demo is a short, captioned 720p render with no narration yet.</p>
+  </header>
+
+  <article class="card">
+    <video controls playsinline preload="metadata" poster="posters/option-1.png" src="videos/option-1.mp4"></video>
+    <div class="body">
+      <h2><span class="num">Option 1</span> · Code Hike + Remotion</h2>
+      <p class="desc">A component lights up in the C4 diagram, the camera zooms in, and its real Go function appears with animated line focus.</p>
+      <ul class="meta"><li>0:25</li><li>Built by Opus</li></ul>
+      <a class="link" href="videos/option-1.mp4">Open video full screen</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <video controls playsinline preload="metadata" poster="posters/option-2.png" src="videos/option-2.mp4"></video>
+    <div class="body">
+      <h2><span class="num">Option 2</span> · Motion Canvas</h2>
+      <p class="desc">A request packet travels the query path through the diagram while the matching source lines highlight in sync.</p>
+      <ul class="meta"><li>0:27</li><li>Built by Opus</li></ul>
+      <a class="link" href="videos/option-2.mp4">Open video full screen</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <video controls playsinline preload="metadata" poster="posters/option-3.png" src="videos/option-3.mp4"></video>
+    <div class="body">
+      <h2><span class="num">Option 3</span> · Playwright + VHS + Remotion</h2>
+      <p class="desc">A claim, then proof: the live diagrams site, the circuit-breaker code, and a terminal running the real tests.</p>
+      <ul class="meta"><li>0:31</li><li class="opus">Rebuilt by Opus</li></ul>
+      <a class="link" href="videos/option-3.mp4">Open video full screen</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <video controls playsinline preload="metadata" poster="posters/option-4.png" src="videos/option-4.mp4"></video>
+    <div class="body">
+      <h2><span class="num">Option 4</span> · Slidev + Shiki Magic Move</h2>
+      <p class="desc">A five-slide deck recorded to video; one constructor morphs across three commits with Magic Move.</p>
+      <ul class="meta"><li>0:38</li><li class="opus">Rebuilt by Opus</li></ul>
+      <a class="link" href="videos/option-4.mp4">Open video full screen</a>
+    </div>
+  </article>
+
+  <footer>
+    <p>Details and notes: <a href="https://github.com/nickstrad/c4-video-walkthroughs/blob/main/overview.md">overview.md on GitHub</a></p>
+  </footer>
+</main>
+</body>
+</html>

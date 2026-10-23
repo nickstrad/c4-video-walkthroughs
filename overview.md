@@ -145,6 +145,9 @@ video (10–30 s), still frames proving the signature visual rendered, and a
 notes file recording what worked, what didn't, and what the full build would
 need. Videos and frames are linked here so they can be watched from GitHub.
 
+**Watch all four on a phone:** https://nickstrad.github.io/c4-video-walkthroughs/
+(GitHub Pages; see [Demo site](#demo-site) below).
+
 | Option | Builder | Status | Demo |
 |---|---|---|---|
 | 1 — Code Hike + Remotion | Opus | **works end to end** — 25 s, 720p: C4 view, component lights up, camera zooms in, real function with animated line focus | [walkthrough.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-1-codehike-remotion/demo/walkthrough.mp4) |

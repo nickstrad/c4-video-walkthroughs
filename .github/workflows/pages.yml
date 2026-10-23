@@ -1,0 +1,55 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - pocs/*/demo.mp4
+      - pocs/*/demo/walkthrough.mp4
+      - pocs/*/frames/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/videos _site/posters
+          cp site/index.html _site/
+          cp pocs/option-1-codehike-remotion/demo/walkthrough.mp4       _site/videos/option-1.mp4
+          cp pocs/option-2-motion-canvas/demo.mp4                       _site/videos/option-2.mp4
+          cp pocs/option-3-playwright-vhs-remotion/demo.mp4             _site/videos/option-3.mp4
+          cp pocs/option-4-slidev-magic-move/demo.mp4                   _site/videos/option-4.mp4
+          cp pocs/option-1-codehike-remotion/frames/02-focus-zoom.png   _site/posters/option-1.png
+          cp pocs/option-2-motion-canvas/frames/02-epoch-check.png      _site/posters/option-2.png
+          cp pocs/option-3-playwright-vhs-remotion/frames/title.png     _site/posters/option-3.png
+          cp pocs/option-4-slidev-magic-move/frames/05-hardened.png     _site/posters/option-4.png
+          find _site -type f -exec ls -l {} +
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
