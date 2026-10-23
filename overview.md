@@ -147,10 +147,17 @@ need. Videos and frames are linked here so they can be watched from GitHub.
 
 | Option | Builder | Status | Demo |
 |---|---|---|---|
-| 1 — Code Hike + Remotion | Opus | building | — |
-| 2 — Motion Canvas | Opus | building | — |
-| 3 — Playwright + VHS + Remotion | Sol | building | — |
-| 4 — Slidev + Shiki Magic Move | Sol | building | — |
+| 1 — Code Hike + Remotion | Opus | **works end to end** — 25 s, 720p: C4 view, component lights up, camera zooms in, real function with animated line focus | [walkthrough.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-1-codehike-remotion/demo/walkthrough.mp4) |
+| 2 — Motion Canvas | Opus | **works end to end, fully unattended** — 26.6 s, 720p: request packet animates the query flow, then real code highlights in sync; no editor needed | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-2-motion-canvas/demo.mp4) |
+| 3 — Playwright + VHS + Remotion | Sol | **works end to end** — 32 s, 720p: real browser recording of the diagrams site → code excerpt → VHS terminal running the actual tests | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-3-playwright-vhs-remotion/demo.mp4) |
+| 4 — Slidev + Shiki Magic Move | Sol | **works end to end** — six-slide deck recorded to MP4; Magic Move morphs the flawed v0 code into the hardened v1 code | [demo.mp4](https://github.com/nickstrad/c4-video-walkthroughs/blob/main/pocs/option-4-slidev-magic-move/demo.mp4) |
+
+All four POCs were built against litefleet at `release-it/v1-hardened`
+(`9367863`) on 2026-10-22; each folder's `NOTES.md` records what worked,
+what didn't, measurements, and what the full build needs. POC 3's notes flag
+one honest caveat: the diagrams site's catalog did not yet contain the real
+datasets at capture time, so it appended litefleet to a local copy of the
+site bundle only.
 
 *Narration note: the POCs stub the ElevenLabs step (captions/titles instead
 of voice) until an API key is provided; the timing-driven sync is designed
