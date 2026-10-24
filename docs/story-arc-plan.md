@@ -804,6 +804,20 @@ protocol. Effort: S under half a day, M about a day, L several days.
 | 11 | **AI-mapping instructions from the registry** | generate the producer brief (`BEATS`, `PATTERNS`, schema) as a document the mapping step reads; a fixture storyboard it must reproduce | 1, 8 | S | Luna | the brief is generated, not hand-written; `verify` accepts the fixture |
 | 12 | **Point-and-shoot entry mode** (§ 7) | `Pointer` + `pointer.json`, `c4v point`, `derive.ts` (locus → element → view chain → skeleton), `ingest/neighbors.ts`, `derived` block, brief addendum, litefleet fixture (the draft gate and `DRAFT` ribbon are deferred with `gains`, § 10) | 3, 4, 6; 11's `walkthrough` half (11 can ship that before 8 lands) | M | Opus (derive, bound check), Sol (neighbours, `c4v point`), Luna (brief addendum, fixture) | `c4v point` on litefleet at `Query` emits a storyboard that `verify` accepts; its beats 1–3 land on `nd-engine` and `node-components` like the hand-written storyboard; after a `claude -p` mapping run and `narrate`, both renderers render it and `proof` passes; the derived storyboard's deep dive overlaps the authored one (`n-acquire`) |
 
+**Build status (2026-10-24, branch `feature/arc-video`, Opus):** landed
+items 1, 2 (Remotion only), 3 (`repo-card` in Remotion), 4 and 6, and a thin
+slice of 5 (blame over the shown excerpts at their pins, the video's commit
+line and one `credits` scene kind, video scope only; no `creditsOf` scopes,
+aliases, `.mailmap` folding or bylines). They are proved by
+`framework/projects/litefleet-arc` ("One query's guardrails", a five-beat
+`walkthrough` ending on `shoutout`): `c4v verify` and `c4v proof` pass; see
+[framework/README.md § Story arcs](../framework/README.md). Not landed: the
+Motion Canvas halves of items 2, 3, 5 and 6, and items 7–12. Item 1's proof
+as worded (a four-beat arc over litefleet's existing 14 scenes) cannot hold,
+because a `walkthrough` requires a `repo-intro` that opens on a `repo-card`;
+the arc rules are tested on `litefleet-arc` instead. One deviation from § 2.3:
+`responsibilities` is `{ label, cue }[]`, not `string[]`.
+
 Items 1–3 are the spine and should land first, in order. Items 4, 5 and 6
 are independent of each other after 3. Items 7 and 8 are the two L items and
 can run in parallel on different seats. 9–11 close the playlist loop. Item 12 is
