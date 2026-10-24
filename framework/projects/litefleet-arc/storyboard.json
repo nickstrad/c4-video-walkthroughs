@@ -1,0 +1,275 @@
+{
+  "schema": "c4v-storyboard/1",
+  "id": "litefleet-query-guardrails",
+  "title": "One query's guardrails",
+  "authoredBy": "Hand-written (Opus, arc build) as the first story-arc video: a walkthrough arc over litefleet's pinned dataset and code. Narration spoken forms follow the POCs' rules: numbers, symbols and file names are spelled for TTS in speech, kept exact in captions.",
+  "format": { "fps": 30, "width": 1280, "height": 720, "outro": 0.6 },
+  "sources": {
+    "dataset": {
+      "repo": "nickstrad/book-notes",
+      "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+      "path": "pages/public/architectures/litefleet.json",
+      "snapshot": "../litefleet/sources/litefleet.dataset.json"
+    },
+    "code": {
+      "repo": "nickstrad/book-notes",
+      "tag": "release-it/v1-hardened",
+      "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+      "stripPrefix": "books/release-it/project/"
+    }
+  },
+  "narration": {
+    "provider": "elevenlabs",
+    "voice": { "name": "Roger", "id": "CwhRBWXzGAHq8TQ4Fs17" },
+    "model": "eleven_multilingual_v2",
+    "outputFormat": "mp3_44100_128",
+    "leadIn": 0.3,
+    "tail": 0.5,
+    "stepLead": 0.25
+  },
+  "excerpts": [
+    {
+      "id": "query-guards",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "func (e *Engine) Query",
+      "lines": [130, 149],
+      "elementId": "nd-engine",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23"
+    },
+    {
+      "id": "deadline",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "const StatementDeadline",
+      "lines": [32, 35],
+      "elementId": "nd-engine"
+    },
+    {
+      "id": "bulkheads",
+      "path": "books/release-it/project/internal/engine/admission.go",
+      "blob": "e09ada334e75062d43504805678cdc5e4f9fdba6",
+      "symbol": "// Bulkheads, three deep.",
+      "lines": [27, 41],
+      "elementId": "nd-engine"
+    },
+    {
+      "id": "caps",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "// A query's answer is capped",
+      "lines": [116, 123],
+      "elementId": "nd-engine"
+    },
+    {
+      "id": "query-caps",
+      "path": "books/release-it/project/internal/engine/exec.go",
+      "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+      "symbol": "func (e *Engine) Query",
+      "lines": [194, 217],
+      "elementId": "nd-engine",
+      "relationshipId": "sql-tenant",
+      "datasetSourceId": "src-23"
+    }
+  ],
+  "acts": [
+    { "id": "intro", "title": "The repo", "role": "repo-intro" },
+    { "id": "architecture", "title": "Architecture", "role": "architecture" },
+    { "id": "focus", "title": "Admission engine", "role": "focus" },
+    { "id": "deep-dive", "title": "Engine.Query's guards", "role": "deep-dive" },
+    { "id": "credits", "title": "Credits", "role": "shoutout", "optional": true }
+  ],
+  "arc": {
+    "pattern": "walkthrough",
+    "beats": ["intro", "architecture", "focus", "deep-dive", "credits"],
+    "chrome": { "lowerThird": true, "labels": "title" }
+  },
+  "scenes": [
+    {
+      "id": "r-card",
+      "act": "intro",
+      "kind": "repo-card",
+      "view": "context",
+      "elementId": "litefleet",
+      "facts": ["commit", "commits", "tags", "dates", "authors", "elements"],
+      "narration": { "leadIn": 0.6 },
+      "lines": [
+        {
+          "id": "what",
+          "caption": "Litefleet: a small multitenant SQLite platform, one owning node per database.",
+          "speech": "Litefleet is a small multitenant SQLite platform, with one owning node per database."
+        },
+        {
+          "id": "how",
+          "caption": "It was built lesson by lesson, following the book Release It!",
+          "speech": "It was built lesson by lesson, following the book Release It."
+        },
+        {
+          "id": "pin",
+          "caption": "This video follows one query, pinned at release-it/v1-hardened.",
+          "speech": "This video follows one query through it, pinned at the release-it v1 hardened tag."
+        }
+      ]
+    },
+    {
+      "id": "a-context",
+      "act": "architecture",
+      "kind": "architecture-overview",
+      "view": "context",
+      "descend": { "elementId": "litefleet", "cue": "open" },
+      "minDuration": 6,
+      "caption": "Tenants send SQL to Litefleet with an API key. Let's open it up.",
+      "narration": { "cues": { "open": "open it up" } }
+    },
+    {
+      "id": "a-containers",
+      "act": "architecture",
+      "kind": "architecture-overview",
+      "view": "containers",
+      "descend": { "elementId": "node", "cue": "node" },
+      "minDuration": 6,
+      "caption": "Gateways route each query to the node agent that owns its database.",
+      "narration": { "cues": { "node": "node agent" } }
+    },
+    {
+      "id": "a-node",
+      "act": "architecture",
+      "kind": "architecture-overview",
+      "view": "node-components",
+      "settle": { "elementId": "nd-engine", "cue": "engine" },
+      "minDuration": 5,
+      "caption": "Inside the node, every statement passes the admission engine first.",
+      "narration": { "cues": { "engine": "admission engine" } }
+    },
+    {
+      "id": "f-engine",
+      "act": "focus",
+      "kind": "focus-element",
+      "view": "node-components",
+      "elementId": "nd-engine",
+      "responsibilities": [
+        { "label": "Epoch check", "cue": "epoch" },
+        { "label": "Per-database lanes", "cue": "lanes" },
+        { "label": "Tenant and node limits", "cue": "slots" },
+        { "label": "2 s statement deadline", "cue": "deadline" }
+      ],
+      "narration": { "cues": { "epoch": "checks the epoch", "lanes": "database lane", "slots": "tenant and node", "deadline": "two second" } },
+      "lines": [
+        { "id": "what", "caption": "The admission and SQL engine decides if a statement may run, and for how long." },
+        { "id": "checks", "caption": "It checks the epoch, takes a database lane, then tenant and node slots." },
+        {
+          "id": "deadline",
+          "caption": "And it bounds every statement with a 2 second deadline.",
+          "speech": "And it bounds every statement with a two second deadline."
+        }
+      ]
+    },
+    {
+      "id": "d-query",
+      "act": "deep-dive",
+      "kind": "code-explanation",
+      "excerpt": "query-guards",
+      "context": { "view": "node-components", "elementId": "nd-engine" },
+      "focus": [
+        { "ranges": [[132, 133]], "cue": "deadline" },
+        { "ranges": [[145, 149]], "cue": "bulkheads" }
+      ],
+      "narration": { "cues": { "deadline": "the deadline", "bulkheads": "the bulkheads" } },
+      "lines": [
+        {
+          "id": "enter",
+          "caption": "Engine.Query in exec.go, at the pinned commit: every read enters here.",
+          "speech": "Here is Engine dot Query, in exec dot go. Every read enters here."
+        },
+        {
+          "id": "deadline",
+          "gap": 0.6,
+          "caption": "Guard one, the deadline: the context gets 2 seconds, then it is cancelled.",
+          "speech": "Guard one is the deadline. The context gets two seconds, then it is cancelled."
+        },
+        {
+          "id": "bulkheads",
+          "caption": "Guard two, the bulkheads: acquire takes a lane and slots, or refuses.",
+          "speech": "Guard two is the bulkheads. Acquire takes a lane and slots, or refuses."
+        }
+      ]
+    },
+    {
+      "id": "d-deadline",
+      "act": "deep-dive",
+      "kind": "code-explanation",
+      "excerpt": "deadline",
+      "context": { "view": "node-components", "elementId": "nd-engine" },
+      "focus": [{ "ranges": [[32, 34]], "cue": "why" }],
+      "caption": "Why 2 s? The gateway allows 2.9 s, so a timeout still gets its 504 back.",
+      "speech": "Why two seconds? The gateway allows two point nine, so a timed-out statement still gets its five-oh-four back in time.",
+      "narration": { "cues": { "why": "The gateway" } }
+    },
+    {
+      "id": "d-bulkheads",
+      "act": "deep-dive",
+      "kind": "code-explanation",
+      "excerpt": "bulkheads",
+      "context": { "view": "node-components", "elementId": "nd-engine" },
+      "focus": [
+        { "ranges": [[35, 37]], "cue": "db" },
+        { "ranges": [[38, 39]], "cue": "tenant" },
+        { "ranges": [[30, 31]], "cue": "quarter" }
+      ],
+      "narration": { "cues": { "db": "two readers", "tenant": "four statements", "quarter": "a quarter" } },
+      "lines": [
+        {
+          "id": "db",
+          "caption": "The bulkheads, per database: 2 readers, 1 writer and 8 waiting.",
+          "speech": "The bulkheads, per database: two readers, one writer, and eight waiting."
+        },
+        {
+          "id": "tenant",
+          "caption": "Then 4 statements per tenant across the node, and 16 for the whole node.",
+          "speech": "Then four statements per tenant across the node, and sixteen for the whole node."
+        },
+        { "id": "quarter", "caption": "So one tenant can hold at most a quarter of the node." }
+      ]
+    },
+    {
+      "id": "d-caps",
+      "act": "deep-dive",
+      "kind": "code-explanation",
+      "excerpt": "caps",
+      "context": { "view": "node-components", "elementId": "nd-engine" },
+      "focus": [{ "ranges": [[120, 123]], "cue": "caps" }],
+      "caption": "Guard three caps the answer: 1000 rows or 1 MiB of JSON, whichever first.",
+      "speech": "Guard three caps the answer: one thousand rows, or one mebibyte of JSON, whichever comes first.",
+      "narration": { "cues": { "caps": "one thousand" } }
+    },
+    {
+      "id": "d-truncate",
+      "act": "deep-dive",
+      "kind": "code-explanation",
+      "excerpt": "query-caps",
+      "context": { "view": "node-components", "elementId": "nd-engine" },
+      "focus": [{ "ranges": [[195, 198], [206, 209]], "cue": "cap" }],
+      "narration": { "cues": { "cap": "either cap" } },
+      "lines": [
+        { "id": "loop", "caption": "In the scan loop, either cap stops the stream, and the answer says truncated." },
+        { "id": "sum", "caption": "Bounded time, bounded concurrency, bounded answers: one query's guardrails." }
+      ]
+    },
+    {
+      "id": "c-credits",
+      "act": "credits",
+      "kind": "credits",
+      "minDuration": 9,
+      "names": ["nickstrad"],
+      "lines": [
+        {
+          "id": "blame",
+          "caption": "Git blame credits every line shown to nickstrad, across seven commits.",
+          "speech": "Git blame credits every line shown to Nick Strad, across seven commits."
+        },
+        { "id": "thanks", "caption": "Thanks for watching." }
+      ]
+    }
+  ]
+}

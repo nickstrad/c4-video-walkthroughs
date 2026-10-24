@@ -1,0 +1,3256 @@
+{
+ "schema": "c4v-bundle/1",
+ "storyboard": {
+  "schema": "c4v-storyboard/1",
+  "id": "litefleet-query-guardrails",
+  "title": "One query's guardrails",
+  "authoredBy": "Hand-written (Opus, arc build) as the first story-arc video: a walkthrough arc over litefleet's pinned dataset and code. Narration spoken forms follow the POCs' rules: numbers, symbols and file names are spelled for TTS in speech, kept exact in captions.",
+  "format": {
+   "fps": 30,
+   "width": 1280,
+   "height": 720,
+   "outro": 0.6
+  },
+  "sources": {
+   "dataset": {
+    "repo": "nickstrad/book-notes",
+    "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+    "path": "pages/public/architectures/litefleet.json",
+    "snapshot": "../litefleet/sources/litefleet.dataset.json"
+   },
+   "code": {
+    "repo": "nickstrad/book-notes",
+    "tag": "release-it/v1-hardened",
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "stripPrefix": "books/release-it/project/"
+   }
+  },
+  "narration": {
+   "provider": "elevenlabs",
+   "voice": {
+    "name": "Roger",
+    "id": "CwhRBWXzGAHq8TQ4Fs17"
+   },
+   "model": "eleven_multilingual_v2",
+   "outputFormat": "mp3_44100_128",
+   "leadIn": 0.3,
+   "tail": 0.5,
+   "stepLead": 0.25
+  },
+  "excerpts": [
+   {
+    "id": "query-guards",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+    "symbol": "func (e *Engine) Query",
+    "lines": [
+     130,
+     149
+    ],
+    "elementId": "nd-engine",
+    "relationshipId": "sql-tenant",
+    "datasetSourceId": "src-23"
+   },
+   {
+    "id": "deadline",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+    "symbol": "const StatementDeadline",
+    "lines": [
+     32,
+     35
+    ],
+    "elementId": "nd-engine"
+   },
+   {
+    "id": "bulkheads",
+    "path": "books/release-it/project/internal/engine/admission.go",
+    "blob": "e09ada334e75062d43504805678cdc5e4f9fdba6",
+    "symbol": "// Bulkheads, three deep.",
+    "lines": [
+     27,
+     41
+    ],
+    "elementId": "nd-engine"
+   },
+   {
+    "id": "caps",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+    "symbol": "// A query's answer is capped",
+    "lines": [
+     116,
+     123
+    ],
+    "elementId": "nd-engine"
+   },
+   {
+    "id": "query-caps",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+    "symbol": "func (e *Engine) Query",
+    "lines": [
+     194,
+     217
+    ],
+    "elementId": "nd-engine",
+    "relationshipId": "sql-tenant",
+    "datasetSourceId": "src-23"
+   }
+  ],
+  "acts": [
+   {
+    "id": "intro",
+    "title": "The repo",
+    "role": "repo-intro"
+   },
+   {
+    "id": "architecture",
+    "title": "Architecture",
+    "role": "architecture"
+   },
+   {
+    "id": "focus",
+    "title": "Admission engine",
+    "role": "focus"
+   },
+   {
+    "id": "deep-dive",
+    "title": "Engine.Query's guards",
+    "role": "deep-dive"
+   },
+   {
+    "id": "credits",
+    "title": "Credits",
+    "role": "shoutout",
+    "optional": true
+   }
+  ],
+  "arc": {
+   "pattern": "walkthrough",
+   "beats": [
+    "intro",
+    "architecture",
+    "focus",
+    "deep-dive",
+    "credits"
+   ],
+   "chrome": {
+    "lowerThird": true,
+    "labels": "title"
+   }
+  },
+  "scenes": [
+   {
+    "id": "r-card",
+    "act": "intro",
+    "kind": "repo-card",
+    "view": "context",
+    "elementId": "litefleet",
+    "facts": [
+     "commit",
+     "commits",
+     "tags",
+     "dates",
+     "authors",
+     "elements"
+    ],
+    "narration": {
+     "leadIn": 0.6
+    },
+    "lines": [
+     {
+      "id": "what",
+      "caption": "Litefleet: a small multitenant SQLite platform, one owning node per database.",
+      "speech": "Litefleet is a small multitenant SQLite platform, with one owning node per database."
+     },
+     {
+      "id": "how",
+      "caption": "It was built lesson by lesson, following the book Release It!",
+      "speech": "It was built lesson by lesson, following the book Release It."
+     },
+     {
+      "id": "pin",
+      "caption": "This video follows one query, pinned at release-it/v1-hardened.",
+      "speech": "This video follows one query through it, pinned at the release-it v1 hardened tag."
+     }
+    ]
+   },
+   {
+    "id": "a-context",
+    "act": "architecture",
+    "kind": "architecture-overview",
+    "view": "context",
+    "descend": {
+     "elementId": "litefleet",
+     "cue": "open"
+    },
+    "minDuration": 6,
+    "caption": "Tenants send SQL to Litefleet with an API key. Let's open it up.",
+    "narration": {
+     "cues": {
+      "open": "open it up"
+     }
+    }
+   },
+   {
+    "id": "a-containers",
+    "act": "architecture",
+    "kind": "architecture-overview",
+    "view": "containers",
+    "descend": {
+     "elementId": "node",
+     "cue": "node"
+    },
+    "minDuration": 6,
+    "caption": "Gateways route each query to the node agent that owns its database.",
+    "narration": {
+     "cues": {
+      "node": "node agent"
+     }
+    }
+   },
+   {
+    "id": "a-node",
+    "act": "architecture",
+    "kind": "architecture-overview",
+    "view": "node-components",
+    "settle": {
+     "elementId": "nd-engine",
+     "cue": "engine"
+    },
+    "minDuration": 5,
+    "caption": "Inside the node, every statement passes the admission engine first.",
+    "narration": {
+     "cues": {
+      "engine": "admission engine"
+     }
+    }
+   },
+   {
+    "id": "f-engine",
+    "act": "focus",
+    "kind": "focus-element",
+    "view": "node-components",
+    "elementId": "nd-engine",
+    "responsibilities": [
+     {
+      "label": "Epoch check",
+      "cue": "epoch"
+     },
+     {
+      "label": "Per-database lanes",
+      "cue": "lanes"
+     },
+     {
+      "label": "Tenant and node limits",
+      "cue": "slots"
+     },
+     {
+      "label": "2 s statement deadline",
+      "cue": "deadline"
+     }
+    ],
+    "narration": {
+     "cues": {
+      "epoch": "checks the epoch",
+      "lanes": "database lane",
+      "slots": "tenant and node",
+      "deadline": "two second"
+     }
+    },
+    "lines": [
+     {
+      "id": "what",
+      "caption": "The admission and SQL engine decides if a statement may run, and for how long."
+     },
+     {
+      "id": "checks",
+      "caption": "It checks the epoch, takes a database lane, then tenant and node slots."
+     },
+     {
+      "id": "deadline",
+      "caption": "And it bounds every statement with a 2 second deadline.",
+      "speech": "And it bounds every statement with a two second deadline."
+     }
+    ]
+   },
+   {
+    "id": "d-query",
+    "act": "deep-dive",
+    "kind": "code-explanation",
+    "excerpt": "query-guards",
+    "context": {
+     "view": "node-components",
+     "elementId": "nd-engine"
+    },
+    "focus": [
+     {
+      "ranges": [
+       [
+        132,
+        133
+       ]
+      ],
+      "cue": "deadline"
+     },
+     {
+      "ranges": [
+       [
+        145,
+        149
+       ]
+      ],
+      "cue": "bulkheads"
+     }
+    ],
+    "narration": {
+     "cues": {
+      "deadline": "the deadline",
+      "bulkheads": "the bulkheads"
+     }
+    },
+    "lines": [
+     {
+      "id": "enter",
+      "caption": "Engine.Query in exec.go, at the pinned commit: every read enters here.",
+      "speech": "Here is Engine dot Query, in exec dot go. Every read enters here."
+     },
+     {
+      "id": "deadline",
+      "gap": 0.6,
+      "caption": "Guard one, the deadline: the context gets 2 seconds, then it is cancelled.",
+      "speech": "Guard one is the deadline. The context gets two seconds, then it is cancelled."
+     },
+     {
+      "id": "bulkheads",
+      "caption": "Guard two, the bulkheads: acquire takes a lane and slots, or refuses.",
+      "speech": "Guard two is the bulkheads. Acquire takes a lane and slots, or refuses."
+     }
+    ]
+   },
+   {
+    "id": "d-deadline",
+    "act": "deep-dive",
+    "kind": "code-explanation",
+    "excerpt": "deadline",
+    "context": {
+     "view": "node-components",
+     "elementId": "nd-engine"
+    },
+    "focus": [
+     {
+      "ranges": [
+       [
+        32,
+        34
+       ]
+      ],
+      "cue": "why"
+     }
+    ],
+    "caption": "Why 2 s? The gateway allows 2.9 s, so a timeout still gets its 504 back.",
+    "speech": "Why two seconds? The gateway allows two point nine, so a timed-out statement still gets its five-oh-four back in time.",
+    "narration": {
+     "cues": {
+      "why": "The gateway"
+     }
+    }
+   },
+   {
+    "id": "d-bulkheads",
+    "act": "deep-dive",
+    "kind": "code-explanation",
+    "excerpt": "bulkheads",
+    "context": {
+     "view": "node-components",
+     "elementId": "nd-engine"
+    },
+    "focus": [
+     {
+      "ranges": [
+       [
+        35,
+        37
+       ]
+      ],
+      "cue": "db"
+     },
+     {
+      "ranges": [
+       [
+        38,
+        39
+       ]
+      ],
+      "cue": "tenant"
+     },
+     {
+      "ranges": [
+       [
+        30,
+        31
+       ]
+      ],
+      "cue": "quarter"
+     }
+    ],
+    "narration": {
+     "cues": {
+      "db": "two readers",
+      "tenant": "four statements",
+      "quarter": "a quarter"
+     }
+    },
+    "lines": [
+     {
+      "id": "db",
+      "caption": "The bulkheads, per database: 2 readers, 1 writer and 8 waiting.",
+      "speech": "The bulkheads, per database: two readers, one writer, and eight waiting."
+     },
+     {
+      "id": "tenant",
+      "caption": "Then 4 statements per tenant across the node, and 16 for the whole node.",
+      "speech": "Then four statements per tenant across the node, and sixteen for the whole node."
+     },
+     {
+      "id": "quarter",
+      "caption": "So one tenant can hold at most a quarter of the node."
+     }
+    ]
+   },
+   {
+    "id": "d-caps",
+    "act": "deep-dive",
+    "kind": "code-explanation",
+    "excerpt": "caps",
+    "context": {
+     "view": "node-components",
+     "elementId": "nd-engine"
+    },
+    "focus": [
+     {
+      "ranges": [
+       [
+        120,
+        123
+       ]
+      ],
+      "cue": "caps"
+     }
+    ],
+    "caption": "Guard three caps the answer: 1000 rows or 1 MiB of JSON, whichever first.",
+    "speech": "Guard three caps the answer: one thousand rows, or one mebibyte of JSON, whichever comes first.",
+    "narration": {
+     "cues": {
+      "caps": "one thousand"
+     }
+    }
+   },
+   {
+    "id": "d-truncate",
+    "act": "deep-dive",
+    "kind": "code-explanation",
+    "excerpt": "query-caps",
+    "context": {
+     "view": "node-components",
+     "elementId": "nd-engine"
+    },
+    "focus": [
+     {
+      "ranges": [
+       [
+        195,
+        198
+       ],
+       [
+        206,
+        209
+       ]
+      ],
+      "cue": "cap"
+     }
+    ],
+    "narration": {
+     "cues": {
+      "cap": "either cap"
+     }
+    },
+    "lines": [
+     {
+      "id": "loop",
+      "caption": "In the scan loop, either cap stops the stream, and the answer says truncated."
+     },
+     {
+      "id": "sum",
+      "caption": "Bounded time, bounded concurrency, bounded answers: one query's guardrails."
+     }
+    ]
+   },
+   {
+    "id": "c-credits",
+    "act": "credits",
+    "kind": "credits",
+    "minDuration": 9,
+    "names": [
+     "nickstrad"
+    ],
+    "lines": [
+     {
+      "id": "blame",
+      "caption": "Git blame credits every line shown to nickstrad, across seven commits.",
+      "speech": "Git blame credits every line shown to Nick Strad, across seven commits."
+     },
+     {
+      "id": "thanks",
+      "caption": "Thanks for watching."
+     }
+    ]
+   }
+  ]
+ },
+ "timeline": {
+  "schema": "c4v-timeline/1",
+  "storyboard": "litefleet-query-guardrails",
+  "fps": 30,
+  "width": 1280,
+  "height": 720,
+  "totalFrames": 3282,
+  "total": 109.4,
+  "scenes": [
+   {
+    "id": "r-card",
+    "kind": "repo-card",
+    "takes": [
+     {
+      "take": "r-card.what",
+      "lineId": "what",
+      "at": 0.6,
+      "speech": [
+       0.6,
+       6.417
+      ]
+     },
+     {
+      "take": "r-card.how",
+      "lineId": "how",
+      "at": 6.817,
+      "speech": [
+       6.817,
+       10.103
+      ]
+     },
+     {
+      "take": "r-card.pin",
+      "lineId": "pin",
+      "at": 10.503,
+      "speech": [
+       10.503,
+       14.88
+      ]
+     }
+    ],
+    "startFrame": 0,
+    "frames": 462,
+    "start": 0,
+    "duration": 15.4,
+    "leadIn": 0.6,
+    "speech": [
+     0.6,
+     14.88
+    ],
+    "cues": {}
+   },
+   {
+    "id": "a-context",
+    "kind": "architecture-overview",
+    "takes": [
+     {
+      "take": "a-context",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       4.387
+      ]
+     }
+    ],
+    "startFrame": 462,
+    "frames": 180,
+    "start": 15.4,
+    "duration": 6,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     4.387
+    ],
+    "cues": {
+     "open": 3.911
+    }
+   },
+   {
+    "id": "a-containers",
+    "kind": "architecture-overview",
+    "takes": [
+     {
+      "take": "a-containers",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       3.841
+      ]
+     }
+    ],
+    "startFrame": 642,
+    "frames": 180,
+    "start": 21.4,
+    "duration": 6,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     3.841
+    ],
+    "cues": {
+     "node": 1.995
+    }
+   },
+   {
+    "id": "a-node",
+    "kind": "architecture-overview",
+    "takes": [
+     {
+      "take": "a-node",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       4.004
+      ]
+     }
+    ],
+    "startFrame": 822,
+    "frames": 150,
+    "start": 27.4,
+    "duration": 5,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     4.004
+    ],
+    "cues": {
+     "engine": 2.854
+    }
+   },
+   {
+    "id": "f-engine",
+    "kind": "focus-element",
+    "takes": [
+     {
+      "take": "f-engine.what",
+      "lineId": "what",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       4.712
+      ]
+     },
+     {
+      "take": "f-engine.checks",
+      "lineId": "checks",
+      "at": 5.112,
+      "speech": [
+       5.112,
+       9.605
+      ]
+     },
+     {
+      "take": "f-engine.deadline",
+      "lineId": "deadline",
+      "at": 10.005,
+      "speech": [
+       10.005,
+       12.931
+      ]
+     }
+    ],
+    "startFrame": 972,
+    "frames": 403,
+    "start": 32.4,
+    "duration": 13.433,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     12.931
+    ],
+    "cues": {
+     "epoch": 5.356,
+     "lanes": 6.912,
+     "slots": 8.316,
+     "deadline": 11.793
+    }
+   },
+   {
+    "id": "d-query",
+    "kind": "code-explanation",
+    "takes": [
+     {
+      "take": "d-query.enter",
+      "lineId": "enter",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       5.014
+      ]
+     },
+     {
+      "take": "d-query.deadline",
+      "lineId": "deadline",
+      "at": 5.614,
+      "speech": [
+       5.614,
+       9.817
+      ]
+     },
+     {
+      "take": "d-query.bulkheads",
+      "lineId": "bulkheads",
+      "at": 10.217,
+      "speech": [
+       10.217,
+       15.047
+      ]
+     }
+    ],
+    "startFrame": 1375,
+    "frames": 467,
+    "start": 45.833,
+    "duration": 15.567,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     15.047
+    ],
+    "cues": {
+     "deadline": 6.345,
+     "bulkheads": 11.053
+    }
+   },
+   {
+    "id": "d-deadline",
+    "kind": "code-explanation",
+    "takes": [
+     {
+      "take": "d-deadline",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       7.812
+      ]
+     }
+    ],
+    "startFrame": 1842,
+    "frames": 250,
+    "start": 61.4,
+    "duration": 8.333,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     7.812
+    ],
+    "cues": {
+     "why": 2.216
+    }
+   },
+   {
+    "id": "d-bulkheads",
+    "kind": "code-explanation",
+    "takes": [
+     {
+      "take": "d-bulkheads.db",
+      "lineId": "db",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       4.352
+      ]
+     },
+     {
+      "take": "d-bulkheads.tenant",
+      "lineId": "tenant",
+      "at": 4.752,
+      "speech": [
+       4.752,
+       8.885
+      ]
+     },
+     {
+      "take": "d-bulkheads.quarter",
+      "lineId": "quarter",
+      "at": 9.285,
+      "speech": [
+       9.285,
+       12.013
+      ]
+     }
+    ],
+    "startFrame": 2092,
+    "frames": 376,
+    "start": 69.733,
+    "duration": 12.533,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     12.013
+    ],
+    "cues": {
+     "db": 2.25,
+     "tenant": 5.077,
+     "quarter": 10.945
+    }
+   },
+   {
+    "id": "d-caps",
+    "kind": "code-explanation",
+    "takes": [
+     {
+      "take": "d-caps",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       6.209
+      ]
+     }
+    ],
+    "startFrame": 2468,
+    "frames": 202,
+    "start": 82.267,
+    "duration": 6.733,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     6.209
+    ],
+    "cues": {
+     "caps": 2.332
+    }
+   },
+   {
+    "id": "d-truncate",
+    "kind": "code-explanation",
+    "takes": [
+     {
+      "take": "d-truncate.loop",
+      "lineId": "loop",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       4.956
+      ]
+     },
+     {
+      "take": "d-truncate.sum",
+      "lineId": "sum",
+      "at": 5.356,
+      "speech": [
+       5.356,
+       10.267
+      ]
+     }
+    ],
+    "startFrame": 2670,
+    "frames": 324,
+    "start": 89,
+    "duration": 10.8,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     10.267
+    ],
+    "cues": {
+     "cap": 1.217
+    }
+   },
+   {
+    "id": "c-credits",
+    "kind": "credits",
+    "takes": [
+     {
+      "take": "c-credits.blame",
+      "lineId": "blame",
+      "at": 0.3,
+      "speech": [
+       0.3,
+       3.899
+      ]
+     },
+     {
+      "take": "c-credits.thanks",
+      "lineId": "thanks",
+      "at": 4.299,
+      "speech": [
+       4.299,
+       5.17
+      ]
+     }
+    ],
+    "startFrame": 2994,
+    "frames": 270,
+    "start": 99.8,
+    "duration": 9,
+    "leadIn": 0.3,
+    "speech": [
+     0.3,
+     5.17
+    ],
+    "cues": {}
+   }
+  ],
+  "captions": [
+   {
+    "start": 0,
+    "end": 6.817,
+    "text": "Litefleet: a small multitenant SQLite platform, one owning node per database.",
+    "sceneId": "r-card",
+    "lineId": "what"
+   },
+   {
+    "start": 6.817,
+    "end": 10.503,
+    "text": "It was built lesson by lesson, following the book Release It!",
+    "sceneId": "r-card",
+    "lineId": "how"
+   },
+   {
+    "start": 10.503,
+    "end": 15.4,
+    "text": "This video follows one query, pinned at release-it/v1-hardened.",
+    "sceneId": "r-card",
+    "lineId": "pin"
+   },
+   {
+    "start": 15.4,
+    "end": 21.4,
+    "text": "Tenants send SQL to Litefleet with an API key. Let's open it up.",
+    "sceneId": "a-context"
+   },
+   {
+    "start": 21.4,
+    "end": 27.4,
+    "text": "Gateways route each query to the node agent that owns its database.",
+    "sceneId": "a-containers"
+   },
+   {
+    "start": 27.4,
+    "end": 32.4,
+    "text": "Inside the node, every statement passes the admission engine first.",
+    "sceneId": "a-node"
+   },
+   {
+    "start": 32.4,
+    "end": 37.512,
+    "text": "The admission and SQL engine decides if a statement may run, and for how long.",
+    "sceneId": "f-engine",
+    "lineId": "what"
+   },
+   {
+    "start": 37.512,
+    "end": 42.405,
+    "text": "It checks the epoch, takes a database lane, then tenant and node slots.",
+    "sceneId": "f-engine",
+    "lineId": "checks"
+   },
+   {
+    "start": 42.405,
+    "end": 45.833,
+    "text": "And it bounds every statement with a 2 second deadline.",
+    "sceneId": "f-engine",
+    "lineId": "deadline"
+   },
+   {
+    "start": 45.833,
+    "end": 51.447,
+    "text": "Engine.Query in exec.go, at the pinned commit: every read enters here.",
+    "sceneId": "d-query",
+    "lineId": "enter"
+   },
+   {
+    "start": 51.447,
+    "end": 56.05,
+    "text": "Guard one, the deadline: the context gets 2 seconds, then it is cancelled.",
+    "sceneId": "d-query",
+    "lineId": "deadline"
+   },
+   {
+    "start": 56.05,
+    "end": 61.4,
+    "text": "Guard two, the bulkheads: acquire takes a lane and slots, or refuses.",
+    "sceneId": "d-query",
+    "lineId": "bulkheads"
+   },
+   {
+    "start": 61.4,
+    "end": 69.733,
+    "text": "Why 2 s? The gateway allows 2.9 s, so a timeout still gets its 504 back.",
+    "sceneId": "d-deadline"
+   },
+   {
+    "start": 69.733,
+    "end": 74.485,
+    "text": "The bulkheads, per database: 2 readers, 1 writer and 8 waiting.",
+    "sceneId": "d-bulkheads",
+    "lineId": "db"
+   },
+   {
+    "start": 74.485,
+    "end": 79.018,
+    "text": "Then 4 statements per tenant across the node, and 16 for the whole node.",
+    "sceneId": "d-bulkheads",
+    "lineId": "tenant"
+   },
+   {
+    "start": 79.018,
+    "end": 82.267,
+    "text": "So one tenant can hold at most a quarter of the node.",
+    "sceneId": "d-bulkheads",
+    "lineId": "quarter"
+   },
+   {
+    "start": 82.267,
+    "end": 89,
+    "text": "Guard three caps the answer: 1000 rows or 1 MiB of JSON, whichever first.",
+    "sceneId": "d-caps"
+   },
+   {
+    "start": 89,
+    "end": 94.356,
+    "text": "In the scan loop, either cap stops the stream, and the answer says truncated.",
+    "sceneId": "d-truncate",
+    "lineId": "loop"
+   },
+   {
+    "start": 94.356,
+    "end": 99.8,
+    "text": "Bounded time, bounded concurrency, bounded answers: one query's guardrails.",
+    "sceneId": "d-truncate",
+    "lineId": "sum"
+   },
+   {
+    "start": 99.8,
+    "end": 104.099,
+    "text": "Git blame credits every line shown to nickstrad, across seven commits.",
+    "sceneId": "c-credits",
+    "lineId": "blame"
+   },
+   {
+    "start": 104.099,
+    "end": 108.8,
+    "text": "Thanks for watching.",
+    "sceneId": "c-credits",
+    "lineId": "thanks"
+   }
+  ],
+  "audio": {
+   "file": "track.wav",
+   "sampleRate": 44100
+  },
+  "acts": [
+   {
+    "id": "intro",
+    "title": "The repo",
+    "role": "repo-intro",
+    "startFrame": 0,
+    "frames": 462,
+    "start": 0,
+    "duration": 15.4,
+    "scenes": [
+     "r-card"
+    ]
+   },
+   {
+    "id": "architecture",
+    "title": "Architecture",
+    "role": "architecture",
+    "startFrame": 462,
+    "frames": 510,
+    "start": 15.4,
+    "duration": 17,
+    "scenes": [
+     "a-context",
+     "a-containers",
+     "a-node"
+    ]
+   },
+   {
+    "id": "focus",
+    "title": "Admission engine",
+    "role": "focus",
+    "startFrame": 972,
+    "frames": 403,
+    "start": 32.4,
+    "duration": 13.433,
+    "scenes": [
+     "f-engine"
+    ]
+   },
+   {
+    "id": "deep-dive",
+    "title": "Engine.Query's guards",
+    "role": "deep-dive",
+    "startFrame": 1375,
+    "frames": 1619,
+    "start": 45.833,
+    "duration": 53.967,
+    "scenes": [
+     "d-query",
+     "d-deadline",
+     "d-bulkheads",
+     "d-caps",
+     "d-truncate"
+    ]
+   },
+   {
+    "id": "credits",
+    "title": "Credits",
+    "role": "shoutout",
+    "startFrame": 2994,
+    "frames": 270,
+    "start": 99.8,
+    "duration": 9,
+    "scenes": [
+     "c-credits"
+    ]
+   }
+  ]
+ },
+ "views": {
+  "context": {
+   "view": {
+    "id": "context",
+    "kind": "context",
+    "title": "Litefleet: system context",
+    "datasetRevision": "release-it/v1-hardened · 9367863",
+    "direction": "LR",
+    "scope": {
+     "id": "litefleet",
+     "kind": "softwareSystem",
+     "name": "Litefleet",
+     "description": "A small multitenant SQLite platform; one owning node per database.",
+     "technology": null,
+     "tags": [],
+     "external": false,
+     "inScope": false
+    },
+    "nodes": [
+     {
+      "id": "tenant",
+      "kind": "person",
+      "name": "Tenant developer / application",
+      "description": "Creates databases and sends SQL with a bearer API key.",
+      "technology": null,
+      "tags": [],
+      "external": false,
+      "inScope": false
+     },
+     {
+      "id": "operator",
+      "kind": "person",
+      "name": "Operator",
+      "description": "Reads fleet usage and operates the external lab harness.",
+      "technology": null,
+      "tags": [],
+      "external": false,
+      "inScope": false
+     },
+     {
+      "id": "litefleet",
+      "kind": "softwareSystem",
+      "name": "Litefleet",
+      "description": "A small multitenant SQLite platform; one owning node per database.",
+      "technology": null,
+      "tags": [],
+      "external": false,
+      "inScope": false
+     },
+     {
+      "id": "blob",
+      "kind": "softwareSystem",
+      "name": "Blob-store partner (lab fake)",
+      "description": "Stores backup generations. The Compose service is a Go fake.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "meter",
+      "kind": "softwareSystem",
+      "name": "Metering partner (lab fake)",
+      "description": "Accepts usage batches; deduplicates event IDs in memory.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     }
+    ],
+    "edges": [
+     {
+      "id": "ctx-tenant",
+      "n": 1,
+      "from": "tenant",
+      "to": "litefleet",
+      "label": "Creates databases; queries and writes SQL",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "ctx-ops",
+      "n": 2,
+      "from": "operator",
+      "to": "litefleet",
+      "label": "Reads usage; operates fleet",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "ctx-backup",
+      "n": 3,
+      "from": "litefleet",
+      "to": "blob",
+      "label": "Uploads database snapshots",
+      "technology": "HTTP PUT"
+     },
+     {
+      "id": "ctx-usage",
+      "n": 4,
+      "from": "litefleet",
+      "to": "meter",
+      "label": "Delivers usage batches",
+      "technology": "HTTP/JSON"
+     }
+    ],
+    "scenario": []
+   },
+   "layout": {
+    "width": 1250,
+    "height": 316,
+    "boxes": {
+     "tenant": {
+      "x": 20,
+      "y": 178,
+      "w": 210,
+      "h": 118
+     },
+     "operator": {
+      "x": 20,
+      "y": 20,
+      "w": 210,
+      "h": 118
+     },
+     "litefleet": {
+      "x": 520,
+      "y": 39.66666666666667,
+      "w": 210,
+      "h": 118
+     },
+     "blob": {
+      "x": 1020,
+      "y": 20,
+      "w": 210,
+      "h": 118
+     },
+     "meter": {
+      "x": 1020,
+      "y": 178,
+      "w": 210,
+      "h": 118
+     }
+    },
+    "routes": {
+     "ctx-tenant": {
+      "points": [
+       {
+        "x": 230,
+        "y": 237
+       },
+       {
+        "x": 460,
+        "y": 237
+       },
+       {
+        "x": 460,
+        "y": 118.33333333333333
+       },
+       {
+        "x": 520,
+        "y": 118.33333333333333
+       }
+      ],
+      "label": {
+       "x": 300,
+       "y": 242,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "1. Creates databases;",
+        "queries and writes SQL"
+       ]
+      }
+     },
+     "ctx-ops": {
+      "points": [
+       {
+        "x": 230,
+        "y": 79
+       },
+       {
+        "x": 520,
+        "y": 79
+       }
+      ],
+      "label": {
+       "x": 300,
+       "y": 48,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "2. Reads usage; operates",
+        "fleet"
+       ]
+      }
+     },
+     "ctx-backup": {
+      "points": [
+       {
+        "x": 730,
+        "y": 79
+       },
+       {
+        "x": 1020,
+        "y": 79
+       }
+      ],
+      "label": {
+       "x": 800,
+       "y": 48,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "3. Uploads database",
+        "snapshots"
+       ]
+      }
+     },
+     "ctx-usage": {
+      "points": [
+       {
+        "x": 730,
+        "y": 118.33333333333333
+       },
+       {
+        "x": 740,
+        "y": 118.33333333333333
+       },
+       {
+        "x": 740,
+        "y": 237
+       },
+       {
+        "x": 1020,
+        "y": 237
+       }
+      ],
+      "label": {
+       "x": 800,
+       "y": 242,
+       "w": 150,
+       "h": 13,
+       "lines": [
+        "4. Delivers usage batches"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "containers": {
+   "view": {
+    "id": "containers",
+    "kind": "container",
+    "title": "Litefleet: containers",
+    "datasetRevision": "release-it/v1-hardened · 9367863",
+    "direction": "LR",
+    "scope": {
+     "id": "litefleet",
+     "kind": "softwareSystem",
+     "name": "Litefleet",
+     "description": "A small multitenant SQLite platform; one owning node per database.",
+     "technology": null,
+     "tags": [],
+     "external": false,
+     "inScope": false
+    },
+    "nodes": [
+     {
+      "id": "tenant",
+      "kind": "person",
+      "name": "Tenant developer / application",
+      "description": "Creates databases and sends SQL with a bearer API key.",
+      "technology": null,
+      "tags": [],
+      "external": false,
+      "inScope": false
+     },
+     {
+      "id": "operator",
+      "kind": "person",
+      "name": "Operator",
+      "description": "Reads fleet usage and operates the external lab harness.",
+      "technology": null,
+      "tags": [],
+      "external": false,
+      "inScope": false
+     },
+     {
+      "id": "ingress",
+      "kind": "container",
+      "name": "HAProxy ingress",
+      "description": "Balances gateways only; checks health and limits queues.",
+      "technology": "HAProxy 3.2",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "gateway",
+      "kind": "container",
+      "name": "Gateway",
+      "description": "Three stateless copies, collapsed here.",
+      "technology": "Go / net/http",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "control",
+      "kind": "container",
+      "name": "Control plane",
+      "description": "Authenticates keys, resolves placement, provisions and receives heartbeats.",
+      "technology": "Go / net/http",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": true
+     },
+     {
+      "id": "registry",
+      "kind": "container",
+      "name": "Registry",
+      "description": "Tenants, hashed keys, placement, activity ledger and daily rollups.",
+      "technology": "PostgreSQL 17",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "node",
+      "kind": "container",
+      "name": "Node agent",
+      "description": "Two stateful copies, collapsed here. Files do not fail over to another node.",
+      "technology": "Go / net/http",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": true
+     },
+     {
+      "id": "tenant-files",
+      "kind": "container",
+      "name": "Tenant SQLite files",
+      "description": "One WAL-mode database per tenant database in /data/tenants.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": true
+     },
+     {
+      "id": "node-state",
+      "kind": "container",
+      "name": "Node-local outbox storage",
+      "description": "/data/_node.db: node_info and usage_outbox. Separate from tenant files.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": true
+     },
+     {
+      "id": "blob",
+      "kind": "softwareSystem",
+      "name": "Blob-store partner (lab fake)",
+      "description": "Stores backup generations. The Compose service is a Go fake.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "meter",
+      "kind": "softwareSystem",
+      "name": "Metering partner (lab fake)",
+      "description": "Accepts usage batches; deduplicates event IDs in memory.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     }
+    ],
+    "edges": [
+     {
+      "id": "tenant-edge",
+      "n": 1,
+      "from": "tenant",
+      "to": "ingress",
+      "label": "Sends authenticated API calls",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "ops-edge",
+      "n": 2,
+      "from": "operator",
+      "to": "ingress",
+      "label": "Requests admin usage report",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "balance",
+      "n": 3,
+      "from": "ingress",
+      "to": "gateway",
+      "label": "Balances requests; checks /health",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "resolve",
+      "n": 4,
+      "from": "gateway",
+      "to": "control",
+      "label": "Resolves on cache miss; lifecycle / reports",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "forward",
+      "n": 5,
+      "from": "gateway",
+      "to": "node",
+      "label": "Forwards query / execute with X-Epoch",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "provision",
+      "n": 6,
+      "from": "control",
+      "to": "node",
+      "label": "Provisions / drops directly",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "heartbeat",
+      "n": 7,
+      "from": "node",
+      "to": "control",
+      "label": "Reports activity every 5 seconds (direct)",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "sql-registry",
+      "n": 8,
+      "from": "control",
+      "to": "registry",
+      "label": "Reads / writes via separate OLTP, report, health pools",
+      "technology": "PostgreSQL wire / SQL"
+     },
+     {
+      "id": "sql-tenant",
+      "n": 9,
+      "from": "node",
+      "to": "tenant-files",
+      "label": "Executes SQL; snapshots; checkpoints",
+      "technology": "SQLite / local file I/O"
+     },
+     {
+      "id": "sql-state",
+      "n": 10,
+      "from": "node",
+      "to": "node-state",
+      "label": "Persists overflow, failed sends and shutdown spill",
+      "technology": "SQLite / local file I/O"
+     },
+     {
+      "id": "node-backup",
+      "n": 11,
+      "from": "node",
+      "to": "blob",
+      "label": "Uploads backup generations",
+      "technology": "HTTP PUT / SQLite snapshot"
+     },
+     {
+      "id": "node-meter",
+      "n": 12,
+      "from": "node",
+      "to": "meter",
+      "label": "Sends usage batches via Toxiproxy",
+      "technology": "HTTP/JSON"
+     }
+    ],
+    "scenario": []
+   },
+   "layout": {
+    "width": 2928,
+    "height": 557.8333333333334,
+    "boxes": {
+     "litefleet": {
+      "x": 525,
+      "y": 58,
+      "w": 1878,
+      "h": 479.83333333333337
+     },
+     "ingress": {
+      "x": 549,
+      "y": 395.83333333333337,
+      "w": 210,
+      "h": 118
+     },
+     "gateway": {
+      "x": 949,
+      "y": 395.83333333333337,
+      "w": 210,
+      "h": 118
+     },
+     "control": {
+      "x": 1769,
+      "y": 386,
+      "w": 210,
+      "h": 118
+     },
+     "registry": {
+      "x": 2169,
+      "y": 386,
+      "w": 210,
+      "h": 118
+     },
+     "node": {
+      "x": 1349,
+      "y": 239.57142857142856,
+      "w": 210,
+      "h": 118
+     },
+     "tenant-files": {
+      "x": 1769,
+      "y": 98,
+      "w": 210,
+      "h": 118
+     },
+     "node-state": {
+      "x": 1769,
+      "y": 248,
+      "w": 210,
+      "h": 118
+     },
+     "tenant": {
+      "x": 20,
+      "y": 415.5,
+      "w": 210,
+      "h": 118
+     },
+     "operator": {
+      "x": 20,
+      "y": 257.5,
+      "w": 210,
+      "h": 118
+     },
+     "blob": {
+      "x": 2698,
+      "y": 178,
+      "w": 210,
+      "h": 118
+     },
+     "meter": {
+      "x": 2698,
+      "y": 20,
+      "w": 210,
+      "h": 118
+     }
+    },
+    "routes": {
+     "tenant-edge": {
+      "points": [
+       {
+        "x": 230,
+        "y": 474.5
+       },
+       {
+        "x": 549,
+        "y": 474.5
+       }
+      ],
+      "label": {
+       "x": 300,
+       "y": 479.5,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "1. Sends authenticated API",
+        "calls"
+       ]
+      }
+     },
+     "ops-edge": {
+      "points": [
+       {
+        "x": 230,
+        "y": 316.5
+       },
+       {
+        "x": 460,
+        "y": 316.5
+       },
+       {
+        "x": 460,
+        "y": 435.1666666666667
+       },
+       {
+        "x": 549,
+        "y": 435.1666666666667
+       }
+      ],
+      "label": {
+       "x": 300,
+       "y": 285.5,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "2. Requests admin usage",
+        "report"
+       ]
+      }
+     },
+     "balance": {
+      "points": [
+       {
+        "x": 759,
+        "y": 454.83333333333337
+       },
+       {
+        "x": 949,
+        "y": 454.83333333333337
+       }
+      ],
+      "label": {
+       "x": 779,
+       "y": 457.83333333333337,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "3. Balances requests;",
+        "checks /health"
+       ]
+      }
+     },
+     "resolve": {
+      "points": [
+       {
+        "x": 1159,
+        "y": 474.5
+       },
+       {
+        "x": 1769,
+        "y": 474.5
+       }
+      ],
+      "label": {
+       "x": 1379,
+       "y": 477.5,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "4. Resolves on cache miss;",
+        "lifecycle / reports"
+       ]
+      }
+     },
+     "forward": {
+      "points": [
+       {
+        "x": 1159,
+        "y": 435.1666666666667
+       },
+       {
+        "x": 1169,
+        "y": 435.1666666666667
+       },
+       {
+        "x": 1169,
+        "y": 298.57142857142856
+       },
+       {
+        "x": 1349,
+        "y": 298.57142857142856
+       }
+      ],
+      "label": {
+       "x": 1179,
+       "y": 269.57142857142856,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "5. Forwards query / execute",
+        "with X-Epoch"
+       ]
+      }
+     },
+     "provision": {
+      "points": [
+       {
+        "x": 1769,
+        "y": 445
+       },
+       {
+        "x": 1759,
+        "y": 445
+       },
+       {
+        "x": 1759,
+        "y": 434.5
+       },
+       {
+        "x": 1569,
+        "y": 434.5
+       },
+       {
+        "x": 1569,
+        "y": 340.7142857142857
+       },
+       {
+        "x": 1559,
+        "y": 340.7142857142857
+       }
+      ],
+      "label": {
+       "x": 1599,
+       "y": 437.5,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "6. Provisions / drops",
+        "directly"
+       ]
+      }
+     },
+     "heartbeat": {
+      "points": [
+       {
+        "x": 1559,
+        "y": 323.85714285714283
+       },
+       {
+        "x": 1579,
+        "y": 323.85714285714283
+       },
+       {
+        "x": 1579,
+        "y": 415.5
+       },
+       {
+        "x": 1769,
+        "y": 415.5
+       }
+      ],
+      "label": {
+       "x": 1599,
+       "y": 386.5,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "7. Reports activity every 5",
+        "seconds (direct)"
+       ]
+      }
+     },
+     "sql-registry": {
+      "points": [
+       {
+        "x": 1979,
+        "y": 445
+       },
+       {
+        "x": 2169,
+        "y": 445
+       }
+      ],
+      "label": {
+       "x": 1999,
+       "y": 448,
+       "w": 150,
+       "h": 39,
+       "lines": [
+        "8. Reads / writes via",
+        "separate OLTP, report,",
+        "health pools"
+       ]
+      }
+     },
+     "sql-tenant": {
+      "points": [
+       {
+        "x": 1559,
+        "y": 256.42857142857144
+       },
+       {
+        "x": 1569,
+        "y": 256.42857142857144
+       },
+       {
+        "x": 1569,
+        "y": 157
+       },
+       {
+        "x": 1769,
+        "y": 157
+       }
+      ],
+      "label": {
+       "x": 1599,
+       "y": 160,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "9. Executes SQL; snapshots;",
+        "checkpoints"
+       ]
+      }
+     },
+     "sql-state": {
+      "points": [
+       {
+        "x": 1559,
+        "y": 307
+       },
+       {
+        "x": 1769,
+        "y": 307
+       }
+      ],
+      "label": {
+       "x": 1599,
+       "y": 310,
+       "w": 150,
+       "h": 39,
+       "lines": [
+        "10. Persists overflow,",
+        "failed sends and shutdown",
+        "spill"
+       ]
+      }
+     },
+     "node-backup": {
+      "points": [
+       {
+        "x": 1559,
+        "y": 290.1428571428571
+       },
+       {
+        "x": 1589,
+        "y": 290.1428571428571
+       },
+       {
+        "x": 1589,
+        "y": 237
+       },
+       {
+        "x": 2698,
+        "y": 237
+       }
+      ],
+      "label": {
+       "x": 2478,
+       "y": 242,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "11. Uploads backup",
+        "generations"
+       ]
+      }
+     },
+     "node-meter": {
+      "points": [
+       {
+        "x": 1559,
+        "y": 273.2857142857143
+       },
+       {
+        "x": 1579,
+        "y": 273.2857142857143
+       },
+       {
+        "x": 1579,
+        "y": 226
+       },
+       {
+        "x": 2418,
+        "y": 226
+       },
+       {
+        "x": 2418,
+        "y": 79
+       },
+       {
+        "x": 2698,
+        "y": 79
+       }
+      ],
+      "label": {
+       "x": 2478,
+       "y": 48,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "12. Sends usage batches via",
+        "Toxiproxy"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "node-components": {
+   "view": {
+    "id": "node-components",
+    "kind": "component",
+    "title": "Litefleet: node components",
+    "datasetRevision": "release-it/v1-hardened · 9367863",
+    "direction": "LR",
+    "scope": {
+     "id": "node",
+     "kind": "container",
+     "name": "Node agent",
+     "description": "Two stateful copies, collapsed here. Files do not fail over to another node.",
+     "technology": "Go / net/http",
+     "tags": [
+      "external"
+     ],
+     "external": true,
+     "inScope": false
+    },
+    "nodes": [
+     {
+      "id": "nd-engine",
+      "kind": "component",
+      "name": "Admission + SQL engine",
+      "description": "Epoch check, per-database lanes, tenant/node limits; 2 second statement deadline.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "nd-handles",
+      "kind": "component",
+      "name": "Handle manager",
+      "description": "Bounded pools and LRU; singleflight open; close releases resources.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "tenant-files",
+      "kind": "container",
+      "name": "Tenant SQLite files",
+      "description": "One WAL-mode database per tenant database in /data/tenants.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "nd-backup",
+      "kind": "component",
+      "name": "Backup job + blob client",
+      "description": "Snapshots under writer lock; uploads after releasing lock.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "blob",
+      "kind": "softwareSystem",
+      "name": "Blob-store partner (lab fake)",
+      "description": "Stores backup generations. The Compose service is a Go fake.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "nd-usage",
+      "kind": "component",
+      "name": "Bounded usage queue + shippers",
+      "description": "1024 queued events; four shippers; batches up to 100; overflow after 20 ms.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "nd-outbox",
+      "kind": "component",
+      "name": "Outbox access + sweeper",
+      "description": "Reads at most 500 rows every 5 seconds; deletes only after delivery.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     },
+     {
+      "id": "node-state",
+      "kind": "container",
+      "name": "Node-local outbox storage",
+      "description": "/data/_node.db: node_info and usage_outbox. Separate from tenant files.",
+      "technology": "SQLite / filesystem",
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "meter",
+      "kind": "softwareSystem",
+      "name": "Metering partner (lab fake)",
+      "description": "Accepts usage batches; deduplicates event IDs in memory.",
+      "technology": null,
+      "tags": [
+       "external"
+      ],
+      "external": true,
+      "inScope": false
+     },
+     {
+      "id": "nd-maintain",
+      "kind": "component",
+      "name": "Maintenance + drain",
+      "description": "Checkpoints WALs; evicts idle handles; SIGTERM stops admission and spills usage.",
+      "technology": "Go",
+      "tags": [],
+      "external": false,
+      "inScope": true
+     }
+    ],
+    "edges": [
+     {
+      "id": "n-engine-handles",
+      "n": 1,
+      "from": "nd-engine",
+      "to": "nd-handles",
+      "label": "Acquires / releases database handle",
+      "technology": "Go call"
+     },
+     {
+      "id": "n-handles-files",
+      "n": 2,
+      "from": "nd-handles",
+      "to": "tenant-files",
+      "label": "Opens per-database pools",
+      "technology": "SQLite / file I/O"
+     },
+     {
+      "id": "n-backup-handles",
+      "n": 3,
+      "from": "nd-backup",
+      "to": "nd-handles",
+      "label": "Obtains handle; snapshots under lock",
+      "technology": "Go call"
+     },
+     {
+      "id": "n-backup-blob",
+      "n": 4,
+      "from": "nd-backup",
+      "to": "blob",
+      "label": "Uploads snapshot after lock release",
+      "technology": "HTTP PUT / SQLite snapshot"
+     },
+     {
+      "id": "n-engine-usage",
+      "n": 5,
+      "from": "nd-engine",
+      "to": "nd-usage",
+      "label": "Records completed read / committed write usage",
+      "technology": "Go call"
+     },
+     {
+      "id": "n-usage-outbox",
+      "n": 6,
+      "from": "nd-usage",
+      "to": "nd-outbox",
+      "label": "Persists overflow / failed batches / spill",
+      "technology": "Go call"
+     },
+     {
+      "id": "n-outbox-state",
+      "n": 7,
+      "from": "nd-outbox",
+      "to": "node-state",
+      "label": "Inserts, selects and deletes usage_outbox rows",
+      "technology": "SQLite / file I/O"
+     },
+     {
+      "id": "n-queue-meter",
+      "n": 8,
+      "from": "nd-usage",
+      "to": "meter",
+      "label": "Sends queued batches, 2 second budget",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "n-sweep-meter",
+      "n": 9,
+      "from": "nd-outbox",
+      "to": "meter",
+      "label": "Redelivers; deletes after success",
+      "technology": "HTTP/JSON"
+     },
+     {
+      "id": "n-maintain-handles",
+      "n": 10,
+      "from": "nd-maintain",
+      "to": "nd-handles",
+      "label": "Checkpoints and closes handles",
+      "technology": "Go call"
+     },
+     {
+      "id": "n-drain-queue",
+      "n": 11,
+      "from": "nd-maintain",
+      "to": "nd-usage",
+      "label": "Spills pending and stuck in-flight events",
+      "technology": "Go call"
+     }
+    ],
+    "scenario": []
+   },
+   "layout": {
+    "width": 1613,
+    "height": 632,
+    "boxes": {
+     "node": {
+      "x": 20,
+      "y": 89,
+      "w": 1068,
+      "h": 458
+     },
+     "nd-engine": {
+      "x": 44,
+      "y": 405,
+      "w": 210,
+      "h": 118
+     },
+     "nd-handles": {
+      "x": 454,
+      "y": 206.66666666666666,
+      "w": 210,
+      "h": 118
+     },
+     "nd-backup": {
+      "x": 44,
+      "y": 129,
+      "w": 210,
+      "h": 118
+     },
+     "nd-usage": {
+      "x": 454,
+      "y": 405,
+      "w": 210,
+      "h": 118
+     },
+     "nd-outbox": {
+      "x": 854,
+      "y": 355.66666666666663,
+      "w": 210,
+      "h": 118
+     },
+     "nd-maintain": {
+      "x": 44,
+      "y": 267,
+      "w": 210,
+      "h": 118
+     },
+     "tenant-files": {
+      "x": 1383,
+      "y": 178,
+      "w": 210,
+      "h": 118
+     },
+     "blob": {
+      "x": 1383,
+      "y": 20,
+      "w": 210,
+      "h": 118
+     },
+     "node-state": {
+      "x": 1383,
+      "y": 336,
+      "w": 210,
+      "h": 118
+     },
+     "meter": {
+      "x": 1383,
+      "y": 494,
+      "w": 210,
+      "h": 118
+     }
+    },
+    "routes": {
+     "n-engine-handles": {
+      "points": [
+       {
+        "x": 254,
+        "y": 444.3333333333333
+       },
+       {
+        "x": 274,
+        "y": 444.3333333333333
+       },
+       {
+        "x": 274,
+        "y": 305.66666666666663
+       },
+       {
+        "x": 444,
+        "y": 305.66666666666663
+       },
+       {
+        "x": 444,
+        "y": 295.16666666666663
+       },
+       {
+        "x": 454,
+        "y": 295.16666666666663
+       }
+      ],
+      "label": {
+       "x": 284,
+       "y": 308.66666666666663,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "1. Acquires / releases",
+        "database handle"
+       ]
+      }
+     },
+     "n-handles-files": {
+      "points": [
+       {
+        "x": 664,
+        "y": 265.66666666666663
+       },
+       {
+        "x": 1103,
+        "y": 265.66666666666663
+       },
+       {
+        "x": 1103,
+        "y": 237
+       },
+       {
+        "x": 1383,
+        "y": 237
+       }
+      ],
+      "label": {
+       "x": 1163,
+       "y": 242,
+       "w": 150,
+       "h": 13,
+       "lines": [
+        "2. Opens per-database pools"
+       ]
+      }
+     },
+     "n-backup-handles": {
+      "points": [
+       {
+        "x": 254,
+        "y": 207.66666666666666
+       },
+       {
+        "x": 444,
+        "y": 207.66666666666666
+       },
+       {
+        "x": 444,
+        "y": 236.16666666666666
+       },
+       {
+        "x": 454,
+        "y": 236.16666666666666
+       }
+      ],
+      "label": {
+       "x": 284,
+       "y": 210.66666666666666,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "3. Obtains handle;",
+        "snapshots under lock"
+       ]
+      }
+     },
+     "n-backup-blob": {
+      "points": [
+       {
+        "x": 254,
+        "y": 168.33333333333331
+       },
+       {
+        "x": 1103,
+        "y": 168.33333333333331
+       },
+       {
+        "x": 1103,
+        "y": 79
+       },
+       {
+        "x": 1383,
+        "y": 79
+       }
+      ],
+      "label": {
+       "x": 1163,
+       "y": 84,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "4. Uploads snapshot after",
+        "lock release"
+       ]
+      }
+     },
+     "n-engine-usage": {
+      "points": [
+       {
+        "x": 254,
+        "y": 483.66666666666663
+       },
+       {
+        "x": 454,
+        "y": 483.66666666666663
+       }
+      ],
+      "label": {
+       "x": 284,
+       "y": 486.66666666666663,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "5. Records completed read /",
+        "committed write usage"
+       ]
+      }
+     },
+     "n-usage-outbox": {
+      "points": [
+       {
+        "x": 664,
+        "y": 444.3333333333333
+       },
+       {
+        "x": 674,
+        "y": 444.3333333333333
+       },
+       {
+        "x": 674,
+        "y": 414.66666666666663
+       },
+       {
+        "x": 854,
+        "y": 414.66666666666663
+       }
+      ],
+      "label": {
+       "x": 684,
+       "y": 417.66666666666663,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "6. Persists overflow /",
+        "failed batches / spill"
+       ]
+      }
+     },
+     "n-outbox-state": {
+      "points": [
+       {
+        "x": 1064,
+        "y": 395
+       },
+       {
+        "x": 1383,
+        "y": 395
+       }
+      ],
+      "label": {
+       "x": 1163,
+       "y": 400,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "7. Inserts, selects and",
+        "deletes usage_outbox rows"
+       ]
+      }
+     },
+     "n-queue-meter": {
+      "points": [
+       {
+        "x": 664,
+        "y": 483.66666666666663
+       },
+       {
+        "x": 1103,
+        "y": 483.66666666666663
+       },
+       {
+        "x": 1103,
+        "y": 572.6666666666666
+       },
+       {
+        "x": 1383,
+        "y": 572.6666666666666
+       }
+      ],
+      "label": {
+       "x": 1163,
+       "y": 577.6666666666666,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "8. Sends queued batches, 2",
+        "second budget"
+       ]
+      }
+     },
+     "n-sweep-meter": {
+      "points": [
+       {
+        "x": 1064,
+        "y": 434.3333333333333
+       },
+       {
+        "x": 1113,
+        "y": 434.3333333333333
+       },
+       {
+        "x": 1113,
+        "y": 533.3333333333333
+       },
+       {
+        "x": 1383,
+        "y": 533.3333333333334
+       }
+      ],
+      "label": {
+       "x": 1163,
+       "y": 502.3333333333333,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "9. Redelivers; deletes",
+        "after success"
+       ]
+      }
+     },
+     "n-maintain-handles": {
+      "points": [
+       {
+        "x": 254,
+        "y": 306.3333333333333
+       },
+       {
+        "x": 264,
+        "y": 306.3333333333333
+       },
+       {
+        "x": 264,
+        "y": 265.66666666666663
+       },
+       {
+        "x": 454,
+        "y": 265.66666666666663
+       }
+      ],
+      "label": {
+       "x": 284,
+       "y": 268.66666666666663,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "10. Checkpoints and closes",
+        "handles"
+       ]
+      }
+     },
+     "n-drain-queue": {
+      "points": [
+       {
+        "x": 254,
+        "y": 345.66666666666663
+       },
+       {
+        "x": 444,
+        "y": 345.66666666666663
+       },
+       {
+        "x": 444,
+        "y": 444.3333333333333
+       },
+       {
+        "x": 454,
+        "y": 444.3333333333333
+       }
+      ],
+      "label": {
+       "x": 284,
+       "y": 348.66666666666663,
+       "w": 150,
+       "h": 26,
+       "lines": [
+        "11. Spills pending and",
+        "stuck in-flight events"
+       ]
+      }
+     }
+    }
+   }
+  }
+ },
+ "excerpts": {
+  "query-guards": {
+   "id": "query-guards",
+   "kind": "code",
+   "repo": "nickstrad/book-notes",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "tag": "release-it/v1-hardened",
+   "path": "books/release-it/project/internal/engine/exec.go",
+   "displayPath": "internal/engine/exec.go",
+   "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+   "symbol": "func (e *Engine) Query",
+   "declaredAt": 130,
+   "lines": [
+    130,
+    149
+   ],
+   "firstLine": 130,
+   "text": "func (e *Engine) Query(ctx context.Context, id string, epoch int, req wire.QueryRequest, start func() io.Writer) (started bool, err error) {\n\tdefer observeStatement(\"read\", time.Now())\n\tctx, cancel := context.WithTimeout(ctx, StatementDeadline)\n\tdefer cancel()\n\tif !isRead(req.SQL) {\n\t\treturn false, &StatementError{http.StatusBadRequest, \"bad_request\", \"query takes a single read statement; use execute for writes\"}\n\t}\n\th, err := e.Handle(id)\n\tif err != nil {\n\t\treturn false, err\n\t}\n\tdefer h.Release()\n\tif err := h.admit(epoch); err != nil {\n\t\treturn false, err\n\t}\n\trelease, err := e.acquire(ctx, h, false)\n\tif err != nil {\n\t\treturn false, err\n\t}\n\tdefer release()",
+   "sha256": "3830ae1e447792b03986a4dc3e7153306fa4c74e057ee9422aca230582eed710",
+   "selector": {
+    "id": "src-23",
+    "notes": "Symbol/config selector: func (e *Engine) Query; line 130. Pinned as built, not the proposed plan.",
+    "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L130",
+    "line": 130
+   },
+   "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L130-L149"
+  },
+  "deadline": {
+   "id": "deadline",
+   "kind": "code",
+   "repo": "nickstrad/book-notes",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "tag": "release-it/v1-hardened",
+   "path": "books/release-it/project/internal/engine/exec.go",
+   "displayPath": "internal/engine/exec.go",
+   "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+   "symbol": "const StatementDeadline",
+   "declaredAt": 35,
+   "lines": [
+    32,
+    35
+   ],
+   "firstLine": 32,
+   "text": "// StatementDeadline is the longest a tenant statement may run. The gateway\n// gives the whole request 2.9 s, so a statement that hits this deadline still\n// gets its 504 back to the tenant in time.\nconst StatementDeadline = 2 * time.Second",
+   "sha256": "231eac11b9304156626fe66d5bd9d64a44d08e92da730b15a877f5273a974dba",
+   "selector": null,
+   "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L32-L35"
+  },
+  "bulkheads": {
+   "id": "bulkheads",
+   "kind": "code",
+   "repo": "nickstrad/book-notes",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "tag": "release-it/v1-hardened",
+   "path": "books/release-it/project/internal/engine/admission.go",
+   "displayPath": "internal/engine/admission.go",
+   "blob": "e09ada334e75062d43504805678cdc5e4f9fdba6",
+   "symbol": "// Bulkheads, three deep.",
+   "declaredAt": 27,
+   "lines": [
+    27,
+    41
+   ],
+   "firstLine": 27,
+   "text": "// Bulkheads, three deep. Each database gets its own lanes: 2 statements\n// reading at once, 1 writing, and at most 8 waiting for a lane; past that its\n// tenant gets 429 at once. Each tenant may run at most 4 statements on the\n// node across all its databases, and the node runs at most 16, so one tenant\n// can hold at most a quarter of the node however hard it pushes. (The lanes\n// bound concurrency, not CPU: an expensive query still takes its share of\n// the processor while it runs.)\nconst (\n\treadsPerDB       = 2\n\twritersPerDB     = 1\n\twaitingPerDB     = 8\n\tstatementsTenant = 4\n\tNodeStatements   = 16\n\tnodeWait         = 250 * time.Millisecond\n)",
+   "sha256": "c015d537bc350f06178153e69579ce430f310272c7938078b0ae276cd45e6695",
+   "selector": null,
+   "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/admission.go#L27-L41"
+  },
+  "caps": {
+   "id": "caps",
+   "kind": "code",
+   "repo": "nickstrad/book-notes",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "tag": "release-it/v1-hardened",
+   "path": "books/release-it/project/internal/engine/exec.go",
+   "displayPath": "internal/engine/exec.go",
+   "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+   "symbol": "// A query's answer is capped",
+   "declaredAt": 116,
+   "lines": [
+    116,
+    123
+   ],
+   "firstLine": 116,
+   "text": "// A query's answer is capped at MaxRows rows or MaxBytes of JSON, whichever\n// comes first; a capped answer says \"truncated\": true. Tenants page with\n// keyset queries (WHERE id > ? ORDER BY id LIMIT n). The cap is the\n// platform's bulkhead for the node's memory, not a suggestion.\nconst (\n\tMaxRows  = 1000\n\tMaxBytes = 1 << 20\n)",
+   "sha256": "690515068b2622936c34fe3dc0615bc60f18fb11a842ca02f5b541e5b45eccb8",
+   "selector": null,
+   "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L116-L123"
+  },
+  "query-caps": {
+   "id": "query-caps",
+   "kind": "code",
+   "repo": "nickstrad/book-notes",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "tag": "release-it/v1-hardened",
+   "path": "books/release-it/project/internal/engine/exec.go",
+   "displayPath": "internal/engine/exec.go",
+   "blob": "0d1c4433deade8704fdbda772a5086d15382383b",
+   "symbol": "func (e *Engine) Query",
+   "declaredAt": 130,
+   "lines": [
+    194,
+    217
+   ],
+   "firstLine": 194,
+   "text": "\tfor rows.Next() {\n\t\tif count == MaxRows {\n\t\t\ttruncated = true\n\t\t\tbreak\n\t\t}\n\t\tif err := rows.Scan(ptrs...); err != nil {\n\t\t\treturn true, classify(ctx, err)\n\t\t}\n\t\trow, err := json.Marshal(vals)\n\t\tif err != nil {\n\t\t\treturn true, err\n\t\t}\n\t\tif size+int64(len(row)) > MaxBytes {\n\t\t\ttruncated = true\n\t\t\tbreak\n\t\t}\n\t\tif count > 0 {\n\t\t\tw.Write([]byte{','})\n\t\t\tsize++\n\t\t}\n\t\tw.Write(row)\n\t\tsize += int64(len(row))\n\t\tcount++\n\t}",
+   "sha256": "21c1f70f01834418f7bc7d024f058d46cfdbb5d4c20c5ae38bc6da70b0e9fd53",
+   "selector": {
+    "id": "src-23",
+    "notes": "Symbol/config selector: func (e *Engine) Query; line 130. Pinned as built, not the proposed plan.",
+    "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L130",
+    "line": 130
+   },
+   "url": "https://github.com/nickstrad/book-notes/blob/936786399d7bab3ebbfa845b9a07df02b41ed363/books/release-it/project/internal/engine/exec.go#L194-L217"
+  }
+ },
+ "repo": {
+  "repo": "nickstrad/book-notes",
+  "tag": "release-it/v1-hardened",
+  "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+  "subject": "litefleet: log requests a handler cuts off (post-review defect fix)",
+  "date": "2026-10-22",
+  "scope": "books/release-it/project",
+  "commits": 24,
+  "firstDate": "2026-10-22",
+  "lastDate": "2026-10-22",
+  "tags": 14,
+  "authors": [
+   {
+    "name": "nickstrad",
+    "commits": 24
+   }
+  ],
+  "languages": [
+   {
+    "ext": ".go",
+    "files": 53
+   },
+   {
+    "ext": ".sh",
+    "files": 24
+   },
+   {
+    "ext": ".sql",
+    "files": 6
+   },
+   {
+    "ext": ".yml",
+    "files": 3
+   },
+   {
+    "ext": ".cfg",
+    "files": 1
+   },
+   {
+    "ext": ".dockerignore",
+    "files": 1
+   },
+   {
+    "ext": ".env",
+    "files": 1
+   },
+   {
+    "ext": ".gitignore",
+    "files": 1
+   },
+   {
+    "ext": ".gitkeep",
+    "files": 1
+   },
+   {
+    "ext": ".json",
+    "files": 1
+   },
+   {
+    "ext": ".md",
+    "files": 1
+   },
+   {
+    "ext": ".mod",
+    "files": 1
+   },
+   {
+    "ext": ".report",
+    "files": 1
+   },
+   {
+    "ext": ".sum",
+    "files": 1
+   },
+   {
+    "ext": "Dockerfile",
+    "files": 1
+   },
+   {
+    "ext": "Makefile",
+    "files": 1
+   }
+  ],
+  "model": {
+   "containers": 7,
+   "components": 12,
+   "views": 7
+  }
+ },
+ "credits": {
+  "base": {
+   "tag": "release-it/v1-hardened",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+   "subject": "litefleet: log requests a handler cuts off (post-review defect fix)",
+   "date": "2026-10-22"
+  },
+  "excerpts": {
+   "query-guards": {
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "lines": [
+     {
+      "line": 130,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 131,
+      "commit": "c8b9174888df974e6d77d6baf78b0e07d0e40f19"
+     },
+     {
+      "line": 132,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     },
+     {
+      "line": 133,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     },
+     {
+      "line": 134,
+      "commit": "9f52c854d1b6f74a7e4c8faa813637b7c22722b5"
+     },
+     {
+      "line": 135,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 136,
+      "commit": "9f52c854d1b6f74a7e4c8faa813637b7c22722b5"
+     },
+     {
+      "line": 137,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 138,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 139,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 140,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 141,
+      "commit": "6f83f9e8e329fe7b659eaaae08cea1d712014e48"
+     },
+     {
+      "line": 142,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 143,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 144,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 145,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 146,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 147,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 148,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 149,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     }
+    ]
+   },
+   "deadline": {
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "lines": [
+     {
+      "line": 32,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     },
+     {
+      "line": 33,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     },
+     {
+      "line": 34,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     },
+     {
+      "line": 35,
+      "commit": "8e716278b152a31e0f0d4a81b3d20a8ff6091467"
+     }
+    ]
+   },
+   "bulkheads": {
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/admission.go",
+    "lines": [
+     {
+      "line": 27,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 28,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 29,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 30,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 31,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 32,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 33,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 34,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 35,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 36,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 37,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 38,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 39,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 40,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     },
+     {
+      "line": 41,
+      "commit": "9028409bcfe570bd6a438bac0452129871ca9bc1"
+     }
+    ]
+   },
+   "caps": {
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "lines": [
+     {
+      "line": 116,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 117,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 118,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 119,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 120,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 121,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 122,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 123,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     }
+    ]
+   },
+   "query-caps": {
+    "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363",
+    "path": "books/release-it/project/internal/engine/exec.go",
+    "lines": [
+     {
+      "line": 194,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 195,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 196,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 197,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 198,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 199,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 200,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 201,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 202,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 203,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 204,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 205,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     },
+     {
+      "line": 206,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 207,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 208,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 209,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 210,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 211,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 212,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 213,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 214,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 215,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 216,
+      "commit": "e602a086fde4d8ab9fc0d43397c1dc729f3f219e"
+     },
+     {
+      "line": 217,
+      "commit": "6076a82a59355b4ed7afbc5d29d3bbc12da6a944"
+     }
+    ]
+   }
+  },
+  "commits": {
+   "6076a82a59355b4ed7afbc5d29d3bbc12da6a944": {
+    "author": "nickstrad",
+    "subject": "release-it: add the flawed litefleet platform (v0)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "6f83f9e8e329fe7b659eaaae08cea1d712014e48": {
+    "author": "nickstrad",
+    "subject": "litefleet: reach steady state: checkpoint, purge, evict (lesson 10)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "8e716278b152a31e0f0d4a81b3d20a8ff6091467": {
+    "author": "nickstrad",
+    "subject": "litefleet: bound every integration point and statement with deadlines (lesson 02)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "9028409bcfe570bd6a438bac0452129871ca9bc1": {
+    "author": "nickstrad",
+    "subject": "litefleet: bulkhead tenants, the usage report and backups (lesson 06)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "9f52c854d1b6f74a7e4c8faa813637b7c22722b5": {
+    "author": "nickstrad",
+    "subject": "litefleet: roll back on every path and bound the handle pools (lesson 03)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "c8b9174888df974e6d77d6baf78b0e07d0e40f19": {
+    "author": "nickstrad",
+    "subject": "litefleet: export metrics and report real health on every service (lesson 01, 1/2)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   },
+   "e602a086fde4d8ab9fc0d43397c1dc729f3f219e": {
+    "author": "nickstrad",
+    "subject": "litefleet: cap and stream query answers (lesson 08, 1/2)",
+    "date": "2026-10-22",
+    "coAuthors": [
+     "Claude Opus 5.5"
+    ]
+   }
+  }
+ },
+ "provenance": {
+  "dataset": {
+   "repo": "nickstrad/book-notes",
+   "commit": "20470465f6a4f9541d1bf59d62727806c55bb4f6",
+   "path": "pages/public/architectures/litefleet.json",
+   "revision": "release-it/v1-hardened · 9367863",
+   "sha256": "89a86b3dff695672ad9415950f0c3996e90c5f7b29dbb312ac06c5b39128bd80"
+  },
+  "code": {
+   "repo": "nickstrad/book-notes",
+   "tag": "release-it/v1-hardened",
+   "commit": "936786399d7bab3ebbfa845b9a07df02b41ed363"
+  },
+  "builtWith": "framework/core c4v build"
+ }
+}
