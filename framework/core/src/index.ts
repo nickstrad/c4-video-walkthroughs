@@ -10,4 +10,7 @@ export * from "./diagram/view.ts";
 export * from "./diagram/geometry.ts";
 export * from "./diagram/route.ts";
 export * from "./bundle.ts";
+export * from "./ingest/types.ts";
+export * from "./beats/registry.ts";
+export * from "./beats/patterns.ts";
 export * from "./play.ts";

@@ -21,6 +21,8 @@ export type Git = {
   dir: string;
   revParse: (rev: string) => string;
   blob: (commit: string, path: string) => Buffer;
+  /** Any read-only git command's stdout (callers pass commits, never the working tree). */
+  out: (args: string[]) => string;
 };
 
 export function git(dir: string): Git {
@@ -29,6 +31,7 @@ export function git(dir: string): Git {
     dir,
     revParse: (rev) => run(["rev-parse", rev]).toString("utf8").trim(),
     blob: (commit, path) => run(["show", `${commit}:${path}`]),
+    out: (args) => run(args).toString("utf8"),
   };
 }
 

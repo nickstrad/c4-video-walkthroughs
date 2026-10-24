@@ -42,7 +42,7 @@ export type TimedScene = {
   steps?: TimedStep[];
 };
 /** An act's bounds: its first scene's start to its last scene's end. */
-export type TimedAct = { id: string; title: string; startFrame: number; frames: number; start: number; duration: number; scenes: string[] };
+export type TimedAct = { id: string; title: string; role?: string; startFrame: number; frames: number; start: number; duration: number; scenes: string[] };
 export type Caption = { start: number; end: number; text: string; sceneId: string; stepId?: string; lineId?: string };
 export type Timeline = {
   schema: "c4v-timeline/1";

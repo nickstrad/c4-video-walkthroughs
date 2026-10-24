@@ -10,14 +10,17 @@ const MIN = 12;
 
 /** Every on-screen or spoken string the storyboard authors. */
 export function authoredText(sb: Storyboard): string[] {
-  const out = [sb.title, sb.statePanel?.title];
+  const out = [sb.title, sb.statePanel?.title, ...(sb.acts ?? []).map((a) => a.title)];
   for (const s of sb.scenes) {
-    out.push(s.caption, s.speech, s.packet?.label);
+    out.push(s.caption, s.speech);
     for (const l of s.lines ?? []) out.push(l.caption, l.speech);
     if (s.kind === "code-explanation") {
-      out.push(s.railTitle);
+      out.push(s.railTitle, s.packet?.label);
       for (const st of s.steps ?? []) out.push(st.caption, st.speech, st.label);
-    } else out.push(s.title, s.badge?.text, s.skip?.note);
+    } else if (s.kind !== "repo-card" && s.kind !== "credits") {
+      out.push(s.title, s.packet?.label, s.badge?.text, s.skip?.note);
+      for (const r of s.responsibilities ?? []) out.push(r.label);
+    }
   }
   return [...new Set(out.filter((x): x is string => !!x && x.length >= MIN))];
 }

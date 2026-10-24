@@ -23,6 +23,10 @@ import { mixTrack } from "../src/narration/track.ts";
 import { isCodeScene, type Storyboard } from "../src/storyboard/schema.ts";
 import { validateRefs, validateStoryboard } from "../src/storyboard/validate.ts";
 import { proveOutput } from "../src/verify/output.ts";
+import { needsOf } from "../src/beats/registry.ts";
+import { ingestCredits } from "../src/ingest/blame.ts";
+import { ingestRepo } from "../src/ingest/repo.ts";
+import type { Credits, RepoFacts } from "../src/ingest/types.ts";
 
 const [cmd, dirArg, ...rest] = process.argv.slice(2);
 if (!cmd || !dirArg || !["build", "verify", "narrate", "proof"].includes(cmd)) {
@@ -41,7 +45,7 @@ const viewIds = () => {
   const ids = new Set<string>();
   for (const s of sb.scenes) {
     if (isCodeScene(s)) { if (s.context) ids.add(s.context.view); }
-    else ids.add(s.view);
+    else if (s.kind !== "credits" && s.view) ids.add(s.view);
   }
   return [...ids];
 };
@@ -51,6 +55,21 @@ const die = (title: string, errs: string[]) => {
   console.error(`${title}:\n  ${errs.join("\n  ")}`);
   process.exit(1);
 };
+
+/** What the beats need ingested from git at the pin; absent keys keep arc-less bundles unchanged. */
+function ingest(code: ReturnType<typeof git>): { repo?: RepoFacts; credits?: Credits } {
+  const needs = needsOf(sb);
+  return {
+    ...(needs.has("git-log") ? { repo: ingestRepo(sb, code, dataset) } : {}),
+    ...(needs.has("git-blame") ? { credits: ingestCredits(sb, code) } : {}),
+  };
+}
+
+/** Names a credits scene speaks must be authors blame found. */
+function creditNames(credits?: Credits): string[] {
+  const authors = new Set(Object.values(credits?.commits ?? {}).map((c) => c.author));
+  return sb.scenes.flatMap((s) => (s.kind === "credits" ? (s.names ?? []).filter((n) => !authors.has(n)).map((n) => `${s.id}: names ${n}, who is not an author in the blame of the shown excerpts`) : []));
+}
 
 /** The dataset snapshot must be byte-identical to the dataset at its commit. */
 function datasetCheck(): string[] {
@@ -77,6 +96,7 @@ async function build() {
     timeline,
     views: laid,
     excerpts: Object.fromEntries(excerpts.map((x) => [x.id, x])),
+    ...ingest(code),
     provenance: {
       dataset: { ...sb.sources.dataset, revision: dataset.revision, sha256: sha256(datasetBytes) } as RenderBundle["provenance"]["dataset"],
       code: { repo: sb.sources.code.repo, tag: sb.sources.code.tag, commit: sb.sources.code.commit },
@@ -84,6 +104,7 @@ async function build() {
     },
   };
   delete (bundle.provenance.dataset as { snapshot?: string }).snapshot;
+  die("credits", creditNames(bundle.credits));
   mkdirSync(buildDir, { recursive: true });
   writeFileSync(path.join(buildDir, "bundle.json"), JSON.stringify(bundle, null, 1) + "\n");
   writeFileSync(path.join(buildDir, timeline.audio.file), mixTrack(timeline, takesDir));
@@ -112,6 +133,11 @@ function verify() {
     const tl = buildTimeline(sb, takes);
     if (JSON.stringify(tl) !== JSON.stringify(bundle.timeline)) errs.push("bundle timeline is stale; rebuild");
     if (JSON.stringify(bundle.storyboard) !== JSON.stringify(sb)) errs.push("bundle storyboard is stale; rebuild");
+    // Ingested git facts must reproduce from the pinned repo.
+    const fresh2 = ingest(code);
+    if (JSON.stringify(fresh2.repo) !== JSON.stringify(bundle.repo)) errs.push("bundle repo facts do not reproduce from git; rebuild");
+    if (JSON.stringify(fresh2.credits) !== JSON.stringify(bundle.credits)) errs.push("bundle credits do not reproduce from git blame; rebuild");
+    errs.push(...creditNames(bundle.credits));
   } catch (e) {
     errs.push((e as Error).message);
   }
@@ -119,6 +145,9 @@ function verify() {
   for (const x of excerpts) console.log(`  ok ${x.id.padEnd(13)} ${x.displayPath}:${x.lines.join("-")} @ ${x.commit.slice(0, 7)} blob ${x.blob.slice(0, 7)} sha256 ${x.sha256.slice(0, 12)} (${Buffer.byteLength(x.text)} B byte-identical)`);
   console.log(`  ok every view, element, relationship and scenario step the storyboard names is in the dataset`);
   console.log(`  ok dataset snapshot byte-identical to ${sb.sources.dataset.path} @ ${sb.sources.dataset.commit.slice(0, 7)}`);
+  if (bundle.repo) console.log(`  ok repo facts reproduce from git @ ${bundle.repo.commit.slice(0, 7)}: ${bundle.repo.commits} commits, ${bundle.repo.tags} tags, ${bundle.repo.firstDate} → ${bundle.repo.lastDate}, ${bundle.repo.authors.length} author(s) in ${bundle.repo.scope || "the repo"}`);
+  if (bundle.credits) console.log(`  ok credits reproduce from git blame: ${Object.values(bundle.credits.excerpts).reduce((n, x) => n + x.lines.length, 0)} lines over ${Object.keys(bundle.credits.excerpts).length} shown excerpts, ${Object.keys(bundle.credits.commits).length} commits; spoken names are credited authors`);
+  if (sb.arc) console.log(`  ok arc ${sb.arc.pattern}: ${sb.arc.beats.map((id) => sb.acts?.find((a) => a.id === id)?.role).join(" → ")}`);
   console.log(`  ok ${Object.keys(loadTakes(sb, takesDir)).length} takes match their spoken text and model; timeline invariants hold; bundle timeline reproduces`);
   console.log("verify: pass");
 }

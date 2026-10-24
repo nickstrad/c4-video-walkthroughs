@@ -122,7 +122,7 @@ export function buildTimeline(sb: Storyboard, takes: Record<string, TakeRecord>,
       const own = sb.scenes.flatMap((s, i) => (s.act === a.id ? [scenes[i]] : []));
       if (!own.length) throw new Error(`act ${a.id} has no scenes`);
       const startFrame = own[0].startFrame, frames = own.at(-1)!.startFrame + own.at(-1)!.frames - startFrame;
-      return { id: a.id, title: a.title, startFrame, frames, start: r3(startFrame / fps), duration: r3(frames / fps), scenes: own.map((s) => s.id) };
+      return { id: a.id, title: a.title, ...(a.role ? { role: a.role } : {}), startFrame, frames, start: r3(startFrame / fps), duration: r3(frames / fps), scenes: own.map((s) => s.id) };
     });
   }
   return tl;

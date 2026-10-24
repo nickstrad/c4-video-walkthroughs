@@ -11,12 +11,13 @@ export type Dataset = {
   };
   diagrams: {
     id: string; kind: string; title: string; scopeId?: string;
-    nodes: { elementId: string }[];
+    nodes: { elementId: string; detail?: { diagramId: string } }[];
     edges: { relationshipId: string; displayNumber: number }[];
     layout?: { mode: string; direction: string };
     scenario?: { children: { id: string; relationshipId: string; direction: "forward" | "reverse"; label: string }[] };
   }[];
   sources: { id: string; title: string; url: string; revision: string; path: string; notes: string }[];
+  documents?: { id: string; title: string; plain: string }[];
 };
 
 export type ViewElement = {
