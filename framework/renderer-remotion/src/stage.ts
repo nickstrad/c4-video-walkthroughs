@@ -28,3 +28,13 @@ export function withRail(area: Box, rail: boolean): { code: Box; rail?: Box } {
     rail: { x: area.x + area.w - RAIL_W, y: area.y, w: RAIL_W, h: area.h },
   };
 }
+/**
+ * The act tracker (story-arc chrome): a strip under the content regions
+ * (which end at y 608) and above a one-line caption (top ≈ y 647).
+ */
+export const LOWER_THIRD: Box = { x: 32, y: 614, w: 1216, h: 26 };
+/** A focus-element scene with a responsibilities list: diagram left, list right. */
+export const FOCUS_LEFT: Box = { x: 24, y: 92, w: 760, h: 516 };
+export const FOCUS_LIST: Box = { x: 812, y: 150, w: 440, h: 420 };
+/** A full-screen card (repo-card, credits). */
+export const CARD: Box = { x: 140, y: 64, w: 1000, h: 530 };

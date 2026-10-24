@@ -4,7 +4,7 @@
 // Times are seconds; `rel` means relative to the scene start.
 import type { RenderBundle } from "./bundle.ts";
 import type { TimedAct, TimedScene } from "./narration/types.ts";
-import { contextAt, isCodeScene, viewAt, type CodeContext, type Hop, type Range, type Scene, type StateChange } from "./storyboard/schema.ts";
+import { contextAt, isCodeScene, viewAt, type BeatRole, type CodeContext, type Hop, type Range, type RepoFact, type Scene, type StateChange } from "./storyboard/schema.ts";
 import type { View } from "./diagram/view.ts";
 
 export const sceneOf = (b: RenderBundle, id: string): Scene => {
@@ -63,7 +63,7 @@ export type TimedHop = Hop & { edge: string; view: string; start: number; durati
  */
 export function hopsOf(b: RenderBundle, sceneId: string): TimedHop[] {
   const sc = sceneOf(b, sceneId), t = timedOf(b, sceneId);
-  if (!sc.hops?.length) return [];
+  if (!("hops" in sc) || !sc.hops?.length) return [];
   const viewId = viewOf(b, sceneId);
   const v = viewId && b.views[viewId]?.view;
   if (!v) throw new Error(`${sceneId}: hops need a view`);
@@ -123,9 +123,114 @@ export function stateAt(b: RenderBundle, t: number) {
 export function packetLabelAt(b: RenderBundle, t: number): string | undefined {
   let label: string | undefined;
   for (const sc of b.storyboard.scenes) {
-    if (!sc.packet) continue;
+    if (!("packet" in sc) || !sc.packet) continue;
     const ts = timedOf(b, sc.id);
     if (t >= ts.start + cueAt(ts, sc.packet.cue)) label = sc.packet.label;
   }
   return label;
+}
+
+// ── Story arc (docs/story-arc-plan.md) ──────────────────────────────────────
+
+export type BeatProgress = { id: string; title: string; role: BeatRole; label: string; state: "done" | "current" | "todo" };
+export type ArcProgress = { beats: BeatProgress[]; index: number; within: number };
+/**
+ * Where absolute t sits in the arc: every beat with its state, the current
+ * beat's index and how far through it we are (0..1). Undefined without an
+ * arc, or when the arc turns the lower third off. Labels follow arc.chrome.
+ */
+export function arcProgressAt(b: RenderBundle, t: number): ArcProgress | undefined {
+  const arc = b.storyboard.arc;
+  if (!arc || arc.chrome?.lowerThird === false || !b.timeline.acts) return undefined;
+  const acts = new Map(b.timeline.acts.map((a) => [a.id, a]));
+  const timed = arc.beats.map((id) => acts.get(id)!);
+  let index = timed.findIndex((a) => t >= a.start && t < a.start + a.duration);
+  if (index < 0) index = t < timed[0].start ? 0 : timed.length - 1;
+  const cur = timed[index];
+  const within = Math.max(0, Math.min(1, (t - cur.start) / cur.duration));
+  return {
+    index, within,
+    beats: timed.map((a, i) => {
+      const role = a.role as BeatRole;
+      return { id: a.id, title: a.title, role, label: arc.chrome?.labels === "role" ? role : a.title, state: i < index ? "done" : i === index ? "current" : "todo" };
+    }),
+  };
+}
+
+export type Approach = { elementId: string; at: number; mode: "descend" | "settle" };
+/** An overview's move onto one element (rel): `descend` zooms in before the child view, `settle` stays. */
+export function approachOf(b: RenderBundle, sceneId: string): Approach | undefined {
+  const sc = sceneOf(b, sceneId);
+  if (sc.kind !== "architecture-overview") return undefined;
+  const to = sc.descend ?? sc.settle;
+  if (!to) return undefined;
+  return { elementId: to.elementId, at: cueAt(timedOf(b, sceneId), to.cue), mode: sc.descend ? "descend" : "settle" };
+}
+
+/** A focus-element scene's responsibilities list, each with when it appears (rel). */
+export function responsibilitiesOf(b: RenderBundle, sceneId: string): { label: string; at: number }[] {
+  const sc = sceneOf(b, sceneId);
+  if (sc.kind !== "focus-element" || !sc.responsibilities) return [];
+  const t = timedOf(b, sceneId);
+  return sc.responsibilities.map((r) => ({ label: r.label, at: cueAt(t, r.cue) }));
+}
+
+export type FactRow = { fact: RepoFact; label: string; value: string };
+/**
+ * The facts a repo-card prints, as label/value rows, from bundle.repo
+ * (ingested from git at the pin) and the bundle's views: never typed text.
+ */
+export function repoFactsOf(b: RenderBundle, sceneId: string): FactRow[] {
+  const sc = sceneOf(b, sceneId);
+  if (sc.kind !== "repo-card") return [];
+  const r = b.repo;
+  if (!r) throw new Error(`${sceneId}: a repo-card needs bundle.repo; rebuild`);
+  const row = (fact: RepoFact): FactRow => {
+    switch (fact) {
+      case "commit": return { fact, label: "pinned", value: `${r.tag} · ${r.commit.slice(0, 7)}` };
+      case "commits": return { fact, label: "commits", value: String(r.commits) };
+      case "tags": return { fact, label: "tags", value: String(r.tags) };
+      case "dates": return { fact, label: "history", value: r.firstDate === r.lastDate ? r.firstDate : `${r.firstDate} → ${r.lastDate}` };
+      case "authors": return { fact, label: r.authors.length === 1 ? "author" : "authors", value: r.authors.map((a) => a.name).join(", ") };
+      case "languages": return { fact, label: "files", value: r.languages.slice(0, 4).map((l) => `${l.ext} ${l.files}`).join(" · ") };
+      case "elements": return { fact, label: "C4 model", value: `${r.model.containers} containers · ${r.model.components} components · ${r.model.views} views` };
+      case "containers": return { fact, label: "containers", value: String(r.model.containers) };
+    }
+  };
+  return (sc.facts ?? ["commit", "commits", "dates", "authors"]).map(row);
+}
+
+/** The video's commit line: `tag · sha7 · subject · date`. */
+export const creditLine = (c: { tag: string; commit: string; subject: string; date: string }) =>
+  [c.tag, c.commit.slice(0, 7), c.subject, c.date].join(" · ");
+
+export type VideoCredits = {
+  line: string;
+  authors: { name: string; lines: number; share: number }[];
+  commits: { sha7: string; subject: string; lines: number; date: string }[];
+  coAuthors: string[];
+  total: number;
+};
+/**
+ * Who wrote the lines the video shows, over every shown excerpt at its own
+ * pin (bundle.credits, from git blame). Video scope only: the thin slice of
+ * build item 5. Authors by lines, then name; commits by lines, then date.
+ */
+export function videoCreditsOf(b: RenderBundle): VideoCredits {
+  const c = b.credits;
+  if (!c) throw new Error("no bundle.credits; a credits scene needs a rebuild");
+  const byAuthor = new Map<string, number>(), byCommit = new Map<string, number>();
+  let total = 0;
+  for (const x of Object.values(c.excerpts)) for (const l of x.lines) {
+    total++;
+    const cm = c.commits[l.commit];
+    byAuthor.set(cm.author, (byAuthor.get(cm.author) ?? 0) + 1);
+    byCommit.set(l.commit, (byCommit.get(l.commit) ?? 0) + 1);
+  }
+  const authors = [...byAuthor].map(([name, lines]) => ({ name, lines, share: lines / total }))
+    .sort((x, y) => y.lines - x.lines || x.name.localeCompare(y.name));
+  const commits = [...byCommit].map(([sha, lines]) => ({ sha7: sha.slice(0, 7), subject: c.commits[sha].subject, lines, date: c.commits[sha].date }))
+    .sort((x, y) => y.lines - x.lines || x.date.localeCompare(y.date));
+  const coAuthors = [...new Set([...byCommit.keys()].flatMap((sha) => c.commits[sha].coAuthors))].sort();
+  return { line: creditLine(c.base), authors, commits, coAuthors, total };
 }

@@ -8,6 +8,8 @@ on:
       - pocs/*/demo.mp4
       - pocs/*/demo/walkthrough.mp4
       - pocs/*/frames/**
+      - framework/projects/litefleet-arc/renders/remotion.mp4
+      - framework/projects/litefleet-arc/renders/frames/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -39,6 +41,8 @@ jobs:
           cp pocs/option-2-motion-canvas/frames/02-epoch-check.png      _site/posters/option-2.png
           cp pocs/option-3-playwright-vhs-remotion/frames/title.png     _site/posters/option-3.png
           cp pocs/option-4-slidev-magic-move/frames/05-hardened.png     _site/posters/option-4.png
+          cp framework/projects/litefleet-arc/renders/remotion.mp4                         _site/videos/arc-litefleet.mp4
+          cp framework/projects/litefleet-arc/renders/frames/remotion-03-focus-f-engine.png _site/posters/arc-litefleet.png
           find _site -type f -exec ls -l {} +
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -8,9 +8,10 @@
 // from the existing cameras/regions (or new ones) plus an optional Overlay.
 import React from "react";
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { isCodeScene, type Box, type Scene, type TimedScene } from "../../core/src/index.ts";
+import { approachOf, isCodeScene, isDiagramScene, type Box, type DiagramScene, type Scene, type TimedScene } from "../../core/src/index.ts";
 import { cameras, type Camera } from "./camera.ts";
-import { CODE_ALONE, CODE_UNDER_STRIP, FRAME, FULL, FULL_UNDER_PANEL, PANEL, STRIP, withRail } from "./stage.ts";
+import { CreditsCard, RepoCard, Responsibilities } from "./cards.tsx";
+import { CODE_ALONE, CODE_UNDER_STRIP, FOCUS_LEFT, FRAME, FULL, FULL_UNDER_PANEL, PANEL, STRIP, withRail } from "./stage.ts";
 import type { Story } from "./story.ts";
 import { C, MONO, SANS } from "./theme.ts";
 
@@ -22,6 +23,8 @@ export type DiagramShot = {
   clip: Box;
   framed: number;
   emphasis?: Emphasis;
+  /** Diagram opacity (default 1): a card dims the view behind it. */
+  opacity?: number;
 };
 export type CodeShot = { excerpt: string; run: number; box: Box; rail?: Box };
 export type HeaderShot = { key: string; eyebrow: string; title: string; detail: string };
@@ -41,7 +44,7 @@ const hasPanel = (c: SceneCtx) => !!c.story.bundle.storyboard.statePanel;
 /** Follow the action: the scene's hop ends, badge and skipped elements. */
 function followShot(c: SceneCtx): Shot {
   const s = c.scene;
-  if (isCodeScene(s)) throw new Error(`${s.id}: not a diagram scene`);
+  if (!isDiagramScene(s)) throw new Error(`${s.id}: not a diagram scene`);
   const { layout } = c.story.view(s.view);
   const ids = [
     ...(s.hops ?? []).flatMap((h) => [h.from, h.to]),
@@ -61,9 +64,11 @@ const TitleCard: React.FC<{ ctx: SceneCtx }> = ({ ctx }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const s = ctx.scene;
-  if (isCodeScene(s)) return null;
+  if (!isDiagramScene(s)) return null;
   const v = ctx.story.view(s.view).view;
-  const d = ctx.timed.duration;
+  // A descend/settle clears the title as the camera starts to move.
+  const ap = approachOf(ctx.story.bundle, s.id);
+  const d = ap ? Math.min(ctx.timed.duration, ap.at + 0.9) : ctx.timed.duration;
   const opacity = interpolate(frame / fps, [0.4, 0.8, Math.max(0.9, d - 1), Math.max(1, d - 0.4)], [0, 1, 1, 0], {
     extrapolateLeft: "clamp", extrapolateRight: "clamp",
   });
@@ -76,24 +81,53 @@ const TitleCard: React.FC<{ ctx: SceneCtx }> = ({ ctx }) => {
   );
 };
 
+type DiagramOf = DiagramScene;
+
 export const SCENE_KINDS: Record<string, SceneDef> = {
   "architecture-overview": {
     shot: (c) => {
-      const s = c.scene as Extract<Scene, { view: string }>;
-      return { diagram: full(s.view, cameras.whole(c.story.view(s.view).layout)) };
+      const s = c.scene as DiagramOf;
+      const { layout } = c.story.view(s.view);
+      // Descend: light the element on its cue, then dive into it as the scene
+      // ends (the next scene crossfades to its detail view). Settle: light it
+      // and let the camera come to rest on it for the focus beat.
+      const ap = approachOf(c.story.bundle, s.id);
+      if (!ap) return { diagram: full(s.view, cameras.whole(layout)) };
+      const d = c.timed.duration;
+      const camera = ap.mode === "descend"
+        ? cameras.zoom(layout, ap.elementId, Math.max(ap.at + 0.5, d - 1.3), d, 0.92)
+        : cameras.zoom(layout, ap.elementId, ap.at + 0.3, Math.min(d, ap.at + 1.8), 0.22);
+      return { diagram: { ...full(s.view, camera), emphasis: { id: ap.elementId, mode: "focus", at: ap.at } } };
     },
     Overlay: TitleCard,
   },
   "focus-element": {
     shot: (c) => {
-      const s = c.scene as Extract<Scene, { view: string }>;
+      const s = c.scene as DiagramOf;
       if (!s.elementId) throw new Error(`${s.id}: focus-element needs elementId`);
       const { layout } = c.story.view(s.view);
-      // Light first, then fly in for the rest of the scene.
-      const camera = cameras.zoom(layout, s.elementId, 0.8, Math.max(1.2, c.timed.duration - 0.4));
-      return { diagram: { ...full(s.view, camera), emphasis: { id: s.elementId, mode: "focus", at: 0 } } };
+      // After an overview that settled on this element the camera is already
+      // there: hold it (the layer blends over). Otherwise light first, then fly in.
+      const prev = c.i > 0 ? c.story.scenes[c.i - 1] : undefined;
+      const settled = !!prev && !isCodeScene(prev) && prev.kind === "architecture-overview" && prev.view === s.view && prev.settle?.elementId === s.elementId;
+      const list = !!s.responsibilities?.length;
+      const camera = settled
+        ? cameras.zoom(layout, s.elementId, 0, 0, list ? 0.38 : 0.45)
+        : cameras.zoom(layout, s.elementId, 0.8, Math.max(1.2, c.timed.duration - 0.4), list ? 0.38 : 0.45);
+      return { diagram: { ...full(s.view, camera, list ? FOCUS_LEFT : FULL), emphasis: { id: s.elementId, mode: "focus", at: 0 } } };
     },
+    Overlay: Responsibilities,
   },
+  "repo-card": {
+    // The card over its view, dimmed far back; the next scene on that view brings it forward.
+    shot: (c) => {
+      const s = c.scene;
+      if (s.kind !== "repo-card" || !s.view) return {};
+      return { diagram: { ...full(s.view, cameras.whole(c.story.view(s.view).layout)), opacity: 0.07 } };
+    },
+    Overlay: RepoCard,
+  },
+  credits: { shot: () => ({}), Overlay: CreditsCard },
   "follow-request": { shot: followShot },
   "state-change": { shot: followShot },
   "code-explanation": {

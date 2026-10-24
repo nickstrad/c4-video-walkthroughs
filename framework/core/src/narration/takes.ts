@@ -2,7 +2,7 @@
 // scene, or one per line of a multi-line scene. loadTakes never calls the
 // API. synthesizeMissing is the only path that does, and only for takes with
 // nothing on disk.
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { takesOf, type Storyboard, type TakeSpec } from "../storyboard/schema.ts";
 import { credentials, synthesize } from "./elevenlabs.ts";
@@ -39,6 +39,7 @@ export async function synthesizeMissing(sb: Storyboard, dir: string, log = conso
   const missing = new Set(missingTakes(sb, dir).map((t) => t.id));
   if (!missing.size) return 0;
   const cred = credentials();
+  mkdirSync(dir, { recursive: true }); // before the first billed call, so no take is lost
   const order = allTakes(sb);
   let chars = 0;
   for (const [i, t] of order.entries()) {

@@ -19,6 +19,7 @@ const fakeGit = (tags: Record<string, string>): Git => ({
   dir: "/fake",
   revParse: (rev) => rev.endsWith("^{commit}") ? tags[rev.slice(0, -9)] ?? "missing" : blobSha(rev),
   blob: (commit, path) => Buffer.from(files[`${commit}:${path}`]),
+  out: () => { throw new Error("not used"); },
 });
 const ds = { revision: "r", model: { elements: [], relationships: [] }, diagrams: [], sources: [] } as Dataset;
 const sb = {

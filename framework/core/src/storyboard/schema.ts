@@ -30,10 +30,40 @@ export type Storyboard = {
    * each act's scenes are contiguous; the timeline then carries act bounds.
    */
   acts?: Act[];
+  /**
+   * The story's shape: which acts are beats, in what order, under which
+   * pattern (beats/patterns.ts). Optional; an arc-less storyboard is one
+   * implicit beat and validates as before.
+   */
+  arc?: Arc;
   scenes: Scene[];
 };
 
-export type Act = { id: string; title: string };
+export type Arc = {
+  /** A pattern core knows (beats/patterns.ts): "walkthrough" today. */
+  pattern: string;
+  /** Act ids, in order; each such act carries a role. */
+  beats: string[];
+  /** Act chrome; the lower-third tracker defaults on when an arc exists. */
+  chrome?: { lowerThird?: boolean; labels?: "title" | "role" };
+};
+
+/** A beat's role: what core checks it for (beats/registry.ts). */
+export type BeatRole =
+  | "repo-intro" | "architecture" | "focus" | "deep-dive" | "shoutout"
+  | "gains" // reserved, deferred (docs/story-arc-plan.md § 10)
+  | "cold-open" | "investigation" | "change" | "verification"; // reserved for the change pattern (plan § 5)
+
+export type Act = {
+  id: string;
+  title: string;
+  /** Required for every act named in arc.beats. */
+  role?: BeatRole;
+  /** Per-role variant key (none are registered yet). */
+  variant?: string;
+  /** The arc still holds without this act. */
+  optional?: boolean;
+};
 
 export type NarrationConfig = {
   provider: "elevenlabs";
@@ -146,6 +176,16 @@ export type DiagramScene = SceneBase & {
   view: string;
   title?: string;
   elementId?: string; // focus-element
+  /**
+   * architecture-overview: light this element at the cue, then zoom into it;
+   * the next scene's view must be its detail view (dataset
+   * diagrams[].nodes[].detail.diagramId).
+   */
+  descend?: { elementId: string; cue?: string };
+  /** architecture-overview: light this element at the cue and let the camera settle on it. */
+  settle?: { elementId: string; cue?: string };
+  /** focus-element: an on-screen list, each item appearing at its cue. */
+  responsibilities?: { label: string; cue?: string }[];
   packet?: Packet;
   hops?: Hop[];
   badge?: { elementId: string; text: string; tone: Tone; cue?: string };
@@ -177,11 +217,33 @@ export type CodeScene = SceneBase & {
 
 export type CodeContext = { view: string; elementId?: string };
 
-export type Scene = DiagramScene | CodeScene;
+/** Repo facts a repo-card may print; values come from bundle.repo (ingest/repo.ts). */
+export type RepoFact = "commit" | "commits" | "tags" | "dates" | "authors" | "languages" | "elements" | "containers";
+
+/** The repo as a whole: name, purpose, pinned commit and ingested facts. */
+export type RepoCardScene = SceneBase & {
+  kind: "repo-card";
+  /** A view drawn dimmed behind the card. */
+  view?: string;
+  /** The element whose name and description the card shows (the system). */
+  elementId: string;
+  facts?: RepoFact[];
+};
+
+/** The shoutout: the video's commit line and who wrote the lines shown (bundle.credits). */
+export type CreditsScene = SceneBase & {
+  kind: "credits";
+  /** Names the narration says; each must be an author in bundle.credits and appear in a caption. */
+  names?: string[];
+};
+
+export type Scene = DiagramScene | CodeScene | RepoCardScene | CreditsScene;
 export type SceneKind = Scene["kind"];
 
 export const DIAGRAM_KINDS = ["architecture-overview", "focus-element", "follow-request", "state-change"] as const;
+export const CARD_KINDS = ["repo-card", "credits"] as const;
 export const isCodeScene = (s: Scene): s is CodeScene => s.kind === "code-explanation";
+export const isDiagramScene = (s: Scene): s is DiagramScene => (DIAGRAM_KINDS as readonly string[]).includes(s.kind);
 
 /**
  * The context diagram of scenes[i]: its own `context`, else the context of
@@ -202,7 +264,8 @@ export function contextAt(scenes: Scene[], i: number): CodeContext | undefined {
 /** The view a scene draws or keeps as context, if any. */
 export const viewAt = (scenes: Scene[], i: number): string | undefined => {
   const s = scenes[i];
-  return isCodeScene(s) ? contextAt(scenes, i)?.view : s.view;
+  if (isCodeScene(s)) return contextAt(scenes, i)?.view;
+  return s.kind === "credits" ? undefined : s.view;
 };
 
 const said = (l: Partial<Line>, id: string) => {

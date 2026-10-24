@@ -5,6 +5,7 @@ import type { Excerpt } from "./code-source/types.ts";
 import type { Layout } from "./diagram/geometry.ts";
 import type { View } from "./diagram/view.ts";
 import type { Timeline } from "./narration/types.ts";
+import type { Credits, RepoFacts } from "./ingest/types.ts";
 import type { Storyboard } from "./storyboard/schema.ts";
 
 export const BUNDLE_SCHEMA = "c4v-bundle/1";
@@ -15,6 +16,10 @@ export type RenderBundle = {
   timeline: Timeline;
   views: Record<string, { view: View; layout: Layout }>;
   excerpts: Record<string, Excerpt>;
+  /** Repo facts at the pin; present when a beat needs git-log (a repo-card). */
+  repo?: RepoFacts;
+  /** Blame over the shown excerpts; present when a beat needs git-blame (a credits scene). */
+  credits?: Credits;
   provenance: {
     dataset: { repo: string; commit: string; path: string; revision: string; sha256: string };
     code: { repo: string; tag: string; commit: string };
