@@ -4,7 +4,7 @@
 // scene that shows the view, so a badge set in one scene is still there when
 // the story comes back to that diagram. Pure; all timing from play.ts.
 import {
-  along, hopPath, hopsOf, isCodeScene, packetLabelAt,
+  along, hopPath, hopsOf, isDiagramScene, packetLabelAt,
   type Point, type Tone, type View, type Layout,
 } from "../../core/src/index.ts";
 import { clamp01, easeInOut, ramp } from "./anim.ts";
@@ -57,7 +57,7 @@ export function beatsAt(story: Story, viewId: string, t: number): Beats {
     const ts = story.timed[i];
     for (const h of hopsOf(story.bundle, sc.id))
       hops.push({ from: h.from, to: h.to, edge: h.edge, s: ts.start + h.start, d: h.duration, scene: i });
-    if (t < ts.start || isCodeScene(sc)) return;
+    if (t < ts.start || !isDiagramScene(sc)) return;
     const cue = (c?: string) => ts.start + (c === undefined ? 0 : ts.cues[c] ?? 0);
     if (sc.badge) {
       const k = ramp(t - cue(sc.badge.cue), 0.4);

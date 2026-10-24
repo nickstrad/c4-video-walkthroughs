@@ -10,6 +10,7 @@ import { codeEnterOf, type Box } from "../../core/src/index.ts";
 import { beatsAt } from "./beats.ts";
 import { mixCam } from "./camera.ts";
 import { Captions } from "./Captions.tsx";
+import { LowerThird } from "./LowerThird.tsx";
 import { CodePanel } from "./CodePanel.tsx";
 import { Diagram, type EmphasisW } from "./Diagram.tsx";
 import { fadeIn, fadeOut, lerp, lerpBox, ramp } from "./anim.ts";
@@ -54,12 +55,15 @@ export const Walkthrough: React.FC<RenderProps> = ({ bundle, code }) => {
         {story.scenes.map((scene, j) => {
           const Overlay = SCENE_KINDS[scene.kind]?.Overlay;
           const tj = story.timed[j];
+          // The last scene's overlay holds through the outro.
+          const frames = j === story.scenes.length - 1 ? bundle.timeline.totalFrames - tj.startFrame : tj.frames;
           return Overlay ? (
-            <Sequence key={scene.id} from={tj.startFrame} durationInFrames={tj.frames} layout="none">
+            <Sequence key={scene.id} from={tj.startFrame} durationInFrames={frames} layout="none">
               <Overlay ctx={{ story, i: j, scene, timed: tj }} />
             </Sequence>
           ) : null;
         })}
+        <LowerThird bundle={bundle} t={t} />
         <Captions bundle={bundle} t={t} />
       </div>
       <Html5Audio src={staticFile(bundle.timeline.audio.file)} />
@@ -77,7 +81,7 @@ const DiagramLayer: React.FC<{
     const { view, layout } = story.view(d.view);
     return (
       <Diagram key={key} view={view} layout={layout} cam={d.camera(r, d.viewport)} viewport={d.viewport} clip={d.clip}
-        framed={d.framed} emphasis={emph(d, r, 1)} beats={beatsAt(story, d.view, t)} opacity={opacity} t={t} />
+        framed={d.framed} emphasis={emph(d, r, 1)} beats={beatsAt(story, d.view, t)} opacity={opacity * (d.opacity ?? 1)} t={t} />
     );
   };
   if (prev && cur && prev.view === cur.view) {
@@ -87,7 +91,7 @@ const DiagramLayer: React.FC<{
     return (
       <Diagram view={view} layout={layout} cam={cam} viewport={viewport} clip={lerpBox(prev.clip, cur.clip, k)}
         framed={lerp(prev.framed, cur.framed, k)} emphasis={[...emph(prev, prevRel, 1 - k), ...emph(cur, rel, k)]}
-        beats={beatsAt(story, cur.view, t)} opacity={1} t={t} />
+        beats={beatsAt(story, cur.view, t)} opacity={lerp(prev.opacity ?? 1, cur.opacity ?? 1, k)} t={t} />
     );
   }
   return (

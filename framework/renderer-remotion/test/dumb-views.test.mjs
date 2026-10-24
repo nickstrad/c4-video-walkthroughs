@@ -7,6 +7,8 @@ import { hardCodedText } from "../../core/src/verify/dumb-views.ts";
 
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));
 
-test("no storyboard text is hard-coded in the renderer", () => {
-  assert.deepEqual(hardCodedText(here("../../projects/litefleet"), [here("../src"), here("../scripts")]), []);
-});
+for (const project of ["litefleet", "litefleet-arc"]) {
+  test(`no ${project} storyboard text is hard-coded in the renderer`, () => {
+    assert.deepEqual(hardCodedText(here(`../../projects/${project}`), [here("../src"), here("../scripts")]), []);
+  });
+}
