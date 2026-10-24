@@ -24,13 +24,15 @@ seam the arc hangs on, so the 14-scene litefleet storyboard keeps working
 unchanged (an arc-less storyboard is one implicit beat). A pointer (repo,
 commit, target) is a second way in: § 7 derives the arc from it and emits the
 same storyboard, so point-and-shoot videos and authored ones share every step
-after that.
+after that. The `gains` close is **deferred** (§ 10): a `walkthrough` video
+currently ends on its last `deep-dive` excerpt, or on the `shoutout` credits
+when that optional beat is present.
 
 ```
                  storyboard.json
                  ┌──────────────────────────────────────────────┐
                  │ arc: [ repo-intro, architecture, focus,       │   data only;
-                 │        deep-dive, gains, shoutout? ]          │   edit to experiment
+                 │        deep-dive, shoutout? ]                 │   edit to experiment
                  │ acts/scenes: grouped under each beat          │
                  └───────────────┬──────────────────────────────┘
                                  ▼
@@ -40,7 +42,7 @@ after that.
          └───────────────────────────────┬────────────────────────────────────┘
                                          ▼  build/bundle.json (+ credits, drivers)
    renderers   SCENE_KINDS / RUNNERS: one entry per NEW scene kind
-               (repo-card, change-intro, code-evolution, gains-card, credits, …)
+               (repo-card, change-intro, code-evolution, credits, …)
                + one chrome layer (lower third) reading play.ts
 ```
 
@@ -51,17 +53,17 @@ after that.
 - **Scene**: unchanged, the timed unit (one or more takes, cues).
 - **Beat**: a named, ordered group of contiguous scenes with a **role** from a
   closed list. The role is what makes a beat a component: core knows what a
-  `gains` beat needs and checks it; a renderer draws whatever scene kinds it
+  `repo-intro` beat needs and checks it; a renderer draws whatever scene kinds it
   contains. A beat is a storyboard `act` with a `role` and optional
   `variant`, so the lifted `acts` machinery (contiguity validation, timeline
   bounds, `actAt`) is reused rather than duplicated.
 - **Arc**: the ordered list of beats, plus the arc's **pattern** (`walkthrough`
-  for Nick's six-beat story; `change` for PR/issue/commit-driven stories; later
-  patterns from § 6). A pattern is a *template of roles* with required and
-  optional slots; the arc instance may omit optional slots and may insert
-  extra beats where the pattern allows.
+  for Nick's six-beat story, five while `gains` is deferred; `change` for
+  PR/issue/commit-driven stories; later patterns from § 6). A pattern is a
+  *template of roles* with required and optional slots; the arc instance may
+  omit optional slots and may insert extra beats where the pattern allows.
 
-Nick's six beats map to six roles:
+Nick's six beats map to six roles (beat 5 is deferred, § 10):
 
 | # | Role | Nick's words | Required in `walkthrough` |
 |---|---|---|---|
@@ -69,7 +71,7 @@ Nick's six beats map to six roles:
 | 2 | `architecture` | system architecture, zoom to the point of the video | yes |
 | 3 | `focus` | this element is the focus; what it does | yes |
 | 4 | `deep-dive` | how code snippets affect the point | yes |
-| 5 | `gains` | close with the gains this code gives | yes |
+| 5 | `gains` | close with the gains this code gives | **deferred** (§ 10); role reserved, no pattern lists it |
 | 6 | `shoutout` | commit + git blame authors | optional |
 
 Plus one **cross-cutting** component with no beat of its own: **act chrome**
@@ -104,7 +106,8 @@ export type Act = {
   optional?: boolean;              // NEW; documents that the arc still holds without it
 };
 export type BeatRole =
-  | "repo-intro" | "architecture" | "focus" | "deep-dive" | "gains" | "shoutout"
+  | "repo-intro" | "architecture" | "focus" | "deep-dive" | "shoutout"
+  | "gains"                                                      // reserved, deferred (§ 10)
   | "cold-open" | "investigation" | "change" | "verification";   // § 5 adds these
 ```
 
@@ -141,7 +144,10 @@ type BeatDef = {
 This is the only place a role is spelled out. Renderers never read it; they
 read scene kinds. The AI mapping step reads it to know what each beat is for.
 Adding a beat role is: one entry here, one line in a pattern, and whichever
-new scene kinds it introduces (registered in both renderers).
+new scene kinds it introduces (registered in both renderers). A **reserved**
+role (`gains`, § 10) keeps its entry with `kinds: []` and no pattern slot, so
+a storyboard that names it fails verify with "deferred", not "unknown role",
+and bringing it back is filling that entry in rather than adding a role.
 
 ### 1.4 How a beat reaches both renderers
 
@@ -161,8 +167,10 @@ kinds introduced by this plan:
 | `change-card` | cold-open / change (§ 5) | an issue or PR header: number, title, author, state, pinned SHA, labels |
 | `code-evolution` | deep-dive (variant) | one symbol across 2–4 pins, morphing state to state (audit item 11) |
 | `diff-view` | change (§ 5) | before/after excerpt pair from the driver's base and head commits |
-| `gains-card` | gains | 2–4 claim lines, each citing an excerpt id or an evidence excerpt; optional metric chips |
 | `credits` | shoutout | commit line + author rows with share bars (§ 4) |
+
+A sixth kind, `gains-card` (2–4 claim lines citing excerpts, optional metric
+chips), is deferred with its beat (§ 10) and is not registered anywhere.
 
 And one **chrome** element, not a scene kind: `lower-third` (§ 2.7).
 
@@ -270,22 +278,16 @@ renderers · narration · data dependencies.
 - **Narration.** Existing lines/steps; for evolution, one line per state.
 - **Data.** code (multi-pin); dataset for the context strip.
 
-### 2.5 `gains` (beat 5: what this code buys)
+### 2.5 `gains` (beat 5: deferred)
 
-- **Purpose.** Close the argument: claims, each tied to something shown.
-- **Inputs.** Claims as `lines`, each naming an excerpt id (code or
-  `evidence`) it rests on; optional metric chips from evidence excerpts (a
-  benchmark table in the repo, a test output quoted at the pin).
-- **Outputs.** One `gains-card` scene: `{ kind: "gains-card", claims: { lineId: string, excerpt: string, metric?: { label: string, value: string } }[], view?: string }`.
-  Each claim appears when its line is spoken (the timeline already gives
-  line starts), with the excerpt's citation under it.
-- **Validation.** Every claim's `excerpt` exists; a `metric.value` must appear
-  verbatim in that excerpt's text (so the number on screen is in the pinned
-  bytes). This is the no-invented-claims rule applied to the close.
-- **Renderers.** One new entry each: card overlay (Remotion) and card node
-  (Motion Canvas), reading `claimsOf(bundle, sceneId)` from `play.ts`.
-- **Narration.** The claim lines.
-- **Data.** code (evidence excerpts); optionally the dataset view faded behind.
+**Deferred, 2026-10-24** (§ 10). The close was to be one `gains-card` scene of
+2–4 claim lines, each citing an excerpt, with optional metric chips whose
+values had to appear verbatim in the pinned bytes. The role stays reserved in
+the registry (§ 1.3); no component, scene kind, `claimsOf` query or build item
+exists for it in current scope. Until it returns, a `walkthrough` ends on the
+last `deep-dive` excerpt, or on `shoutout` when present. The full component
+spec is in this file's history (commit `b40f3d3`) and is the starting point
+for re-enabling.
 
 ### 2.6 `shoutout` (beat 6, optional: commit and blame credits)
 
@@ -328,7 +330,7 @@ renderers · narration · data dependencies.
 | architecture | dataset documents per view | 1 line per level |
 | focus | element description, relationships | lines |
 | deep-dive | excerpt walk; evolution states | steps / focus cues / lines |
-| gains | claim lines tied to excerpts | lines |
+| gains (deferred, § 10) | — | — |
 | shoutout | generated credit line, verified against credits | 1–2 lines |
 | cold-open / change (§ 5) | issue/PR title and body quotes as evidence excerpts | lines |
 
@@ -436,9 +438,12 @@ beyond `authorship`.
 | `architecture` | optional | same beat; the "point" is the element(s) whose files the diff touched (core suggests them by matching changed paths to `dataset.sources[].path`) | overview kind, descend |
 | `investigation` | optional | the `focus` beat renamed by role: where the bug lived, `code-explanation` at `driver.base` | focus-element, code-explanation |
 | `change` | yes | the deep dive: `diff-view` pairs (base/head of the same symbol) or `code-evolution` when the PR has several commits worth stepping | context strip, steps, cues |
-| `verification` | optional | tests added or changed in the diff as `code-explanation` at head; or an evidence excerpt of CI output quoted from the PR | evidence excerpts |
-| `gains` | yes | claims cite the diff and the issue's acceptance criteria | gains-card |
+| `verification` | optional | tests added or changed in the diff as `code-explanation` at head; or an evidence excerpt of CI output, or of the issue's closing comment, quoted from the snapshot | evidence excerpts |
 | `shoutout` | optional, **default on** | credits are the PR author plus blame at head over the shown excerpts | credits pipeline |
+
+A `change` story therefore ends on `verification` when it has one, else on
+`change`, and then the credits. The `gains` slot it had (claims citing the
+diff and the issue's acceptance criteria) is deferred with the beat (§ 10).
 
 Roles in a `change` story are different names for the same beat machinery:
 `cold-open` and `investigation` are beat defs whose allowed kinds overlap
@@ -449,10 +454,11 @@ knows the difference.
 
 - **Issue** → cold open is the issue (title, body quote, reporter, opened
   date); investigation is at the base of the fixing change; change is the
-  fixing PR/commit's diff; gains quote the issue's closing comment or the
-  tests; shoutout credits the reporter (from the snapshot) and the fix's
-  authors (from blame at head). If `fixedBy` is absent, the arc stops after
-  investigation and the pattern marks it `open-issue` (a valid shorter arc).
+  fixing PR/commit's diff; verification quotes the tests or the issue's
+  closing comment as evidence; shoutout credits the reporter (from the
+  snapshot) and the fix's authors (from blame at head). If `fixedBy` is
+  absent, the arc stops after investigation and the pattern marks it
+  `open-issue` (a valid shorter arc).
 - **PR** → cold open is the PR header plus its linked issue if any; change is
   the diff; verification is its test changes; shoutout credits the PR author,
   reviewers (from the snapshot) and blame at head.
@@ -543,9 +549,9 @@ its values into the bundle (theme tokens, intro/outro cards, lexicon).
 | **Cold open on a failure** | start with the crash, the bug, the slow query (an evidence excerpt or a terminal take), then rewind | **variant of `cold-open`** (change pattern) and allowed as an optional first beat in `walkthrough` | It is beat 1 with a different data source; no new machinery |
 | **Follow one request end to end** | the option-2 move at full length, across C4 levels | **already a component** (`follow-request` + `descend`) | Covered by beats 2–4 |
 | **Code evolution** (one function across versions) | audit item 11 | **variant of `deep-dive`** | Decided above |
-| **Convention tour** ("TigerStyle", "how this repo handles errors") | three or four excerpts that each show the same rule | **new pattern `convention`**: `repo-intro → rule-card → deep-dive×N → gains` | Needs one new scene kind, `rule-card` (the rule as an evidence excerpt from the style doc); otherwise reuses beats |
+| **Convention tour** ("TigerStyle", "how this repo handles errors") | three or four excerpts that each show the same rule | **new pattern `convention`**: `repo-intro → rule-card → deep-dive×N` (→ `gains` once un-deferred) | Needs one new scene kind, `rule-card` (the rule as an evidence excerpt from the style doc); otherwise reuses beats |
 | **Test campaign** ("the VOPR", "what the fuzzer found") | explain a test harness and show it running | **new pattern `test-campaign`**, but only after media-floor holds exist | The "show it running" beat needs the deferred terminal take (audit 3.14, holds from lift 6). Until then, the run is quoted as evidence |
-| **Before/after benchmark** | two evidence excerpts and a metric chip | **variant of `gains`** (`gains-card` already takes metrics) | No new kind |
+| **Before/after benchmark** | two evidence excerpts and a metric chip | **deferred with `gains`** (§ 10); it was to be a variant of `gains-card`, which takes metrics | No new kind when it returns; it is the strongest reason to bring the card back |
 | **Tour by numbers** (counts, sizes, ages) | the repo-card facts as a beat | **folded into `repo-intro`** | Same data |
 | **Series intro/outro cards and "previously on"** | consistent openers, cross-episode references | **series-level machinery** (`series.json`) | Per-series data, not a beat |
 | **Live site / UI tour** | option 3's browser capture | **out of scope** for this plan | Platform canvas rates it L and opt-in; needs per-repo runtimes |
@@ -565,7 +571,7 @@ in a codebase and get a video for it, with no storyboard authoring and no arc
 selection up front. This section specifies that mode as a **front door** onto
 everything above: it derives a `walkthrough` arc from a pointer, emits an
 ordinary storyboard, and hands over to the pipeline already planned. Nothing
-in a renderer changes except one ribbon (§ 7.4).
+in a renderer changes.
 
 ### 7.1 The input: a pointer
 
@@ -582,7 +588,7 @@ export type Pointer = {
     | { kind: "symbol";  path: string; symbol: string }       // function, method, type
     | { kind: "range";   path: string; lines: Range }
     | { kind: "element"; elementId: string; diagramId?: string }   // a C4 diagram element
-  why?: string;                       // one line, optional; becomes draft claim 1 (§ 7.2)
+  why?: string;                       // one line, optional; narration seed for the locus scene (§ 7.2)
   dataset?: Storyboard["sources"]["dataset"];   // optional; see decision 7 when absent
 };
 ```
@@ -609,8 +615,8 @@ the same provenance rule: the SHA is frozen at request time.
 
 Derivation is split in two so the shape is testable without a model: a
 **deterministic skeleton** that core computes from the pointer, the pinned
-tree and the dataset, then the **AI mapping step** that fills words and
-drafts the close inside the skeleton's bounds. The skeleton is where the
+tree and the dataset, then the **AI mapping step** that fills words inside
+the skeleton's bounds. The skeleton is where the
 existing beats are chosen; the model never picks beats.
 
 **Step 1, resolve the target to a locus** (`path`, `lines`, `symbol`):
@@ -663,47 +669,30 @@ excerpt as `relationshipId` and `datasetSourceId`, exactly as litefleet's
 | `architecture` | the descent chain from step 2 | one `architecture-overview` per level with `descend` on the element that opens the next; narration empty |
 | `focus` | the element from step 2, its `description`, its relationships in the focus view | one `focus-element` with `responsibilities` seeded from the description's clauses; one `follow-request` if a dynamic view passes through the element (litefleet: `usage-flow` does) |
 | `deep-dive` | the locus excerpt plus the top neighbours from step 3 | `code-explanation` scenes, `default` variant, one per excerpt, the locus first, context strip on the focus view |
-| `gains` | **drafted**, see below | one `gains-card` whose every claim carries `draft: true` |
+| `gains` | deferred (§ 10) | nothing; the arc ends on the deep dive or the credits |
 | `shoutout` | credits policy per decision 1 | present only if the default says so; its names are generated and verified as in § 2.6 |
 
-**Gains are drafted, never silently invented.** The close is the one beat a
-pointer cannot determine, because "what this code buys" is a judgement. The
-skeleton therefore emits claim *slots*, each with the evidence it may rest
-on, and the mapping step writes a sentence per slot. Slots, in order:
-
-1. The `why` note, verbatim, citing the locus excerpt (only if `why` was given).
-2. The element's `description` from the dataset, citing the locus excerpt.
-3. The doc comment or docstring immediately above the locus symbol, as an
-   evidence excerpt (pinned bytes, so the quote is checkable).
-4. Test names that reference the symbol (from step 3's grep, tests bucket), as
-   an evidence excerpt of the test file's relevant lines.
-
-A slot with no evidence is dropped, not filled. Each emitted claim is
-`{ lineId, excerpt, draft: true, basis: "why" | "description" | "doc-comment" | "tests" }`;
-the § 2.5 validation (claim cites an existing excerpt; a metric value must
-appear verbatim in it) applies unchanged, so a draft can still only say what
-the pinned repo contains. The flag is visible in three places:
-
-- **Storyboard**: `draft: true` on each claim and `draft: true` on the `gains`
-  act, so a reader of the JSON sees it before anything renders.
-- **Verify**: `c4v verify` reports every draft and **fails** unless run with
-  `--allow-drafts` (decision 6 fixes whether fail or warn). `c4v proof`
-  refuses an MP4 built from a storyboard with drafts, so an unconfirmed close
-  cannot be published through the pipeline.
-- **Render**: both renderers draw a `DRAFT` ribbon over a draft claim on the
-  gains card, from `claimsOf` (which already returns the claim; it gains the
-  flag). This is the only renderer change the mode needs.
-
-Confirming is editing: the author rewrites or keeps the sentence and deletes
-the `draft` flag; the act's flag clears when no claim carries one (verify
-checks they agree). Nothing else in the storyboard is marked draft, because
-nothing else was invented: beats 1–4 are facts and quotes from the pin, and
-their narration lines are checked the way every line is (§ 2.8).
+**Nothing in the skeleton is drafted.** The close was the one beat a pointer
+could not determine, because "what this code buys" is a judgement, so the
+earlier version of this section drafted it: claim slots with evidence, a
+`draft: true` flag on claims and on the act, a verify rule that failed without
+`--allow-drafts`, a `proof` refusal, and a `DRAFT` ribbon in both renderers.
+With `gains` deferred (§ 10) that machinery has nothing to gate and is
+deferred with it; nothing else in the storyboard was ever invented. Beats 1–4
+are facts and quotes from the pin, and their narration lines are checked the
+way every line is (§ 2.8), so a derived storyboard goes through `verify` and
+`proof` on the same terms as an authored one. The `why` note is kept verbatim
+in `derived.from` and offered to the mapping step as a narration seed for the
+locus scene (it is checked like any line); it is no longer a claim. The
+evidence the slots would have gathered (element description, doc comment
+above the locus, tests naming the symbol) is still cheap to collect from
+steps 2–3 and is what the draft machinery picks up again when the card
+returns.
 
 **Step 5, the AI fills the words.** The mapping brief (item 11) gets a
 point-and-shoot addendum: given the skeleton and `derived.candidates`, write
-the narration for each scene from that beat's `narrationSources`, write one
-sentence per gains slot from its basis, and optionally swap a neighbour for
+the narration for each scene from that beat's `narrationSources`, using
+`why` for the locus scene if given, and optionally swap a neighbour for
 another candidate from the ranked list. It may not add scene kinds, beats or
 excerpts the skeleton did not offer; `c4v verify` enforces that by comparing
 the result against `derived` (same arc, excerpt ids drawn from the candidate
@@ -752,8 +741,8 @@ Reused as planned, unchanged:
 - **The AI-mapping brief** (item 11): the same generated document, with one
   addendum; the model still reads `BEATS` and `PATTERNS`.
 - **Scene kinds**: `repo-card`, `architecture-overview` with `descend`,
-  `focus-element`, `follow-request`, `code-explanation`, `gains-card`,
-  `credits`. No new kind.
+  `focus-element`, `follow-request`, `code-explanation`, `credits`. No new
+  kind.
 - **The verify gate, both renderers, the act chrome**, as they are.
 
 Genuinely new:
@@ -764,9 +753,9 @@ Genuinely new:
   Pure over the dataset and a tree listing; the only I/O is through
   `code-source` and `ingest/neighbors.ts`.
 - `ingest/neighbors.ts`: callers and callees at the pin by `git grep`, ranked.
-- The `draft` flag on claims and acts, the verify rule and `--allow-drafts`,
-  the proof refusal, and the `DRAFT` ribbon in both renderers.
-- The `derived` block and the step-5 bound check.
+- The `derived` block and the step-5 bound check. (The `draft` flag, verify
+  rule, `--allow-drafts`, proof refusal and `DRAFT` ribbon are deferred with
+  `gains`, § 10.)
 - The brief addendum and a litefleet fixture: the pointer above must derive a
   storyboard that verify accepts, and its beats 1–3 must land on the same
   element and view the hand-written litefleet storyboard uses.
@@ -784,11 +773,13 @@ derived deep dive to overlap the authored one) and the callers of `Query`.
 A name-only grep at this pin also returns the gateway's `Client.Query` in
 `nodeclient/client.go` and its use in `api/handlers.go`, a different method
 with the same name: the same-directory ranking pushes them below the engine
-hits, but it is the imprecision decision 8 weighs. Gains slots: the `why`
-note; the `nd-engine` description ("Epoch check, per-database lanes,
-tenant/node limits; 2 second statement deadline"); the five-line doc comment
-above `Query` (lines 125–129 at the pin, which says what the function
-guarantees about partial writes); and the engine tests that name `Query`.
+hits, but it is the imprecision decision 8 weighs. The video ends on the
+last neighbour's `code-explanation` (or the credits, per decision 1). Had the
+deferred gains slots been live, they would have held: the `why` note; the
+`nd-engine` description ("Epoch check, per-database lanes, tenant/node
+limits; 2 second statement deadline"); the five-line doc comment above
+`Query` (lines 125–129 at the pin, which says what the function guarantees
+about partial writes); and the engine tests that name `Query`.
 
 ## 8. Build sequence
 
@@ -800,9 +791,9 @@ protocol. Effort: S under half a day, M about a day, L several days.
 
 | # | Item | Scope | Depends on | Effort | Seat | Proof it is done |
 |---|---|---|---|---|---|---|
-| 1 | **Arc schema + beat registry + patterns** | `schema.ts` (`arc`, `Act.role/variant/optional`), `beats/registry.ts`, `beats/patterns.ts`, arc rules in `validate.ts`, `arcProgressAt` in `play.ts`, `bundle.arc` passthrough | nothing | M | Opus | `npm test` adds arc tests; litefleet storyboard without `arc` still builds byte-identically; a litefleet storyboard **with** a 5-beat `walkthrough` arc over the existing 14 scenes (no new kinds) passes `verify` |
+| 1 | **Arc schema + beat registry + patterns** | `schema.ts` (`arc`, `Act.role/variant/optional`), `beats/registry.ts`, `beats/patterns.ts`, arc rules in `validate.ts`, `arcProgressAt` in `play.ts`, `bundle.arc` passthrough | nothing | M | Opus | `npm test` adds arc tests; litefleet storyboard without `arc` still builds byte-identically; a litefleet storyboard **with** a 4-beat `walkthrough` arc over the existing 14 scenes (no new kinds) passes `verify` |
 | 2 | **Lower-third act chrome in both renderers** (audit 10) | `LOWER_THIRD` region + layer in Remotion; region + node in Motion Canvas; theme tokens | 1 | M | Opus (Remotion), then Sol (Motion Canvas port) | litefleet re-rendered with the arc from item 1 shows the tracker in both MP4s; both pass `c4v proof`; dumb-views lint passes; stills committed |
-| 3 | **End-to-end arc on litefleet** (the early proof) | `repo-card`, `gains-card` scene kinds in core + both renderers; litefleet storyboard gains beat 1 and beat 5 scenes with new takes | 1, 2 | M | Opus | litefleet renders a full 5-beat arc in both renderers from one storyboard; `verify` and `proof` pass; the new takes are committed (TTS spend reported) |
+| 3 | **End-to-end arc on litefleet** (the early proof) | `repo-card` scene kind in core + both renderers; litefleet storyboard gains a beat 1 scene with new takes (beat 5 deferred, § 10) | 1, 2 | S–M | Opus | litefleet renders the full 4-beat `walkthrough` arc in both renderers from one storyboard, ending on the deep dive; `verify` and `proof` pass; the new takes are committed (TTS spend reported) |
 | 4 | **Repo ingestion** (`ingest/repo.ts`, `bundle.repo`, `repoFactsOf`) | git log/ls-tree facts; `repo-card` reads facts instead of storyboard text | 3 | S | Sol | `verify` reproduces `bundle.repo` from the pinned repo; the repo-card shows the commit count and date |
 | 5 | **Blame ingestion + credits + `credits` scene kind** (beat 6) | `ingest/blame.ts`, aliases, `creditsOf`, `creditLine`, policy, verify checks, scene kind in both renderers | 3 | M | Opus (core + Remotion), Sol (Motion Canvas) | litefleet gets an optional shoutout beat; `bundle.credits` reproduces from git; a spoken name not in credits fails verify; both renders pass proof |
 | 6 | **`architecture` descend + `focus` responsibilities** | `descend` on overview scenes, validation against `detail.diagramId`; responsibilities overlay | 1 | S | Sol | litefleet beat 2 descends context → containers → node-components in both renderers |
@@ -811,7 +802,7 @@ protocol. Effort: S under half a day, M about a day, L several days.
 | 9 | **Series machinery** | `series.json`, `--video` builds, theme tokens into the bundle, chapter markers from acts | 3 | M | Sol | two litefleet videos build from one series file; a chapters file matches the timeline's acts |
 | 10 | **Convention pattern + `rule-card`** | pattern entry, one kind, docs | 3, 9 | S | Sol | a litefleet "how litefleet guards every query" video renders with three excerpts under one rule |
 | 11 | **AI-mapping instructions from the registry** | generate the producer brief (`BEATS`, `PATTERNS`, schema) as a document the mapping step reads; a fixture storyboard it must reproduce | 1, 8 | S | Luna | the brief is generated, not hand-written; `verify` accepts the fixture |
-| 12 | **Point-and-shoot entry mode** (§ 7) | `Pointer` + `pointer.json`, `c4v point`, `derive.ts` (locus → element → view chain → skeleton), `ingest/neighbors.ts`, the `draft` flag with its verify rule, `--allow-drafts` and proof refusal, `DRAFT` ribbon in both renderers, `derived` block, brief addendum, litefleet fixture | 3, 4, 6; 11's `walkthrough` half (11 can ship that before 8 lands) | M | Opus (derive, draft rule, bound check), Sol (neighbours, `c4v point`, ribbons in both renderers), Luna (brief addendum, fixture) | `c4v point` on litefleet at `Query` emits a storyboard that `verify` accepts with `--allow-drafts` and rejects without; its beats 1–3 land on `nd-engine` and `node-components` like the hand-written storyboard; after a `claude -p` mapping run and `narrate`, both renderers render it and the DRAFT ribbon is visible in committed stills; deleting the drafts passes `verify` and `proof` clean |
+| 12 | **Point-and-shoot entry mode** (§ 7) | `Pointer` + `pointer.json`, `c4v point`, `derive.ts` (locus → element → view chain → skeleton), `ingest/neighbors.ts`, `derived` block, brief addendum, litefleet fixture (the draft gate and `DRAFT` ribbon are deferred with `gains`, § 10) | 3, 4, 6; 11's `walkthrough` half (11 can ship that before 8 lands) | M | Opus (derive, bound check), Sol (neighbours, `c4v point`), Luna (brief addendum, fixture) | `c4v point` on litefleet at `Query` emits a storyboard that `verify` accepts; its beats 1–3 land on `nd-engine` and `node-components` like the hand-written storyboard; after a `claude -p` mapping run and `narrate`, both renderers render it and `proof` passes; the derived storyboard's deep dive overlaps the authored one (`n-acquire`) |
 
 Items 1–3 are the spine and should land first, in order. Items 4, 5 and 6
 are independent of each other after 3. Items 7 and 8 are the two L items and
@@ -837,10 +828,12 @@ authored storyboard.
    generated) is settled. Should item 9 wait for that, or ship on litefleet?
 5. **Lower-third placement vs captions.** Above the caption row (plan) or
    replacing the view header at the top? A one-frame mock decides it.
-6. **Gains draft gate.** Should `verify` fail on any `draft: true` (plan),
-   so an unconfirmed point-and-shoot close cannot reach `proof`, or warn and
-   rely on the on-screen ribbon? And is confirmation just deleting the flag
-   by hand, or a `c4v confirm` that records who and when in `derived`?
+6. **Gains draft gate.** *Deferred with the gains card (§ 10); numbering kept
+   so references stay valid.* When the card returns: should `verify` fail on
+   any `draft: true`, so an unconfirmed point-and-shoot close cannot reach
+   `proof`, or warn and rely on the on-screen ribbon? And is confirmation
+   just deleting the flag by hand, or a `c4v confirm` that records who and
+   when in `derived`?
 7. **Pointers into repos with no C4 dataset.** Refuse (plan: the mode needs an
    element and a view), derive a thinner arc with `architecture` and `focus`
    optional (a new `point` pattern), or generate the dataset first (canvas
@@ -849,3 +842,39 @@ authored storyboard.
    cheap, language-agnostic, imprecise) or Tree-sitter call graphs for the
    languages the mapping sandbox already has grammars for? Also the cap: two
    neighbours by default, or let the `why` note's length set it?
+
+## 10. Deferred
+
+*2026-10-24, at Nick's direction.* The gains card is pulled from current scope.
+This is a deferral, not a deletion of the idea.
+
+**Pulled:**
+
+- The `gains` beat as a buildable component (§ 2.5) and its `gains-card` scene
+  kind in core and both renderers (§ 1.4), with the `claimsOf` query.
+- `gains` as a required slot in `walkthrough` (§ 1.1) and `change` (§ 5.2), and
+  as the closing slot of the `convention` pattern (§ 6.3). Videos end on the
+  last `deep-dive` (or `verification` in a `change` story), then `shoutout`
+  when present.
+- The before/after benchmark variant (§ 6.3), which was a `gains-card` with
+  metric chips.
+- The point-and-shoot draft machinery (§ 7.2, § 7.4, item 12): drafted claim
+  slots, the `draft` flag on claims and acts, the verify rule and
+  `--allow-drafts`, the `proof` refusal, and the `DRAFT` ribbon. It existed
+  only to gate drafted gains.
+- Open decision 6 (the draft gate).
+- From item 3: the `gains-card` kind and litefleet's beat 5 scene.
+
+**Kept so it can return:** the `gains` role in `BeatRole` and a reserved
+`BEATS` entry with `kinds: []` (§ 1.3), so a storyboard naming it fails verify
+with "deferred" and no renderer or pattern has to be re-plumbed later. The
+component spec, the drafted-gains design and the § 7.5 slot list are in this
+file's history at `b40f3d3` and `09d9459`.
+
+**What re-enables it:** Nick deciding the close is wanted, after seeing the
+4-beat arc end on the deep dive (demo 3 in
+[poc-demo-list.md](poc-demo-list.md)). Then: fill in the reserved registry
+entry, restore `gains-card` as one entry per renderer and `claimsOf` in
+`play.ts`, put the slot back in the three patterns, add a small build item
+after item 3, bring back the draft machinery inside item 12's scope, and
+reopen decision 6.
